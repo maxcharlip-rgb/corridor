@@ -14,20 +14,55 @@ import { config } from './config.js';
  * instead of markup.
  */
 
+/**
+ * Font discovery.
+ *
+ * This matters more than it looks: with no usable font, drawtext cannot run, so
+ * end cards, address bands, spec lines and hero captions are all silently
+ * skipped. The reel still builds — it just loses every piece of information a
+ * broker needs on it. On a Linux host that ships no fonts (many slim container
+ * images), the first symptom is a video that renders "fine" and says nothing.
+ *
+ * So: search widely, allow an explicit override, and let `npm run doctor` fail
+ * loudly rather than degrade quietly.
+ */
 const FONT_CANDIDATES = [
+  process.env.FONT_PATH,
+  // macOS
   '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
   '/System/Library/Fonts/Supplemental/Arial.ttf',
   '/Library/Fonts/Arial Unicode.ttf',
   '/System/Library/Fonts/Helvetica.ttc',
+  // Debian / Ubuntu (Render's native runtime, most CI images)
   '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-];
+  '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+  '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+  '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+  '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+  '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+  '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
+  '/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf',
+  // Alpine
+  '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',
+  '/usr/share/fonts/liberation/LiberationSans-Bold.ttf',
+  // RHEL / Amazon Linux
+  '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
+  '/usr/share/fonts/liberation-sans/LiberationSans-Bold.ttf',
+].filter(Boolean);
 
 const REGULAR_CANDIDATES = [
+  process.env.FONT_PATH_REGULAR,
   '/System/Library/Fonts/Supplemental/Arial.ttf',
   '/Library/Fonts/Arial Unicode.ttf',
   '/System/Library/Fonts/Helvetica.ttc',
   '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-];
+  '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+  '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+  '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
+  '/usr/share/fonts/dejavu/DejaVuSans.ttf',
+  '/usr/share/fonts/liberation/LiberationSans-Regular.ttf',
+  '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf',
+].filter(Boolean);
 
 function findFont(candidates) {
   for (const candidate of candidates) {

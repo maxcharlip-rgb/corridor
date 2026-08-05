@@ -139,3 +139,42 @@ public/         index.html   marketing homepage + entry point
                 tour.html    public tour player (/t/:slug)
 scripts/        doctor, verify-higgsfield
 ```
+
+---
+
+## Hosting on Render
+
+```
+Render → New → Blueprint → point at this repo
+```
+
+`render.yaml` provisions the service. **The critical part is the persistent
+disk.** Render's filesystem is ephemeral: without one, every deploy erases
+`db.json` (accounts, listings, leads, credit ledger) and every rendered video,
+and published tour links start 404ing — including the QR code already printed on
+a sign. `CORRIDOR_DATA_DIR=/var/data` points state at the mounted disk.
+
+The app warns loudly at boot if it detects a hosted platform with
+`CORRIDOR_DATA_DIR` unset.
+
+### After the first deploy
+
+1. Set `PUBLIC_URL` to the service's real origin (e.g.
+   `https://corridor.onrender.com`). Higgsfield downloads listing photos from
+   this origin and every tour/QR link is built from it — a wrong value breaks
+   generation and sharing at once.
+2. Set `HIGGSFIELD_KEY_ID` / `HIGGSFIELD_KEY_SECRET` if you want cinematic
+   rendering. Everything else works without them.
+3. Confirm: `curl https://<your-app>/healthz`
+
+### Free tier
+
+Not viable: no persistent disk, and the service sleeps — a prospect scanning a
+sign would hit a cold start. Use `starter` or above.
+
+### Fonts
+
+End cards, address bands, spec lines and captions are drawn with ffmpeg
+`drawtext`, which needs a TTF on the host. If the image ships none, those
+elements are silently skipped and the video renders with no information on it.
+`npm run doctor` fails loudly if no font is found; set `FONT_PATH` to override.

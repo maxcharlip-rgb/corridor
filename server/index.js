@@ -67,6 +67,22 @@ const server = app.listen(config.port, () => {
       ? `ready (${config.higgsfield.model})`
       : 'not configured — add HIGGSFIELD_KEY_ID / HIGGSFIELD_KEY_SECRET to .env'
   );
+  // Hosted platforms (Render, Railway, Fly, Heroku) have ephemeral filesystems.
+  // If state is sitting inside the deployed checkout, the next deploy silently
+  // destroys every account, listing, lead and rendered video — and published
+  // tour links start 404ing. Loud, because the failure is otherwise invisible
+  // until the first redeploy.
+  const hosted = process.env.RENDER || process.env.RAILWAY_ENVIRONMENT ||
+    process.env.FLY_APP_NAME || process.env.DYNO || process.env.KUBERNETES_SERVICE_HOST;
+  if (hosted && !process.env.CORRIDOR_DATA_DIR) {
+    console.warn(
+      '\n  ⚠  EPHEMERAL STATE: running on a hosted platform with CORRIDOR_DATA_DIR unset,\n' +
+        `     so data lives in the checkout (${config.dataDir}). The next deploy will\n` +
+        '     erase every account, listing, lead and render, and published tour links\n' +
+        '     will 404. Mount a persistent disk and point CORRIDOR_DATA_DIR at it.\n'
+    );
+  }
+
   if (higgsfieldConfigured && /localhost|127\.0\.0\.1/i.test(config.publicUrl)) {
     console.log(
       '\n  Note: PUBLIC_URL is localhost. Higgsfield downloads your photos over the\n' +

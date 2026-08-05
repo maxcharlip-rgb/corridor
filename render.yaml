@@ -1,0 +1,67 @@
+# Render blueprint for Corridor.
+#
+# The critical line in this file is the `disk` block. Render's filesystem is
+# EPHEMERAL: without a mounted disk, every deploy and every restart wipes
+# data/db.json — accounts, listings, leads, credit ledger — and every rendered
+# video. Published tour links would 404 after a routine redeploy, and a broker's
+# QR code in the ground would stop working.
+#
+# CORRIDOR_DATA_DIR points state at the mounted disk instead of the repo.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> point at this repo.
+# Then set the secret values marked `sync: false` in the dashboard.
+
+services:
+  - type: web
+    name: corridor
+    runtime: node
+    plan: starter          # free tier has no persistent disk and sleeps; not viable
+    region: oregon
+    branch: main
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+
+    # Persistent state. Sized for roughly 200-400 tours; renders dominate.
+    # sweepOrphanRenders() reclaims unreferenced files (RENDER_RETENTION_DAYS).
+    disk:
+      name: corridor-data
+      mountPath: /var/data
+      sizeGB: 10
+
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+
+      # State lives on the mounted disk, NOT in the repo checkout.
+      - key: CORRIDOR_DATA_DIR
+        value: /var/data
+
+      # Must match the service's public origin. Higgsfield downloads listing
+      # photos from here, and tour/QR links are built from it. Set it to the
+      # real URL (e.g. https://corridor.onrender.com) after the first deploy,
+      # or to your custom domain.
+      - key: PUBLIC_URL
+        sync: false
+
+      # Signs session cookies. If unset, one is generated into db.json — which
+      # means a disk loss silently signs everyone out. Set it explicitly.
+      - key: SESSION_SECRET
+        generateValue: true
+
+      # Hard ceiling on monthly generation spend. Strongly recommended: without
+      # it a loop or a bad actor can drain the Higgsfield balance.
+      - key: CREDIT_BUDGET
+        value: "3000"
+
+      # Cinematic video + image generation. Without both, the app still runs:
+      # preview rendering, publishing, QR sign kit, tours and lead capture all
+      # work. Only Higgsfield generation is disabled.
+      - key: HIGGSFIELD_KEY_ID
+        sync: false
+      - key: HIGGSFIELD_KEY_SECRET
+        sync: false
+
+      # Optional: free-text spec extraction. Falls back to a heuristic parse.
+      - key: ANTHROPIC_API_KEY
+        sync: false
