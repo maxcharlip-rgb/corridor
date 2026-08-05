@@ -37,6 +37,7 @@ import express from 'express';
 import { getDb, save, id, now, listings as listingsRepo, shots as shotsRepo } from '../store.js';
 import { normaliseSource } from '../signkit.js';
 import { rateLimit } from '../limits.js';
+import { brandingForListing } from '../branding.js';
 
 export const chatApi = express.Router();
 chatApi.use(express.json({ limit: '16kb' }));
@@ -109,6 +110,7 @@ chatApi.post('/tours/:slug/chat', chatLimiter, async (req, res) => {
   }
 
   const db = getDb();
+  const brand = brandingForListing(listing);
   let answer;
 
   try {
@@ -123,7 +125,7 @@ chatApi.post('/tours/:slug/chat', chatLimiter, async (req, res) => {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 300,
-        system: SYSTEM(factsFor(listing), db.broker.name || 'the listing broker'),
+        system: SYSTEM(factsFor(listing), brand.name || 'the listing broker'),
         messages: [{ role: 'user', content: message }],
       }),
     });
@@ -134,7 +136,7 @@ chatApi.post('/tours/:slug/chat', chatLimiter, async (req, res) => {
   } catch (err) {
     console.error('[chat]', err.message);
     return res.status(502).json({
-      error: `Sorry — I could not answer that. Contact ${db.broker.name || 'the broker'} directly.`,
+      error: `Sorry — I could not answer that. Contact ${brand.name || 'the broker'} directly.`,
     });
   }
 
@@ -154,7 +156,7 @@ chatApi.post('/tours/:slug/chat', chatLimiter, async (req, res) => {
   if (db.chatLog.length > 20_000) db.chatLog.splice(0, 4000);
   save();
 
-  res.json({ answer, brokerName: db.broker.name });
+  res.json({ answer, brokerName: brand.name });
 });
 
 /*

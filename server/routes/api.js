@@ -28,6 +28,7 @@ import { enhancePhoto, stagePhoto, stagingConfigured, ENHANCE_PROFILES } from '.
 import { renderSign, qrDataUrl, taggedUrl, SIGN_FORMATS, SHARE_CHANNELS } from '../signkit.js';
 import { ownsListing, authEnabled } from '../auth.js';
 import { collectFacts, stripUnverified, logFactUse, DISCLOSURES } from '../facts.js';
+import { brandingForAccount, brandingForListing, updateBranding, BRAND_FIELDS } from '../branding.js';
 import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
 import { tourAgent, captionTrack, heroTextFor } from '../agents/tour-agent.js';
 import { envisionAgent } from '../agents/envision-agent.js';
@@ -100,7 +101,7 @@ function requireShot(req) {
 api.get('/bootstrap', (_req, res) => {
   const db = getDb();
   res.json({
-    broker: db.broker,
+    broker: brandingForAccount(_req.account?.id || null),
     motions: MOTIONS.map((m) => ({
       key: m.key,
       label: m.label,
@@ -147,19 +148,17 @@ function summarise(listing) {
 }
 
 api.put('/broker', handle(async (req, res) => {
-  const db = getDb();
-  const { name, company, email, phone, logoUrl, accent } = req.body || {};
-  db.broker = {
-    ...db.broker,
-    ...(name !== undefined && { name }),
-    ...(company !== undefined && { company }),
-    ...(email !== undefined && { email }),
-    ...(phone !== undefined && { phone }),
-    ...(logoUrl !== undefined && { logoUrl }),
-    ...(accent !== undefined && { accent }),
-  };
-  save();
-  res.json(db.broker);
+  // Branding lives on the account, never on install state — otherwise one
+  // firm's identity would appear on another firm's tour.
+  if (!req.account) {
+    const db = getDb();
+    for (const field of BRAND_FIELDS) {
+      if (req.body[field] !== undefined) db.broker[field] = req.body[field];
+    }
+    save();
+    return res.json(db.broker);
+  }
+  res.json(updateBranding(req.account.id, req.body || {}));
 }));
 
 // --- listings ----------------------------------------------------------------
@@ -750,7 +749,7 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
     return res.status(400).json({ error: 'Render at least one shot before exporting a reel.' });
   }
 
-  const broker = getDb().broker;
+  const broker = brandingForListing(listing);
   const outFile = `${listing.slug}_reel.mp4`;
   const outPath = path.join(config.rendersDir, outFile);
   const work = (name) => path.join(config.rendersDir, `${listing.slug}_${name}.mp4`);
@@ -897,8 +896,10 @@ api.get('/listings/:id/sign.svg', handle(async (req, res) => {
     format,
     tourUrl: `${config.publicUrl}/t/${listing.slug}`,
     listing,
-    broker: getDb().broker,
-    accent: getDb().broker.accent || '#c8622a',
+    // A printed sign carrying the wrong firm's phone number is the worst
+    // possible leak — it goes in the ground and stays there.
+    broker: brandingForListing(listing),
+    accent: brandingForListing(listing).accent,
   });
 
   res.type('image/svg+xml');

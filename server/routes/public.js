@@ -4,6 +4,7 @@ import { getDb, save, id, now, listings as listingsRepo, shots as shotsRepo, pho
 import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
 import { DISCLOSURES } from '../facts.js';
+import { brandingForListing } from '../branding.js';
 
 export const publicApi = express.Router();
 publicApi.use(express.json({ limit: '64kb' }));
@@ -67,7 +68,7 @@ publicApi.get('/tours/:slug', (req, res) => {
       cta: listing.cta || { label: 'Request a showing', enabled: true },
       reelUrl: listing.reelFile ? `/renders/${listing.reelFile}` : null,
     },
-    broker: db.broker,
+    broker: brandingForListing(listing),
     stops,
   });
 });

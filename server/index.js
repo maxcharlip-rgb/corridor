@@ -6,6 +6,7 @@ import { api } from './routes/api.js';
 import { publicApi } from './routes/public.js';
 import { authApi } from './routes/auth.js';
 import { loadAccount, requireAuth, authEnabled } from './auth.js';
+import { migrateGlobalBranding } from './branding.js';
 import { resumePending } from './jobs.js';
 import { ffmpegAvailable } from './render-preview.js';
 
@@ -63,6 +64,7 @@ const server = app.listen(config.port, () => {
     );
   }
   console.log('');
+  migrateGlobalBranding();
   resumePending();
 });
 
