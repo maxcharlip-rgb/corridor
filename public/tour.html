@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Building tour</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23e2703a'/><path d='M11 8v16l11-8z' fill='%23170d07'/></svg>" />
+  <style>
+    /* The tour is a separate surface from the studio: fewer affordances, more
+       screen given to the video, and nothing that looks like a tool. */
+    :root {
+      --ink: #0a0b0c;
+      --panel: rgba(255,255,255,0.05);
+      --line: rgba(255,255,255,0.1);
+      --text: #f2f0ee;
+      --muted: #9aa0a8;
+      --accent: #e2703a;
+      --sans: ui-sans-serif, -apple-system, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--ink); color: var(--text); font-family: var(--sans); }
+    body { min-height: 100vh; }
+    a { color: inherit; }
+    button, input, textarea { font: inherit; color: inherit; }
+
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 20px 70px; }
+
+    header.top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 20px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    header.top h1 { margin: 0; font-size: 26px; font-weight: 640; letter-spacing: -0.03em; }
+    header.top .addr { color: var(--muted); font-size: 14px; margin-top: 3px; }
+    header.top .headline {
+      margin-top: 9px; font-size: 14.5px; color: var(--accent); font-weight: 560; letter-spacing: -0.01em;
+    }
+
+    .stage {
+      position: relative; background: #000; border-radius: 14px; overflow: hidden;
+      aspect-ratio: 16 / 9; box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+    }
+    .stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .segments { display: flex; gap: 3px; position: absolute; top: 0; left: 0; right: 0; padding: 10px 12px 0; z-index: 3; }
+    .seg { flex: 1; height: 3px; background: rgba(255,255,255,0.22); border-radius: 2px; overflow: hidden; cursor: pointer; }
+    .seg i { display: block; height: 100%; width: 0; background: var(--accent); }
+    .seg.done i { width: 100%; }
+
+    .overlay {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+      padding: 60px 22px 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.82));
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+      pointer-events: none;
+    }
+    .overlay .cap { pointer-events: auto; }
+    .overlay .stop-name { font-size: 21px; font-weight: 620; letter-spacing: -0.02em; }
+    .overlay .stop-sub { color: rgba(255,255,255,0.68); font-size: 13.5px; margin-top: 3px; }
+    .overlay .controls { display: flex; gap: 8px; pointer-events: auto; }
+
+    .staged-badge {
+      position: absolute; top: 26px; right: 14px; z-index: 3;
+      background: rgba(0,0,0,0.66); border: 1px solid rgba(255,255,255,0.22);
+      color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      padding: 4px 9px; border-radius: 6px; text-transform: uppercase;
+    }
+
+    .big-play {
+      position: absolute; inset: 0; z-index: 4; display: grid; place-items: center;
+      background: rgba(0,0,0,0.45); cursor: pointer; border: none; width: 100%;
+    }
+    .big-play span {
+      width: 72px; height: 72px; border-radius: 50%; background: var(--accent);
+      display: grid; place-items: center; color: #170d07; font-size: 26px; padding-left: 5px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line);
+      background: rgba(0,0,0,0.5); cursor: pointer; font-size: 13.5px; font-weight: 550;
+      backdrop-filter: blur(8px); transition: background .14s ease;
+    }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #170d07; font-weight: 650; }
+    .btn.primary:hover { background: #ef7d45; }
+
+    .below { display: grid; grid-template-columns: 1fr 320px; gap: 26px; margin-top: 26px; align-items: start; }
+
+    .stops { display: flex; flex-direction: column; gap: 6px; }
+    .stop {
+      display: grid; grid-template-columns: 92px 1fr auto; gap: 13px; align-items: center;
+      padding: 8px; border-radius: 10px; cursor: pointer; border: 1px solid transparent;
+      transition: background .14s ease;
+    }
+    .stop:hover { background: var(--panel); }
+    .stop.active { background: var(--panel); border-color: rgba(226,112,58,0.4); }
+    .stop .th { aspect-ratio: 16/9; border-radius: 6px; background: #14161a center/cover no-repeat; }
+    .stop .nm { font-weight: 570; font-size: 14px; letter-spacing: -0.01em; }
+    .stop .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+    .stop .dur { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .stop.active .nm { color: var(--accent); }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+    .card + .card { margin-top: 14px; }
+    .card h3 { margin: 0 0 12px; font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+
+    .spec { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+    .spec:last-child { border-bottom: none; }
+    .spec .k { color: var(--muted); }
+    .spec .v { font-weight: 600; }
+
+    .broker .nm { font-weight: 620; font-size: 15px; }
+    .broker .co { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .broker a { display: block; font-size: 13.5px; color: var(--accent); text-decoration: none; margin-top: 4px; }
+
+    .modal-bg { position: fixed; inset: 0; background: rgba(4,5,6,0.82); backdrop-filter: blur(4px); display: grid; place-items: center; z-index: 60; padding: 20px; }
+    .modal { background: #14161a; border: 1px solid var(--line); border-radius: 14px; padding: 24px; width: min(460px, 100%); }
+    .modal h2 { margin: 0 0 5px; font-size: 19px; letter-spacing: -0.02em; }
+    .modal p.sub { margin: 0 0 18px; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+    .modal label { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; font-weight: 650; }
+    .modal .f { margin-bottom: 13px; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 10px 12px; background: #0a0b0c;
+      border: 1px solid var(--line); border-radius: 8px; outline: none;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: rgba(226,112,58,0.55); }
+    .modal textarea { min-height: 78px; resize: vertical; }
+    .modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal .err { color: #e08a80; font-size: 13px; margin-bottom: 12px; }
+
+    .disclosure { margin-top: 26px; color: #6e737b; font-size: 11.5px; line-height: 1.6; max-width: 78ch; }
+
+    @media (max-width: 880px) {
+      .below { grid-template-columns: 1fr; }
+      header.top h1 { font-size: 22px; }
+      .overlay { padding: 40px 16px 14px; }
+      .overlay .stop-name { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <div style="color:#9aa0a8;padding:40px 0">Loading tour…</div>
+  </div>
+  <div id="modal-root"></div>
+  <script type="module" src="/tour.js"></script>
+</body>
+</html>

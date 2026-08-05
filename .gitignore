@@ -1,0 +1,27 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Runtime data. Contains, at minimum:
+#   db.json      — session signing secret, scrypt password hashes, lead PII
+#   uploads/     — client property photography (not ours to redistribute)
+#   renders/     — generated video, large and reproducible
+data/
+!data/.gitkeep
+
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Scratch
+tmp/
+*.tmp
+*.corrupt-*
+*.trf

@@ -1,0 +1,329 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { config } from './config.js';
+import { getDb, save, shots as shotsRepo, photos as photosRepo, listings, now } from './store.js';
+import { MOTION_BY_KEY, SPACE_BY_KEY, buildPrompt } from './motions.js';
+import {
+  renderMotionShot,
+  renderBlendShot,
+  renderPoster,
+  stabilizeClip,
+  ffmpegAvailable,
+} from './render-preview.js';
+import { submitImageToVideo, getStatus, TERMINAL_STATUSES } from './higgsfield.js';
+
+/**
+ * Render orchestration.
+ *
+ * Preview renders run locally with a small concurrency cap (ffmpeg is CPU
+ * bound). Cinematic renders are submitted to Higgsfield and then polled; the
+ * poller survives restarts because the request id lives on the shot record.
+ */
+
+const PREVIEW_CONCURRENCY = 2;
+const queue = [];
+let active = 0;
+let pollTimer = null;
+
+function photoPath(photo) {
+  return path.join(config.uploadsDir, photo.file);
+}
+
+function resolveShotContext(shot) {
+  const motion = MOTION_BY_KEY[shot.motionKey] || MOTION_BY_KEY.dolly_in;
+  const spaceType = SPACE_BY_KEY[shot.spaceType] || null;
+  const listing = listings.byId(shot.listingId);
+  const photos = (shot.photoIds || []).map((pid) => photosRepo.byId(pid)).filter(Boolean);
+  return { motion, spaceType, listing, photos };
+}
+
+// --- preview (local, free) ---------------------------------------------------
+
+export function enqueuePreview(shotId) {
+  const shot = shotsRepo.byId(shotId);
+  if (!shot) throw new Error('Shot not found.');
+  if (!ffmpegAvailable()) {
+    throw new Error(
+      'ffmpeg was not found on this machine, so preview rendering is unavailable. ' +
+        'Install ffmpeg (brew install ffmpeg) or set FFMPEG_PATH in .env.'
+    );
+  }
+  if (queue.includes(shotId)) return shot;
+
+  shot.status = 'queued';
+  shot.error = null;
+  shot.updatedAt = now();
+  save();
+
+  queue.push(shotId);
+  pump();
+  return shot;
+}
+
+function pump() {
+  while (active < PREVIEW_CONCURRENCY && queue.length) {
+    const shotId = queue.shift();
+    active += 1;
+    runPreview(shotId)
+      .catch((err) => {
+        const shot = shotsRepo.byId(shotId);
+        if (shot) {
+          shot.status = 'failed';
+          shot.error = err.message;
+          shot.updatedAt = now();
+          save();
+        }
+        console.error(`[jobs] preview ${shotId} failed:`, err.message);
+      })
+      .finally(() => {
+        active -= 1;
+        pump();
+      });
+  }
+}
+
+async function runPreview(shotId) {
+  const shot = shotsRepo.byId(shotId);
+  if (!shot) return;
+
+  const { motion, photos } = resolveShotContext(shot);
+  if (!photos.length) throw new Error('This shot has no photo attached.');
+  if (motion.inputs === 2 && photos.length < 2) {
+    throw new Error(`"${motion.label}" needs two photos — attach a start and an end frame.`);
+  }
+
+  shot.status = 'rendering';
+  shot.updatedAt = now();
+  save();
+
+  const base = `${shot.id}_preview`;
+  const outPath = path.join(config.rendersDir, `${base}.mp4`);
+  const posterPath = path.join(config.rendersDir, `${base}.jpg`);
+
+  if (motion.inputs === 2) {
+    await renderBlendShot({
+      imagePathA: photoPath(photos[0]),
+      imagePathB: photoPath(photos[1]),
+      preview: motion.preview,
+      durationSec: shot.durationSec || 6,
+      outPath,
+    });
+  } else {
+    await renderMotionShot({
+      imagePath: photoPath(photos[0]),
+      preview: motion.preview,
+      durationSec: shot.durationSec || 5,
+      outPath,
+    });
+  }
+
+  await renderPoster({ videoPath: outPath, outPath: posterPath });
+
+  shot.preview = {
+    file: path.basename(outPath),
+    poster: fs.existsSync(posterPath) ? path.basename(posterPath) : null,
+    renderedAt: now(),
+  };
+  shot.status = 'ready';
+  shot.error = null;
+  shot.updatedAt = now();
+  save();
+}
+
+// --- cinematic (Higgsfield, costs credits) -----------------------------------
+
+/**
+ * Number of independent takes to generate per shot.
+ *
+ * This is the highest-leverage quality lever in the whole product. Measured
+ * per-shot defect rate is ~40% (hallucinated signage, inverted camera moves),
+ * so a single take yields a clean five-shot tour only 0.6^5 ≈ 8% of the time.
+ * Three takes drops per-shot failure to ~6%, taking a clean tour to ~73% — for
+ * about $3 of credits against a $249 price. Redundancy beats better prompting.
+ */
+export const DEFAULT_TAKES = 3;
+
+export async function submitCinematic(shotId, takeCount = DEFAULT_TAKES) {
+  const shot = shotsRepo.byId(shotId);
+  if (!shot) throw new Error('Shot not found.');
+
+  const { motion, spaceType, listing, photos } = resolveShotContext(shot);
+  if (!photos.length) throw new Error('This shot has no photo attached.');
+  if (motion.inputs === 2 && photos.length < 2) {
+    throw new Error(`"${motion.label}" needs two photos — attach a start and an end frame.`);
+  }
+
+  const prompt = buildPrompt(shot, { listing, motion, spaceType });
+  const imageUrls = photos
+    .slice(0, motion.inputs)
+    .map((p) => `${config.publicUrl}/uploads/${p.file}`);
+
+  shot.takes = shot.takes || [];
+  const submitted = [];
+
+  for (let i = 0; i < Math.max(1, takeCount); i += 1) {
+    try {
+      const { requestId } = await submitImageToVideo({
+        imageUrls,
+        prompt,
+        motionKey: shot.motionKey,
+        duration: shot.durationSec,
+        // Distinct seeds so the takes actually differ; identical seeds would
+        // just buy the same defect three times.
+        seed: Math.floor(Math.random() * 1_000_000),
+      });
+      const take = {
+        id: id('tk'),
+        requestId,
+        status: 'queued',
+        submittedAt: now(),
+        file: null,
+        poster: null,
+        error: null,
+      };
+      shot.takes.push(take);
+      submitted.push(take);
+    } catch (err) {
+      // One rejected take shouldn't abandon the others already in flight.
+      console.error(`[jobs] take ${i + 1} for ${shot.id} failed to submit:`, err.message);
+      if (!submitted.length && i === Math.max(1, takeCount) - 1) throw err;
+    }
+  }
+
+  shot.prompt = prompt;
+  shot.updatedAt = now();
+  save();
+
+  startPolling();
+  return shot;
+}
+
+/** Promote a specific take to be the one the tour uses. */
+export function selectTake(shotId, takeId) {
+  const fail = (message, status) => {
+    const err = new Error(message);
+    err.status = status;
+    return err;
+  };
+
+  const shot = shotsRepo.byId(shotId);
+  if (!shot) throw fail('Shot not found.', 404);
+  const take = (shot.takes || []).find((t) => t.id === takeId);
+  if (!take) throw fail('Take not found.', 404);
+  if (!take.file) throw fail('That take has not finished rendering.', 409);
+
+  shot.selectedTakeId = take.id;
+  shot.cinematic = { ...take };
+  shot.status = 'ready';
+  shot.error = null;
+  shot.updatedAt = now();
+  save();
+  return shot;
+}
+
+function pendingTakes() {
+  const out = [];
+  for (const shot of getDb().shots) {
+    for (const take of shot.takes || []) {
+      if (take.requestId && !TERMINAL_STATUSES.has(take.status || 'queued')) {
+        out.push({ shot, take });
+      }
+    }
+  }
+  return out;
+}
+
+export function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(() => {
+    pollOnce().catch((err) => console.error('[jobs] poll error:', err.message));
+  }, config.higgsfield.pollIntervalMs);
+  pollTimer.unref?.();
+}
+
+async function pollOnce() {
+  const pending = pendingTakes();
+  if (!pending.length) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+    return;
+  }
+
+  for (const { shot, take } of pending) {
+    try {
+      const result = await getStatus(take.requestId);
+      take.status = result.status;
+
+      if (result.status === 'completed' && result.videoUrl) {
+        const rawFile = await downloadRemote(result.videoUrl, `${take.id}_raw.mp4`);
+        const rawPath = path.join(config.rendersDir, rawFile);
+
+        // Stabilise before the take is ever shown. Generated motion always
+        // carries some wobble, and it is cheaper to fix here than to have a
+        // broker notice it.
+        const stabPath = path.join(config.rendersDir, `${take.id}.mp4`);
+        const { path: finalPath, stabilized } = await stabilizeClip({
+          inPath: rawPath,
+          outPath: stabPath,
+        });
+        if (finalPath !== rawPath) fs.rmSync(rawPath, { force: true });
+
+        const posterPath = path.join(config.rendersDir, `${take.id}.jpg`);
+        await renderPoster({ videoPath: finalPath, outPath: posterPath });
+
+        take.file = path.basename(finalPath);
+        take.poster = fs.existsSync(posterPath) ? path.basename(posterPath) : null;
+        take.remoteUrl = result.videoUrl;
+        take.stabilized = stabilized;
+        take.renderedAt = now();
+
+        // Auto-select the first take to land so the tour is never blocked on a
+        // human; the operator can switch to a better take afterwards.
+        if (!shot.selectedTakeId) {
+          shot.selectedTakeId = take.id;
+          shot.cinematic = { ...take };
+          shot.status = 'ready';
+          shot.error = null;
+        }
+      } else if (result.status === 'failed' || result.status === 'nsfw') {
+        take.error =
+          result.status === 'nsfw'
+            ? 'Higgsfield flagged this frame and refunded the credits.'
+            : result.error || 'Higgsfield reported the render failed. Credits are refunded on failure.';
+        // Only surface an error on the shot if every take died.
+        const takes = shot.takes || [];
+        if (takes.every((t) => t.error || (!t.file && TERMINAL_STATUSES.has(t.status)))) {
+          shot.error = take.error;
+          shot.status = 'failed';
+        }
+      }
+
+      shot.updatedAt = now();
+      save();
+    } catch (err) {
+      // Transient network/API errors should not fail the take — the next tick
+      // retries. Only record the message for visibility.
+      take.lastPollError = err.message;
+      save();
+      console.error(`[jobs] poll ${shot.id}/${take.id}:`, err.message);
+    }
+  }
+}
+
+async function downloadRemote(url, filename) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Downloading render failed: ${res.status} ${res.statusText}`);
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const outPath = path.join(config.rendersDir, filename);
+  fs.writeFileSync(outPath, buffer);
+  return filename;
+}
+
+/** Resume polling for anything still in flight after a restart. */
+export function resumePending() {
+  if (pendingTakes().length) startPolling();
+}
+
+export function queueDepth() {
+  return { queued: queue.length, active };
+}
