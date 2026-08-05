@@ -64,12 +64,19 @@ function findBinary(name, bundledModule) {
   return null;
 }
 
+const DATA_DIR = process.env.CORRIDOR_DATA_DIR
+  ? path.resolve(process.env.CORRIDOR_DATA_DIR)
+  : path.join(ROOT, 'data');
+
 export const config = {
   port: Number(process.env.PORT || 4182),
-  dataDir: path.join(ROOT, 'data'),
-  uploadsDir: path.join(ROOT, 'data', 'uploads'),
-  rendersDir: path.join(ROOT, 'data', 'renders'),
-  dbFile: path.join(ROOT, 'data', 'db.json'),
+  // CORRIDOR_DATA_DIR lets the test suite (and a container with a mounted
+  // volume) point state somewhere other than the repo, so tests can never
+  // clobber a live db.json.
+  dataDir: DATA_DIR,
+  uploadsDir: path.join(DATA_DIR, 'uploads'),
+  rendersDir: path.join(DATA_DIR, 'renders'),
+  dbFile: path.join(DATA_DIR, 'db.json'),
   publicDir: path.join(ROOT, 'public'),
 
   // Public origin used when building shareable tour links and when handing

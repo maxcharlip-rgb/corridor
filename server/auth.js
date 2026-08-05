@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { getDb, save, id, now } from './store.js';
+import { getDb, save, saveNow, id, now } from './store.js';
 
 /**
  * Minimal auth: one broker account per email.
@@ -136,7 +136,8 @@ export function createAccount({ email, password, name, company }) {
   for (const listing of orphans) listing.ownerId = account.id;
   if (orphans.length) console.log(`[auth] adopted ${orphans.length} pre-auth listing(s) into ${normalised}`);
 
-  save();
+  // Durable: the API is about to tell the client the account exists.
+  saveNow();
   return account;
 }
 

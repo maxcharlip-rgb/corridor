@@ -35,6 +35,18 @@ Copy `.env.example` to `.env`. Nothing is required to run.
 | `SESSION_SECRET` | Session signing. Auto-generates into `db.json` with a warning if unset — set it before deploying. |
 | `ANTHROPIC_API_KEY` | Optional. Spec extraction from free text; degrades to a heuristic parse without it. |
 
+## Before hosting
+
+```bash
+npm test                                     # 58 checks, spends nothing
+npm run doctor                               # config preflight
+node scripts/verify-higgsfield.js --confirm  # proves REST auth (~5 credits)
+curl localhost:4182/healthz                  # uptime, pending jobs, disk, RSS
+```
+
+`npm test` runs against a throwaway data dir on a spare port and never touches
+your live `db.json`.
+
 ### Verifying the Higgsfield path
 
 ```bash

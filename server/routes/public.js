@@ -1,6 +1,6 @@
 import express from 'express';
 import { config } from '../config.js';
-import { getDb, save, id, now, listings as listingsRepo, shots as shotsRepo, photos as photosRepo } from '../store.js';
+import { getDb, save, saveNow, id, now, listings as listingsRepo, shots as shotsRepo, photos as photosRepo } from '../store.js';
 import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
 import { DISCLOSURES } from '../facts.js';
@@ -139,7 +139,8 @@ publicApi.post('/tours/:slug/leads', (req, res) => {
   lead.completedTour = sessionEvents.some((e) => e.type === 'tour_complete');
 
   getDb().leads.push(lead);
-  save();
+  // Durable: a lead lost to a crash is lost revenue and cannot be recovered.
+  saveNow();
   res.status(201).json({ ok: true });
 });
 

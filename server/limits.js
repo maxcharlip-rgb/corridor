@@ -1,4 +1,4 @@
-import { getDb, save, now } from './store.js';
+import { getDb, save, saveNow, now } from './store.js';
 
 /**
  * Spend guards.
@@ -73,7 +73,8 @@ export function recordCreditSpend({ credits, shotId, note }) {
   book.used += credits;
   book.entries.push(entry);
   if (book.entries.length > 5000) book.entries.splice(0, 1000);
-  save();
+  // Durable: losing the ledger would let the budget be spent twice.
+  saveNow();
   return book.used;
 }
 

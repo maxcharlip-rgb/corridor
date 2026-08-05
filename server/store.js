@@ -52,6 +52,30 @@ export function save() {
   }, 40);
 }
 
+/**
+ * Synchronous write for records that must survive a crash.
+ *
+ * `save()` debounces by 40ms, which means an HTTP response can be acknowledged
+ * before the data is on disk — measured, not theoretical. For high-value, rare
+ * writes (account creation, a captured lead, recorded credit spend) that window
+ * is unacceptable: the client is told it worked and a `kill -9` loses it.
+ *
+ * Use `save()` for chatty updates, `saveNow()` when losing the write would be
+ * visible to a user or cost money.
+ */
+export function saveNow() {
+  if (writeTimer) {
+    clearTimeout(writeTimer);
+    writeTimer = null;
+  }
+  try {
+    writeNow();
+  } catch (err) {
+    console.error('[store] durable write failed:', err.message);
+    throw err;
+  }
+}
+
 export function flush() {
   if (writeTimer) {
     clearTimeout(writeTimer);

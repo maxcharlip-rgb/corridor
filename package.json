@@ -9,7 +9,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "seed": "node scripts/seed.js",
-    "doctor": "node scripts/doctor.js"
+    "doctor": "node scripts/doctor.js",
+    "test": "node scripts/test.js"
   },
   "engines": {
     "node": ">=20"

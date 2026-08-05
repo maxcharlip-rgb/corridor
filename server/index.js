@@ -7,8 +7,18 @@ import { publicApi } from './routes/public.js';
 import { authApi } from './routes/auth.js';
 import { loadAccount, requireAuth, authEnabled } from './auth.js';
 import { migrateGlobalBranding } from './branding.js';
+import {
+  installProcessGuards,
+  installSafeLogging,
+  startHousekeeping,
+  healthSnapshot,
+} from './reliability.js';
 import { resumePending } from './jobs.js';
 import { ffmpegAvailable } from './render-preview.js';
+
+// Install before anything else can log or throw.
+installSafeLogging();
+installProcessGuards({ onFatal: () => flush() });
 
 const app = express();
 app.disable('x-powered-by');
@@ -37,11 +47,12 @@ app.get('/t/:slug', (req, res) => {
 });
 
 app.get('/healthz', (_req, res) => {
+  const snap = healthSnapshot();
   res.json({
     ok: true,
     preview: ffmpegAvailable(),
     cinematic: higgsfieldConfigured,
-    listings: getDb().listings.length,
+    ...snap,
   });
 });
 
@@ -66,6 +77,7 @@ const server = app.listen(config.port, () => {
   console.log('');
   migrateGlobalBranding();
   resumePending();
+  startHousekeeping();
 });
 
 function shutdown(signal) {
