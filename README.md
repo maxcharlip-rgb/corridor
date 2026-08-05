@@ -17,7 +17,7 @@ prospect who reads a sign and drives off is invisible to every other tool in CRE
 ```bash
 npm install
 npm run doctor     # preflight: spends nothing, calls nothing
-npm start          # http://localhost:4182
+npm start          # http://localhost:4182  (landing page; studio at /studio)
 ```
 
 Preview-quality rendering, publishing, QR sign kit, lead capture and analytics all
@@ -134,6 +134,8 @@ server/
   limits.js     credit gate + rate limiting
   endcard.js    end cards, captions, text overlays
   signkit.js    QR + print-ready sign assets
-public/         studio + public tour player (vanilla ES modules, no build step)
+public/         index.html   marketing homepage + entry point
+                studio.html  the studio app (/studio)
+                tour.html    public tour player (/t/:slug)
 scripts/        doctor, verify-higgsfield
 ```

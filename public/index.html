@@ -3,68 +3,308 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — Studio</title>
-  <link rel="stylesheet" href="/styles.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23e2703a'/><path d='M11 8v16l11-8z' fill='%23170d07'/></svg>" />
+  <title>Corridor — CRE marketing is boring. So we fixed it.</title>
+  <meta name="description" content="Corridor turns the listing photos you already have into a cinematic, narrated video tour in about two minutes — shareable by link and QR, refinable by chat." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='7' fill='%232B4FD7'/&gt;&lt;path d='M11 8v16l11-8z' fill='%23F5F3EE'/&gt;&lt;/svg&gt;" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+<style>
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: #F5F3EE; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #101418; text-decoration: none; }
+  a:hover { color: #2B4FD7; }
+  input, select, textarea, button { font-family: inherit; }
+  ::selection { background: #D9E1FB; }
+  @keyframes corridorPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
+  @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes corridorNudge { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
+</style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="rail">
-      <div class="brand">
-        <span class="mark">▶</span>
-        <h1>Corridor</h1>
-      </div>
+<div style="min-height: 100vh; background: #F5F3EE; color: #101418; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+<header style="position: sticky; top: 0; z-index: 60; background: rgba(245,243,238,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #E4E0D6;">
+    <div style="max-width: 1160px; margin: 0 auto; padding: 13px 20px; display: flex; align-items: center; gap: 18px;">
+      <button type="button" data-home="1" style="display: flex; align-items: center; gap: 9px; margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;">
+        <span style="width: 13px; height: 22px; background: #2B4FD7; border-radius: 7px 7px 2px 2px; display: block;"></span>
+        <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; color: #101418;">Corridor</span>
+      </button>
+      <a href="#sample" style="font-size: 14px; color: #55606E;">Sample tour</a>
+      <a href="#pricing" style="font-size: 14px; color: #55606E;">Pricing</a>
+      <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #2B4FD7; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #1F3BB0;">Sign in</button>
+    </div>
+  </header>
 
-      <div class="rail-section">
-        <div class="rail-head">
-          <span class="label">Buildings</span>
-          <button class="btn ghost sm" id="new-listing">+ New</button>
+    <div data-screen-label="Landing">
+      <section style="max-width: 1160px; margin: 0 auto; padding: clamp(44px, 8vw, 96px) 20px clamp(32px, 5vw, 56px); text-align: center;">
+        <div style="display: inline-flex; align-items: center; gap: 9px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #2B4FD7; background: #E7ECFB; border-radius: 999px; padding: 8px 16px; margin-bottom: 26px;">
+          <span style="width: 7px; height: 7px; border-radius: 999px; background: #2B4FD7; display: block; animation: corridorPulse 1.8s ease-in-out infinite;"></span>
+          Photos in · tour out · about two minutes
         </div>
-        <div id="listing-list"></div>
-      </div>
+        <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #2B4FD7;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
+        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #55606E; margin: 0 auto 34px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Drop the photos in, get a cinematic walkthrough back, post it everywhere by lunch.</p>
 
-      <div class="rail-section" style="margin-top:auto">
-        <span class="label">Render engines</span>
-        <div class="cap-list" id="capabilities"></div>
-      </div>
-
-      <div class="rail-section">
-        <button class="btn ghost sm" id="edit-broker" style="justify-content:flex-start">Brokerage details</button>
-      </div>
-    </aside>
-
-    <main class="main" id="main">
-      <div class="topbar">
-        <div>
-          <h2 id="listing-title">No building selected</h2>
-          <div class="sub" id="listing-sub">Create a building to start a tour.</div>
+        <div style="max-width: 680px; margin: 0 auto;">
+          <label style="display: block; border: 1px dashed #C9C5B8; background: #fff; border-radius: 22px; padding: clamp(28px, 5vw, 46px) 24px; cursor: pointer;" data-hover="border-color: #2B4FD7;">
+            <input type="file" multiple accept="image/*" id="hero-files" style="display: none;" />
+            <span style="display: block; font-size: 17px; font-weight: 500; margin-bottom: 8px;">Drag in the photos already sitting in your Dropbox</span>
+            <span style="display: block; font-size: 14.5px; color: #55606E; margin-bottom: 22px;">12 to 40 of them. Crooked phone shots welcome. No shoot day, no scheduling thread.</span>
+            <span style="display: inline-block; font-size: 15px; color: #fff; background: #2B4FD7; padding: 15px 28px; border-radius: 999px; font-weight: 500;">Upload photos</span>
+          </label>
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A8778;">
+            <span>No videographer</span>
+            <span>No “circling back”</span>
+            <span>First tour free</span>
+          </div>
         </div>
-        <div class="actions" id="listing-actions"></div>
+      </section>
+
+      <div style="overflow: hidden; border-top: 1px solid #E4E0D6; border-bottom: 1px solid #E4E0D6; background: #101E33; padding: 13px 0; margin-bottom: clamp(40px, 6vw, 76px);">
+        <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #8FA6D8;">
+          <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
+            <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+          </div>
+          <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
+            <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
+            <span style="color: #6FE3A6; flex: none;">·</span>
+          </div>
+        </div>
       </div>
 
-      <nav class="tabs" id="tabs" hidden>
-        <button class="tab active" data-pane="photos">Photos <span class="count" id="c-photos"></span></button>
-        <button class="tab" data-pane="board">Storyboard <span class="count" id="c-shots"></span></button>
-        <button class="tab" data-pane="visualize">Visualize <span class="count" id="c-visuals"></span></button>
-        <button class="tab" data-pane="publish">Publish</button>
-        <button class="tab" data-pane="leads">Leads <span class="count" id="c-leads"></span></button>
-        <button class="tab" data-pane="insight">Engagement</button>
-      </nav>
+      <section id="sample" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: 0 20px clamp(48px, 7vw, 88px);">
+        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(28px, 4vw, 46px); line-height: 1.04; letter-spacing: -.015em; margin: 0 0 clamp(24px, 3vw, 38px); max-width: 24ch;">Same photos. One of these gets watched.</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: clamp(18px, 3vw, 32px); align-items: stretch;">
+          <div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8A8778;">What you send today</span>
+            </div>
+            <div style="flex: 1; background: #EFEDE6; border: 1px solid #E4E0D6; border-radius: 20px; padding: 18px;">
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; opacity: .72;">
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
+              </div>
+              <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 18px 0 0;">27 photos, a floor plan, and “let me know if you'd like to see it in person.” Nine seconds of attention, tops.</p>
+            </div>
+          </div>
 
-      <section class="pane" id="pane-photos" hidden></section>
-      <section class="pane" id="pane-board" hidden></section>
-      <section class="pane" id="pane-visualize" hidden></section>
-      <section class="pane" id="pane-publish" hidden></section>
-      <section class="pane" id="pane-leads" hidden></section>
-      <section class="pane" id="pane-insight" hidden></section>
+          <div style="flex: 1.4 1 380px; min-width: 0; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #2B4FD7;">What Corridor sends back</span>
+            </div>
+            <div style="flex: 1; background: #fff; border: 1px solid #E4E0D6; border-radius: 20px; padding: 18px;">
+              <div style="position: relative; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 8px, #EAE7DE 8px 16px); display: flex; align-items: center; justify-content: center;">
+                <div style="width: 76px; height: 76px; border-radius: 999px; background: rgba(16,20,24,.78); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                  <span style="width: 0; height: 0; border-left: 18px solid #fff; border-top: 11px solid transparent; border-bottom: 11px solid transparent; margin-left: 5px;"></span>
+                </div>
+                <span style="position: absolute; bottom: 14px; left: 16px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .1em; color: #6E6A5C;">PLACEHOLDER — DROP SAMPLE TOUR (16:9)</span>
+                <span style="position: absolute; top: 14px; right: 16px; background: rgba(16,30,51,.9); color: #fff; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .08em; padding: 5px 9px; border-radius: 999px;">2:14</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Narrated</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Six stops</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">QR for the sign</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">1080p + 4K</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Fixable by chat</span>
+              </div>
+              <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 16px 0 0;">Cut from the exact same folder. Don't like the opening shot? Say so — only that shot re-renders, and the link you already posted updates itself.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section class="pane" id="pane-welcome"></section>
-    </main>
-  </div>
+      <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: 0 20px clamp(48px, 7vw, 88px);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(16px, 2vw, 22px);">
+          <div style="background: #fff; border: 1px solid #E4E0D6; border-radius: 22px; padding: clamp(22px, 3vw, 30px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8A8778; margin-bottom: 16px;">Solo broker</div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px;">
+              <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(38px, 5vw, 50px); line-height: 1;">$79</span>
+              <span style="font-size: 14px; color: #55606E;">/month</span>
+            </div>
+            <div style="display: grid; gap: 9px; margin-bottom: 24px; font-size: 14.5px;">
+              <div>3 tours a month, unlimited re-cuts</div>
+              <div>Chat refinements + concept images</div>
+              <div>QR sign artwork, print-ready</div>
+            </div>
+            <button type="button" data-open-auth="signup" style="width: 100%; font-size: 15px; color: #101418; background: transparent; border: 1px solid #101418; padding: 14px; border-radius: 999px; cursor: pointer;" data-hover="background: #101418; color: #fff;">Start free tour</button>
+          </div>
+          <div style="background: #101E33; color: #fff; border-radius: 22px; padding: clamp(22px, 3vw, 30px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8FA6D8; margin-bottom: 16px;">Brokerage</div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px;">
+              <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(38px, 5vw, 50px); line-height: 1;">$349</span>
+              <span style="font-size: 14px; color: #C4CEE0;">/month</span>
+            </div>
+            <div style="display: grid; gap: 9px; margin-bottom: 24px; font-size: 14.5px; color: #C4CEE0;">
+              <div>20 tours a month, pooled across seats</div>
+              <div>Firm branding on every tour</div>
+              <div>4K masters, SSO, onboarding</div>
+            </div>
+            <a href="mailto:hello@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="display: block; text-align: center; font-size: 15px; color: #101418; background: #fff; padding: 14px; border-radius: 999px; font-weight: 500;" data-hover="background: #E7ECFB; color: #101418;">Talk to us</a>
+          </div>
+        </div>
+        <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #8A8778; margin: 20px 0 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · HELLO@CORRIDOR.TOURS</p>
+      </section>
+    </div>
+<div id="auth-modal" style="display: none;">
+    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div data-modal-card="1" style="width: min(420px, 100%); background: #F5F3EE; border: 1px solid #E4E0D6; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <span style="width: 12px; height: 20px; background: #2B4FD7; border-radius: 6px 6px 2px 2px; display: block;"></span>
+            <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
+          </div>
+          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #55606E; background: transparent; border: 1px solid #E2DED5; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #101418; color: #101418;">×</button>
+        </div>
+        <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.1; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
+        <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 0 0 20px;"><span id="auth-sub">Pick up your tours, share links and concept images.</span></p>
+        <div style="display: grid; gap: 10px;">
+          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
+          <input type="password" autocomplete="current-password" placeholder="Password" id="auth-password" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
+          <div id="signup-extra" style="display: none;">
+            <input type="text" placeholder="Brokerage" id="auth-company" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
+          </div>
+          <div id="auth-error" style="display: none;">
+            <p style="font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0;"></p>
+          </div>
+          <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #2B4FD7; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #1F3BB0;">Sign in</button>
+          <button type="button" id="auth-toggle" style="width: 100%; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #55606E; background: transparent; border: 0; padding: 8px 0 2px; cursor: pointer;" data-hover="color: #2B4FD7;">Create an account</button>
+        </div>
+      </div>
+    </div>
+</div>
+</div>
+<script>
+(function () {
 
-  <div class="toast-wrap" id="toasts"></div>
-  <div id="modal-root"></div>
+  var applyState = function (attr, onEvt, offEvt) {
+    document.querySelectorAll('[' + attr + ']').forEach(function (el) {
+      var base = el.getAttribute('style') || '';
+      el.addEventListener(onEvt, function () { el.setAttribute('style', base + ';' + el.getAttribute(attr)); });
+      el.addEventListener(offEvt, function () { el.setAttribute('style', base); });
+    });
+  };
+  applyState('data-hover', 'mouseenter', 'mouseleave');
+  applyState('data-focus', 'focus', 'blur');
 
-  <script type="module" src="/app.js"></script>
+  // cycling headline word
+  var WORDS = ['boring', 'beige', 'a PDF', 'a Dropbox link', 'stuck in 2014'];
+  var word = document.getElementById('boring-word');
+  var wi = 0;
+  setInterval(function () { wi = (wi + 1) % WORDS.length; word.textContent = WORDS[wi]; }, 2200);
+
+  // --- session + auth dialog -------------------------------------------------
+  // Studio lives at /studio and keeps its own gate; this dialog just gets you
+  // there. Endpoints are the server's own (server/routes/auth.js).
+  var account = null;
+  var mode = 'login';
+  var modal = document.getElementById('auth-modal');
+  var err = document.getElementById('auth-error');
+  var errText = err.querySelector('p');
+  var submit = document.getElementById('auth-submit');
+  var toggle = document.getElementById('auth-toggle');
+  var val = function (id) { var el = document.getElementById(id); return el ? el.value : ''; };
+
+  function paintMode() {
+    var signup = mode === 'signup';
+    document.getElementById('auth-title').textContent = signup ? 'Create your account' : 'Sign in';
+    document.getElementById('auth-sub').textContent = signup
+      ? 'Your first tour is free. No card, no call.'
+      : 'Pick up your tours, share links and concept images.';
+    document.getElementById('signup-extra').style.display = signup ? 'block' : 'none';
+    submit.textContent = signup ? 'Create account' : 'Sign in';
+    toggle.textContent = signup ? 'I already have an account' : 'Create an account';
+  }
+  function closeAuth() { modal.style.display = 'none'; err.style.display = 'none'; }
+  function openAuth(next) {
+    if (account) { location.href = '/studio'; return; }
+    mode = next; paintMode(); err.style.display = 'none';
+    modal.style.display = 'flex';
+    var email = document.getElementById('auth-email');
+    if (email) email.focus();
+  }
+
+  document.querySelectorAll('[data-open-auth]').forEach(function (el) {
+    el.addEventListener('click', function () { openAuth(el.getAttribute('data-open-auth')); });
+  });
+  document.querySelectorAll('[data-close-auth]').forEach(function (el) {
+    el.addEventListener('click', function (e) { if (e.target === el) closeAuth(); });
+  });
+  document.querySelector('[data-modal-card]').addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAuth(); });
+  toggle.addEventListener('click', function () { mode = mode === 'login' ? 'signup' : 'login'; paintMode(); err.style.display = 'none'; });
+  document.querySelectorAll('[data-home]').forEach(function (el) {
+    el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  });
+
+  // Photos chosen on the landing page are handed to the studio, which owns the
+  // upload + generate pipeline. Signed out, we take the account first.
+  var heroFiles = document.getElementById('hero-files');
+  if (heroFiles) {
+    heroFiles.addEventListener('change', function () {
+      if (!heroFiles.files || !heroFiles.files.length) return;
+      if (account) { location.href = '/studio?new=1'; return; }
+      openAuth('signup');
+    });
+  }
+
+  function authenticate() {
+    submit.disabled = true;
+    submit.textContent = 'One moment…';
+    err.style.display = 'none';
+    var body = { email: val('auth-email'), password: val('auth-password') };
+    if (mode === 'signup') { body.company = val('auth-company'); }
+    fetch('/api/auth/' + mode, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = text ? JSON.parse(text) : null;
+        if (!res.ok) throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+        location.href = '/studio';
+      });
+    }).catch(function (e) {
+      errText.textContent = e.message || 'Could not reach Corridor.';
+      err.style.display = 'block';
+      submit.disabled = false;
+      paintMode();
+    });
+  }
+  submit.addEventListener('click', authenticate);
+  ['auth-email', 'auth-password'].forEach(function (id) {
+    document.getElementById(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') authenticate(); });
+  });
+
+  fetch('/api/auth/me', { credentials: 'same-origin' })
+    .then(function (res) { return res.ok ? res.json() : null; })
+    .then(function (data) { if (data && data.account) account = data.account; })
+    .catch(function () {});
+}());
+</script>
 </body>
 </html>

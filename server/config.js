@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -51,7 +50,6 @@ function findBinary(name, bundledModule) {
     `/opt/homebrew/bin/${name}`,
     `/usr/local/bin/${name}`,
     `/usr/bin/${name}`,
-    path.join(os.homedir(), '.hyperframes-ffmpeg', name),
   ].filter(Boolean);
   for (const candidate of candidates) {
     try {

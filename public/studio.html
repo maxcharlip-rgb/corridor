@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Corridor — Studio</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23e2703a'/><path d='M11 8v16l11-8z' fill='%23170d07'/></svg>" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">
+        <span class="mark">▶</span>
+        <h1>Corridor</h1>
+      </div>
+
+      <div class="rail-section">
+        <div class="rail-head">
+          <span class="label">Buildings</span>
+          <button class="btn ghost sm" id="new-listing">+ New</button>
+        </div>
+        <div id="listing-list"></div>
+      </div>
+
+      <div class="rail-section" style="margin-top:auto">
+        <span class="label">Render engines</span>
+        <div class="cap-list" id="capabilities"></div>
+      </div>
+
+      <div class="rail-section">
+        <button class="btn ghost sm" id="edit-broker" style="justify-content:flex-start">Brokerage details</button>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="topbar">
+        <div>
+          <h2 id="listing-title">No building selected</h2>
+          <div class="sub" id="listing-sub">Create a building to start a tour.</div>
+        </div>
+        <div class="actions" id="listing-actions"></div>
+      </div>
+
+      <nav class="tabs" id="tabs" hidden>
+        <button class="tab active" data-pane="photos">Photos <span class="count" id="c-photos"></span></button>
+        <button class="tab" data-pane="board">Storyboard <span class="count" id="c-shots"></span></button>
+        <button class="tab" data-pane="visualize">Visualize <span class="count" id="c-visuals"></span></button>
+        <button class="tab" data-pane="publish">Publish</button>
+        <button class="tab" data-pane="leads">Leads <span class="count" id="c-leads"></span></button>
+        <button class="tab" data-pane="insight">Engagement</button>
+      </nav>
+
+      <section class="pane" id="pane-photos" hidden></section>
+      <section class="pane" id="pane-board" hidden></section>
+      <section class="pane" id="pane-visualize" hidden></section>
+      <section class="pane" id="pane-publish" hidden></section>
+      <section class="pane" id="pane-leads" hidden></section>
+      <section class="pane" id="pane-insight" hidden></section>
+
+      <section class="pane" id="pane-welcome"></section>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toasts"></div>
+  <div id="modal-root"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
