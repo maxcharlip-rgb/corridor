@@ -12,7 +12,7 @@ import {
   events as eventsRepo,
 } from '../store.js';
 import { MOTIONS, MOTION_BY_KEY, SPACE_TYPES, SPACE_BY_KEY, guessSpaceType, buildPrompt, motionEnvKey } from '../motions.js';
-import { enqueuePreview, submitCinematic, selectTake, queueDepth, DEFAULT_TAKES } from '../jobs.js';
+import { enqueuePreview, submitCinematic, selectTake, queueDepth, startVisualPolling, DEFAULT_TAKES } from '../jobs.js';
 import { renderEndCard, applyTextOverlays, buildSpecLine, fontsAvailable } from '../endcard.js';
 import {
   canGenerateVideo,
@@ -26,12 +26,13 @@ import {
 import { ffmpegAvailable, stitchReel } from '../render-preview.js';
 import { enhancePhoto, stagePhoto, stagingConfigured, ENHANCE_PROFILES } from '../photo-ops.js';
 import { renderSign, qrDataUrl, taggedUrl, SIGN_FORMATS, SHARE_CHANNELS } from '../signkit.js';
+import { submitImageGeneration } from '../higgsfield.js';
 import { ownsListing, authEnabled } from '../auth.js';
 import { collectFacts, stripUnverified, logFactUse, DISCLOSURES } from '../facts.js';
 import { brandingForAccount, brandingForListing, updateBranding, BRAND_FIELDS } from '../branding.js';
 import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
 import { tourAgent, captionTrack, heroTextFor } from '../agents/tour-agent.js';
-import { envisionAgent } from '../agents/envision-agent.js';
+import { envisionAgent, VISUALIZE_MODES, VISUAL_STYLES, IMAGE_MODELS } from '../agents/envision-agent.js';
 
 export const api = express.Router();
 api.use(express.json({ limit: '2mb' }));
@@ -116,6 +117,9 @@ api.get('/bootstrap', (_req, res) => {
     spaceTypes: SPACE_TYPES,
     enhanceProfiles: ENHANCE_PROFILES,
     signFormats: Object.values(SIGN_FORMATS),
+    visualizeModes: Object.values(VISUALIZE_MODES),
+    visualStyles: VISUAL_STYLES,
+    imageModels: IMAGE_MODELS,
     shareChannels: SHARE_CHANNELS,
     capabilities: {
       preview: ffmpegAvailable(),
@@ -686,6 +690,98 @@ const generateHandler = handle(async (req, res) => {
 
 api.post('/listings/:id/generate', generateLimiter, dailyGenerateLimiter, generateHandler);
 api.post('/projects/:id/generate', generateLimiter, dailyGenerateLimiter, generateHandler);
+
+// --- visualisation ------------------------------------------------------------
+// The second workflow. Video tours remain the product; this answers the question
+// a prospect asks in the room — "could this work for us?" — with a picture.
+
+/** Dry run. Costs the image job without submitting anything. */
+api.post('/listings/:id/visualize/plan', handle(async (req, res) => {
+  const listing = requireListing(req);
+  const plan = envisionAgent({
+    listing,
+    photos: photosRepo.forListing(listing.id),
+    mode: req.body?.mode,
+    style: req.body?.style,
+    notes: Array.isArray(req.body?.notes) ? req.body.notes : [],
+    photoIds: req.body?.photoIds || null,
+    variants: Number(req.body?.variants) || 2,
+    quality: req.body?.quality || 'standard',
+  });
+  const gate = canGenerateVideo(plan.estimate.totalCredits);
+  res.json({ ...plan, withinBudget: gate.ok, budgetMessage: gate.ok ? null : gate.reason });
+}));
+
+/** Execute a visualisation plan, behind the same guards as video. */
+api.post('/listings/:id/visualize', generateLimiter, dailyGenerateLimiter, handle(async (req, res) => {
+  const listing = requireListing(req);
+  const plan = envisionAgent({
+    listing,
+    photos: photosRepo.forListing(listing.id),
+    mode: req.body?.mode,
+    style: req.body?.style,
+    notes: Array.isArray(req.body?.notes) ? req.body.notes : [],
+    photoIds: req.body?.photoIds || null,
+    variants: Number(req.body?.variants) || 2,
+    quality: req.body?.quality || 'standard',
+  });
+
+  if (!plan.calls.length) {
+    return res.status(400).json({ error: 'Nothing to visualise.', warnings: plan.warnings });
+  }
+
+  const gate = canGenerateVideo(plan.estimate.totalCredits);
+  if (!gate.ok) return res.status(402).json({ error: gate.reason, ...gate, estimate: plan.estimate });
+
+  listing.visuals = listing.visuals || [];
+  const created = [];
+
+  for (const call of plan.calls) {
+    const visual = {
+      id: id('vis'),
+      mode: call.mode,
+      title: call.title,
+      photoId: call.photoId,
+      status: 'queued',
+      // Disclosure is attached at creation and travels with the record.
+      requiresDisclosure: call.requiresDisclosure,
+      disclosureLabel: call.disclosureLabel,
+      prompt: call.request.prompt,
+      createdAt: now(),
+    };
+    try {
+      const { requestId } = await submitImageGeneration({
+        imageUrl: call.request.imageUrl,
+        prompt: call.request.prompt,
+        model: call.request.model,
+        aspectRatio: call.request.aspectRatio,
+      });
+      visual.requestId = requestId;
+      recordCreditSpend({ credits: call.estimatedCredits, note: `visualize:${call.mode}` });
+    } catch (err) {
+      visual.status = 'failed';
+      visual.error = err.message;
+    }
+    listing.visuals.push(visual);
+    created.push(visual);
+  }
+
+  save();
+  startVisualPolling();
+  res.status(202).json({ status: 'processing', created: created.length, estimate: plan.estimate, visuals: created });
+}));
+
+api.get('/listings/:id/visuals', handle(async (req, res) => {
+  const listing = requireListing(req);
+  res.json({ visuals: listing.visuals || [], modes: Object.values(VISUALIZE_MODES), styles: VISUAL_STYLES });
+}));
+
+api.delete('/listings/:id/visuals/:visualId', handle(async (req, res) => {
+  const listing = requireListing(req);
+  listing.visuals = (listing.visuals || []).filter((v) => v.id !== req.params.visualId);
+  save();
+  res.json({ ok: true });
+}));
 
 /** Promote one take to be the version the tour and reel use. */
 api.post('/shots/:id/select-take', handle(async (req, res) => {

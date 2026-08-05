@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
-import { getDb, save, shots as shotsRepo, photos as photosRepo, listings, now } from './store.js';
+import { getDb, save, id, shots as shotsRepo, photos as photosRepo, listings, now } from './store.js';
 import { MOTION_BY_KEY, SPACE_BY_KEY, buildPrompt } from './motions.js';
 import {
   renderMotionShot,
@@ -326,4 +326,57 @@ export function resumePending() {
 
 export function queueDepth() {
   return { queued: queue.length, active };
+}
+
+// --- visualisation image polling ---------------------------------------------
+
+let visualTimer = null;
+
+function pendingVisuals() {
+  const out = [];
+  for (const listing of getDb().listings) {
+    for (const visual of listing.visuals || []) {
+      if (visual.requestId && !TERMINAL_STATUSES.has(visual.status || 'queued')) out.push({ listing, visual });
+    }
+  }
+  return out;
+}
+
+/** Images are cheap and fast; a shorter interval than video is fine. */
+export function startVisualPolling() {
+  if (visualTimer) return;
+  visualTimer = setInterval(() => {
+    pollVisualsOnce().catch((err) => console.error('[jobs] visual poll:', err.message));
+  }, Math.max(3000, config.higgsfield.pollIntervalMs));
+  visualTimer.unref?.();
+}
+
+async function pollVisualsOnce() {
+  const pending = pendingVisuals();
+  if (!pending.length) {
+    clearInterval(visualTimer);
+    visualTimer = null;
+    return;
+  }
+
+  for (const { visual } of pending) {
+    try {
+      const result = await getStatus(visual.requestId);
+      visual.status = result.status;
+
+      if (result.status === 'completed' && (result.videoUrl || result.raw?.jobs?.[0]?.results?.raw?.url)) {
+        const url = result.videoUrl || result.raw.jobs[0].results.raw.url;
+        const file = await downloadRemote(url, `${visual.id}.jpg`);
+        visual.file = file;
+        visual.remoteUrl = url;
+        visual.renderedAt = now();
+      } else if (result.status === 'failed' || result.status === 'nsfw') {
+        visual.error = result.error || `Generation ${result.status}. Credits are refunded on failure.`;
+      }
+      save();
+    } catch (err) {
+      visual.lastPollError = err.message;
+      save();
+    }
+  }
 }

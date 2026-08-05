@@ -150,6 +150,63 @@ export async function submitImageToVideo({ imageUrls, prompt, motionKey, duratio
   return { requestId, raw: data };
 }
 
+/**
+ * Submit an image generation or edit.
+ *
+ * Used by the visualisation workflow (concept / renovation / fit-out / layout).
+ * `imageUrl` is omitted for concept images — there is no building to edit yet.
+ *
+ * NOTE: the image endpoint path is configurable because, unlike
+ * /v1/image2video/dop, it has not been exercised against a live account here.
+ * If it 404s, set HIGGSFIELD_IMAGE_PATH rather than editing this file — the
+ * error below tells you exactly that.
+ */
+export async function submitImageGeneration({ imageUrl, prompt, model, aspectRatio = '16:9' }) {
+  assertConfigured();
+  if (!prompt) throw new Error('A prompt is required.');
+
+  if (imageUrl) {
+    if (/localhost|127\.0\.0\.1/i.test(imageUrl)) {
+      throw new Error(
+        `Higgsfield must download ${imageUrl}, but it is local-only. Set PUBLIC_URL to a reachable origin.`
+      );
+    }
+    let probe;
+    try {
+      probe = await fetch(imageUrl, { method: 'HEAD' });
+    } catch (err) {
+      throw new Error(`Source image is unreachable (${err.message}): ${imageUrl}`);
+    }
+    if (!probe.ok) throw new Error(`Source image returned ${probe.status}: ${imageUrl}`);
+  }
+
+  const pathname =
+    process.env.HIGGSFIELD_IMAGE_PATH || (imageUrl ? '/v1/image2image' : '/v1/text2image');
+
+  const params = { model, prompt, aspect_ratio: aspectRatio };
+  if (imageUrl) params.input_images = [{ type: 'image_url', image_url: imageUrl, role: 'image' }];
+
+  let data;
+  try {
+    data = await request(pathname, { method: 'POST', body: { params } });
+  } catch (err) {
+    if (err.status === 404) {
+      throw new Error(
+        `Higgsfield image endpoint ${pathname} returned 404. The image path differs from the video ` +
+          'path and has not been confirmed against a live account. Set HIGGSFIELD_IMAGE_PATH in .env ' +
+          'to the correct route. Video generation is unaffected.'
+      );
+    }
+    throw err;
+  }
+
+  const requestId = data.request_id || data.id || data.job_set_id || data.data?.id || null;
+  if (!requestId) {
+    throw new Error(`Image job accepted but returned no request id: ${JSON.stringify(data).slice(0, 400)}`);
+  }
+  return { requestId, raw: data };
+}
+
 /** Fetch the status of a submitted request, normalised. */
 export async function getStatus(requestId) {
   assertConfigured();

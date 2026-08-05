@@ -266,6 +266,7 @@ function render() {
   ({
     photos: renderPhotos,
     board: renderBoard,
+    visualize: renderVisualize,
     publish: renderPublish,
     leads: renderLeads,
     insight: renderInsight,
@@ -938,6 +939,179 @@ function brokerDialog() {
       });
       toast('Saved.', 'good');
     },
+  });
+}
+
+// --- visualize pane ----------------------------------------------------------
+// Second workflow, not the product. Video tours sell the building as it is;
+// this answers "could this work for us?" with a picture instead of a paragraph.
+
+async function renderVisualize(pane) {
+  const { visualizeModes, visualStyles, imageModels, capabilities } = state.boot;
+  const mode = state.visualMode || 'fitout';
+  const spec = visualizeModes.find((m) => m.key === mode) || visualizeModes[0];
+
+  let visuals = [];
+  try {
+    ({ visuals } = await api(`/listings/${state.listingId}/visuals`));
+  } catch { /* first load */ }
+  $('#c-visuals').textContent = visuals.length || '';
+
+  pane.innerHTML = `
+    <div class="section-head">
+      <div>
+        <h3>Visualize</h3>
+        <div class="hint">Show a client what a space could become. Concepts are clearly labelled as
+          concepts — they never present as photographs of the property.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:22px">
+      ${visualizeModes
+        .map(
+          (m) => `
+        <button class="btn" data-mode="${m.key}"
+          style="flex-direction:column;align-items:flex-start;gap:5px;padding:14px;height:100%;text-align:left;white-space:normal;
+                 ${m.key === mode ? 'border-color:var(--accent);background:var(--accent-soft)' : ''}">
+          <span style="font-weight:620;font-size:13.5px${m.key === mode ? ';color:var(--accent)' : ''}">${esc(m.label)}</span>
+          <span style="font-size:12px;color:var(--muted-2);line-height:1.45;font-weight:400">${esc(m.blurb)}</span>
+        </button>`
+        )
+        .join('')}
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+      <div>
+        <div class="field"><span class="label">Character</span>
+          <select id="v-style">
+            ${Object.entries(visualStyles)
+              .map(([key, s]) => `<option value="${key}" ${key === (state.visualStyle || 'modern') ? 'selected' : ''}>${esc(s.label)}</option>`)
+              .join('')}
+          </select></div>
+
+        <div class="field"><span class="label">Direction (optional)</span>
+          <textarea id="v-notes" placeholder="e.g. glass-fronted offices along the window line, warm lighting, planting">${esc(state.visualNotes || '')}</textarea></div>
+
+        <div class="grid-2">
+          <div class="field"><span class="label">Variants per photo</span>
+            <select id="v-variants">
+              ${[1, 2, 3, 4].map((n) => `<option value="${n}" ${n === 2 ? 'selected' : ''}>${n}</option>`).join('')}
+            </select></div>
+          <div class="field"><span class="label">Quality</span>
+            <select id="v-quality">
+              ${Object.entries(imageModels).map(([key, m]) => `<option value="${key}">${esc(m.label)}</option>`).join('')}
+            </select></div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" id="v-plan">Estimate cost</button>
+          <button class="btn primary" id="v-run" ${capabilities.cinematic ? '' : 'disabled title="Add Higgsfield API keys to .env"'}>
+            ${esc(spec.label)}
+          </button>
+        </div>
+        <div id="v-estimate" style="margin-top:12px"></div>
+      </div>
+
+      <div>
+        <div class="callout" style="border-left-color:var(--accent)">
+          <strong>${esc(spec.disclosureLabel)}.</strong>
+          Every image produced here is labelled with this wherever it appears. ${
+            spec.preserveArchitecture
+              ? 'Walls, windows, columns and ceiling height are preserved — only finishes, furniture and lighting change.'
+              : 'No building exists yet, so this renders as an architectural concept rather than a photograph.'
+          }
+        </div>
+        ${!capabilities.cinematic
+          ? '<div class="callout"><strong>Image generation needs API keys.</strong> Add <code>HIGGSFIELD_KEY_ID</code> and <code>HIGGSFIELD_KEY_SECRET</code> to <code>.env</code>.</div>'
+          : ''}
+      </div>
+    </div>
+
+    ${visuals.length
+      ? `<div class="section-head" style="margin-top:30px"><div><h3>Concepts</h3>
+           <div class="hint">Download and share with clients. Each carries its disclosure label.</div></div></div>
+         <div class="photo-grid">
+           ${visuals
+             .map(
+               (v) => `
+             <div class="photo-card">
+               <div class="thumb" ${v.file ? `style="background-image:url('/renders/${esc(v.file)}')"` : ''}>
+                 ${!v.file && !v.error ? '<div style="position:absolute;inset:0;display:grid;place-items:center"><span class="spinner"></span></div>' : ''}
+                 <div class="badges"><span class="pill accent">${esc(v.disclosureLabel || 'Concept')}</span></div>
+               </div>
+               <div class="body">
+                 <div class="fname" title="${esc(v.title)}">${esc(v.title)}</div>
+                 ${v.error ? `<div class="err" style="font-size:11.5px">${esc(v.error)}</div>` : ''}
+                 <div class="ops">
+                   ${v.file ? `<a class="btn sm" href="/renders/${esc(v.file)}" download style="flex:1;justify-content:center">Download</a>` : ''}
+                   <button class="btn sm danger" data-del-visual="${v.id}">✕</button>
+                 </div>
+               </div>
+             </div>`
+             )
+             .join('')}
+         </div>`
+      : '<div class="empty" style="margin-top:24px"><h4>No concepts yet</h4><p>Pick what you want to show a client above, then generate. Images cost 1–7 credits each, so exploring options is cheap.</p></div>'}`;
+
+  wireVisualize(pane, visuals);
+}
+
+function wireVisualize(pane, visuals) {
+  $$('[data-mode]', pane).forEach((node) => {
+    node.onclick = () => { state.visualMode = node.dataset.mode; render(); };
+  });
+
+  const collect = () => ({
+    mode: state.visualMode || 'fitout',
+    style: $('#v-style', pane).value,
+    notes: $('#v-notes', pane).value.split('\n').map((n) => n.trim()).filter(Boolean),
+    variants: Number($('#v-variants', pane).value),
+    quality: $('#v-quality', pane).value,
+  });
+
+  $('#v-plan', pane).onclick = async () => {
+    try {
+      const plan = await api(`/listings/${state.listingId}/visualize/plan`, { method: 'POST', body: collect() });
+      $('#v-estimate', pane).innerHTML = `
+        <div class="stat" style="padding:12px 14px">
+          <div style="font-size:13.5px"><strong>${plan.estimate.images}</strong> image${plan.estimate.images === 1 ? '' : 's'}
+            · <strong>${plan.estimate.totalCredits}</strong> credits (~$${plan.estimate.approxUsd})</div>
+          ${plan.warnings.length ? `<div class="note" style="color:var(--warn)">${plan.warnings.map(esc).join('<br>')}</div>` : ''}
+          ${plan.withinBudget ? '' : `<div class="note" style="color:var(--bad)">${esc(plan.budgetMessage)}</div>`}
+        </div>`;
+    } catch (err) { fail(err); }
+  };
+
+  $('#v-run', pane).onclick = async () => {
+    const body = collect();
+    let plan;
+    try {
+      plan = await api(`/listings/${state.listingId}/visualize/plan`, { method: 'POST', body });
+    } catch (err) { return fail(err); }
+
+    modal({
+      title: `Generate ${plan.estimate.images} image${plan.estimate.images === 1 ? '' : 's'}?`,
+      sub: `${plan.estimate.totalCredits} credits (~$${plan.estimate.approxUsd}) using ${esc(plan.estimate.model)}.`,
+      body: `<div style="font-size:13.5px;color:var(--muted);line-height:1.6">
+        Every image is permanently labelled for the client. Failed generations are refunded.</div>`,
+      confirmLabel: 'Generate',
+      onConfirm: async () => {
+        const result = await api(`/listings/${state.listingId}/visualize`, { method: 'POST', body });
+        toast(`${result.created} image${result.created === 1 ? '' : 's'} submitted.`, 'good');
+        render();
+        // Images finish fast; refresh the grid a few times rather than polling forever.
+        [4000, 9000, 15000].forEach((ms) => setTimeout(() => state.tab === 'visualize' && render(), ms));
+      },
+    });
+  };
+
+  $$('[data-del-visual]', pane).forEach((node) => {
+    node.onclick = async () => {
+      try {
+        await api(`/listings/${state.listingId}/visuals/${node.dataset.delVisual}`, { method: 'DELETE' });
+        render();
+      } catch (err) { fail(err); }
+    };
   });
 }
 

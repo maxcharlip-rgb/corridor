@@ -3,6 +3,10 @@
 Turns commercial real estate listing photos into cinematic video tours, then hosts
 them behind a QR code on the listing sign so drive-by interest becomes a trackable lead.
 
+A second workflow, **Visualize**, generates concept imagery so a broker can answer
+"could this work for us?" with a picture: a building not yet built, an existing
+building repositioned, a tenant fit-out, or an alternate layout.
+
 The video is the demo. **The product is the hosted tour + QR + attribution** — a
 prospect who reads a sign and drives off is invisible to every other tool in CRE.
 
@@ -55,6 +59,17 @@ photos → spec → storyboard → takes → select → reel → publish → QR 
 5. **Select** — several takes per shot; pick the best.
 6. **Reel** — montage → burned-in captions → end card.
 7. **Publish** — public tour at `/t/:slug`, print-ready sign assets, lead capture.
+
+### Visualize (second workflow)
+
+Four modes, each with a permanent disclosure label: **concept** (no building yet),
+**renovation**, **fit-out**, **layout**. Images cost 1 credit (`nano_banana`) or 7
+(`gpt_image_2`), so exploring options is cheap. Architecture is preserved in every
+mode except concept — walls, windows, columns and ceiling height never move.
+
+Corridor is not a CRM. There are no pipelines, deal stages, task boards or contact
+management, and none should be added — lead capture exists only to attribute a QR
+scan to a tour.
 
 ### Two render tiers
 
