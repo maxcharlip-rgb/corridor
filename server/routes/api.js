@@ -27,6 +27,7 @@ import { ffmpegAvailable, stitchReel } from '../render-preview.js';
 import { enhancePhoto, stagePhoto, stagingConfigured, ENHANCE_PROFILES } from '../photo-ops.js';
 import { renderSign, qrDataUrl, taggedUrl, SIGN_FORMATS, SHARE_CHANNELS } from '../signkit.js';
 import { submitImageGeneration } from '../higgsfield.js';
+import { diagnose } from '../higgsfield-diagnose.js';
 import { ownsListing, authEnabled } from '../auth.js';
 import { collectFacts, stripUnverified, logFactUse, DISCLOSURES } from '../facts.js';
 import { brandingForAccount, brandingForListing, updateBranding, BRAND_FIELDS } from '../branding.js';
@@ -691,6 +692,17 @@ const generateHandler = handle(async (req, res) => {
 api.post('/listings/:id/generate', generateLimiter, dailyGenerateLimiter, generateHandler);
 api.post('/projects/:id/generate', generateLimiter, dailyGenerateLimiter, generateHandler);
 
+/**
+ * Live Higgsfield diagnosis. Costs nothing — validates credentials by sending a
+ * deliberately invalid request (auth fails before the request is judged, so a
+ * non-401 rejection proves the keys work) and separately checks that our
+ * PUBLIC_URL is reachable from outside.
+ */
+api.get('/diagnostics/higgsfield', handle(async (req, res) => {
+  const anyPhoto = getDb().photos[0];
+  res.json(await diagnose({ sampleUploadFile: anyPhoto?.file || null }));
+}));
+
 // --- visualisation ------------------------------------------------------------
 // The second workflow. Video tours remain the product; this answers the question
 // a prospect asks in the room — "could this work for us?" — with a picture.
@@ -1085,6 +1097,11 @@ api.get('/listings/:id/analytics', handle(async (req, res) => {
 
 api.use((err, _req, res, _next) => {
   const status = err.status || (err instanceof multer.MulterError ? 400 : 500);
-  if (status >= 500) console.error('[api]', err);
+  // Expected, actionable conditions (missing keys, unreachable PUBLIC_URL) are
+  // user errors, not server faults. Logging full stacks for them buries real
+  // failures in noise. One clean line for those; stacks only for genuine 5xx.
+  const expected = /credential|not set|unreachable|local-only|PUBLIC_URL|returned 40/i.test(err.message || '');
+  if (status >= 500 && !expected) console.error('[api]', err);
+  else if (status >= 500) console.warn('[api]', err.message);
   res.status(status).json({ error: err.message || 'Something went wrong.' });
 });

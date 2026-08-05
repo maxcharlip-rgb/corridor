@@ -49,6 +49,9 @@ async function request(pathname, { method = 'GET', body } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  // Always log endpoint + status. Without this, a failure is invisible in prod.
+  console.log(`[higgsfield] ${method} ${pathname} -> ${res.status}`);
+
   const text = await res.text();
   let json = null;
   try {
@@ -190,6 +193,13 @@ export async function submitImageGeneration({ imageUrl, prompt, model, aspectRat
   try {
     data = await request(pathname, { method: 'POST', body: { params } });
   } catch (err) {
+    if (err.status === 401 || err.status === 403) {
+      throw new Error(
+        'Higgsfield rejected the credentials on the image endpoint. Note that Higgsfield checks auth ' +
+        'BEFORE routing, so this same 401 appears if HIGGSFIELD_IMAGE_PATH is wrong. Verify the keys ' +
+        'first with: node scripts/verify-higgsfield.js --confirm'
+      );
+    }
     if (err.status === 404) {
       throw new Error(
         `Higgsfield image endpoint ${pathname} returned 404. The image path differs from the video ` +

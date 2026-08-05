@@ -91,6 +91,14 @@ portFree
   ? add(OK, 'port', `${config.port} available`)
   : add(WARN, 'port', `${config.port} already in use — an instance may already be running`);
 
+// --- live Higgsfield probe (free) -------------------------------------------
+if (higgsfieldConfigured) {
+  const { diagnose } = await import('../server/higgsfield-diagnose.js');
+  const d = await diagnose();
+  add(d.auth.ok ? OK : FAIL, 'higgsfield auth', d.auth.detail);
+  add(d.publicUrl.ok ? OK : (higgsfieldConfigured ? FAIL : WARN), 'image reachability', d.publicUrl.detail);
+}
+
 // --- report ----------------------------------------------------------------
 const icon = { ok: '  ✓', warn: '  !', fail: '  ✕' };
 console.log('\n  Corridor preflight\n');
