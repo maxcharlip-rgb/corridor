@@ -5,14 +5,9 @@ import { config } from './config.js';
 
 const EMPTY = {
   version: 1,
-  broker: {
-    name: 'Your Name',
-    company: 'Your Brokerage',
-    email: '',
-    phone: '',
-    logoUrl: '',
-    accent: '#c8622a',
-  },
+  // NOTE: no global `broker` field. Branding is per-account (see branding.js);
+  // a shared one leaked firm A onto firm B's tour, sign and end card.
+  accounts: [],
   listings: [],
   photos: [],
   shots: [],

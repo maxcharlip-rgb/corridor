@@ -148,15 +148,10 @@ function summarise(listing) {
 }
 
 api.put('/broker', handle(async (req, res) => {
-  // Branding lives on the account, never on install state — otherwise one
-  // firm's identity would appear on another firm's tour.
+  // Branding belongs to an account, never to the install. There is no global
+  // fallback to write to any more.
   if (!req.account) {
-    const db = getDb();
-    for (const field of BRAND_FIELDS) {
-      if (req.body[field] !== undefined) db.broker[field] = req.body[field];
-    }
-    save();
-    return res.json(db.broker);
+    return res.status(401).json({ error: 'Sign in to set your brokerage details.' });
   }
   res.json(updateBranding(req.account.id, req.body || {}));
 }));
