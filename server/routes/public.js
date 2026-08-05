@@ -3,6 +3,7 @@ import { config } from '../config.js';
 import { getDb, save, id, now, listings as listingsRepo, shots as shotsRepo, photos as photosRepo } from '../store.js';
 import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
+import { DISCLOSURES } from '../facts.js';
 
 export const publicApi = express.Router();
 publicApi.use(express.json({ limit: '64kb' }));
@@ -49,7 +50,14 @@ publicApi.get('/tours/:slug', (req, res) => {
       };
     });
 
+  // Disclosures ship with the payload rather than being hard-coded in the
+  // viewer, so they cannot drift from the server's own compliance text and
+  // cannot be edited away in the frontend.
+  const disclosures = [DISCLOSURES.accuracy, DISCLOSURES.motion];
+  if (stops.some((s) => s.virtuallyStaged)) disclosures.push(DISCLOSURES.staging);
+
   res.json({
+    disclosures,
     listing: {
       name: listing.name,
       address: listing.address,

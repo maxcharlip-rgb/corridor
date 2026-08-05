@@ -145,14 +145,9 @@ function paint() {
       </aside>
     </div>
 
-    ${stops.some((s) => s.virtuallyStaged)
-      ? `<p class="disclosure">Some stops on this tour use virtually staged photography and are labelled as such
-          while playing. Staged imagery depicts furniture and finishes that are not present in the space.
-          Motion in this tour is generated from still photography and is intended to convey layout and
-          scale, not to represent exact dimensions. Verify all measurements independently.</p>`
-      : `<p class="disclosure">Motion in this tour is generated from still photography of the property and is
-          intended to convey layout and scale, not to represent exact dimensions. Verify all measurements
-          independently.</p>`}`;
+    ${(tour.disclosures || [])
+      .map((d) => `<p class="disclosure">${esc(d)}</p>`)
+      .join('')}`;
 
   wire();
   show(0, false);

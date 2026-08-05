@@ -27,6 +27,7 @@ import { ffmpegAvailable, stitchReel } from '../render-preview.js';
 import { enhancePhoto, stagePhoto, stagingConfigured, ENHANCE_PROFILES } from '../photo-ops.js';
 import { renderSign, qrDataUrl, taggedUrl, SIGN_FORMATS, SHARE_CHANNELS } from '../signkit.js';
 import { ownsListing, authEnabled } from '../auth.js';
+import { collectFacts, stripUnverified, logFactUse, DISCLOSURES } from '../facts.js';
 import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
 import { tourAgent, captionTrack, heroTextFor } from '../agents/tour-agent.js';
 import { envisionAgent } from '../agents/envision-agent.js';
@@ -765,6 +766,18 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
     .filter((shot) => shot.cinematic?.file || shot.preview?.file)
     .reduce((total, shot) => total + (shot.durationSec || 5), 0);
 
+  // Compliance gate: nothing with an unverifiable number reaches a viewer.
+  // Every number burned into the video must already exist in broker-entered data.
+  const facts = collectFacts(listing, listing.spec);
+  const clean = (value, context) => {
+    const result = stripUnverified(value, facts);
+    if (result.stripped.length) {
+      logFactUse({ listingId: listing.id, accountId: req.account?.id, context, facts, text: value, stripped: result.stripped });
+      console.warn('[facts] stripped unverifiable ' + JSON.stringify(result.stripped) + ' from ' + context);
+    }
+    return result.text;
+  };
+
   let bodyPath = montagePath;
   if (overlayOpts && fontsAvailable()) {
     try {
@@ -772,13 +785,16 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
       await applyTextOverlays({
         inPath: montagePath,
         outPath: overlaidPath,
-        address: req.body?.address ?? (listing.address || ''),
-        specLine: req.body?.specLine ?? buildSpecLine(listing),
+        address: clean(req.body?.address ?? (listing.address || ''), 'overlay.address'),
+        specLine: clean(req.body?.specLine ?? buildSpecLine(listing), 'overlay.specLine'),
         cta: req.body?.ctaText ?? [listing.cta?.label, broker.phone].filter(Boolean).join('  ·  '),
         captions: captionTrack(
           ordered
             .filter((shot) => shot.cinematic?.file || shot.preview?.file)
-            .map((shot) => ({ durationSec: shot.durationSec || 5, heroText: shot.heroText || shot.caption || '' }))
+            .map((shot) => ({
+              durationSec: shot.durationSec || 5,
+              heroText: clean(shot.heroText || shot.caption || '', 'caption:' + shot.id),
+            }))
         ),
         durationSec: montageSec,
         accent: broker.accent,
