@@ -118,6 +118,23 @@ function esc(text) {
     .replace(/\]/g, '\\]');
 }
 
+/**
+ * Pull the actual complaint out of ffmpeg's stderr.
+ *
+ * ffmpeg prints codec statistics last, so taking the final few lines reports
+ * bitrate and macroblock percentages and discards the one line that says what
+ * went wrong. Select the diagnostic lines instead, and keep the tail only as a
+ * fallback when none match.
+ */
+function explainFfmpeg(stderr) {
+  const lines = stderr.trim().split('\n');
+  const notable = lines.filter((l) =>
+    /error|invalid|no such|failed|cannot|unable|denied|no space|not found|unsupported|conversion failed/i.test(l)
+  );
+  const picked = (notable.length ? notable : lines).slice(-6);
+  return picked.join('\n').slice(0, 1200);
+}
+
 function run(binary, args, timeoutMs = 120_000) {
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, { stdio: ['ignore', 'ignore', 'pipe'] });
@@ -128,10 +145,13 @@ function run(binary, args, timeoutMs = 120_000) {
     }, timeoutMs);
     child.stderr.on('data', (c) => { stderr += c; });
     child.on('error', (err) => { clearTimeout(timer); reject(err); });
-    child.on('close', (code) => {
+    child.on('close', (code, signal) => {
       clearTimeout(timer);
       if (code === 0) return resolve();
-      reject(new Error(`ffmpeg exited ${code}: ${stderr.trim().split('\n').slice(-4).join('\n')}`));
+      // A kill reports code null; without the signal the message reads
+      // "ffmpeg exited null", which says nothing about being OOM-killed.
+      const how = signal ? `was killed by ${signal}` : `exited ${code}`;
+      reject(new Error(`ffmpeg ${how}: ${explainFfmpeg(stderr)}`));
     });
   });
 }
