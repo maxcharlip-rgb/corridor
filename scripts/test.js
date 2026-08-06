@@ -404,3 +404,26 @@ main().catch(async (err) => {
   check('every two-input motion has a local preview recipe',
     twoInput.length > 0 && twoInput.every((m) => Boolean(m.preview)));
 }
+
+// --- result quality selection ----------------------------------------------
+{
+  const { normaliseStatus } = await import('../server/higgsfield.js');
+
+  // A completed job carries results.min (compressed proof) and results.raw
+  // (the deliverable). A generic scan returns whichever comes first, and min
+  // sorts first — which shipped the preview as the finished tour.
+  const payload = {
+    jobs: [{ status: 'completed', results: {
+      min: { url: 'https://cdn/x_min.mp4', type: 'video' },
+      raw: { url: 'https://cdn/x.mp4', type: 'video' },
+    } }],
+    input_params: { input_images: [{ image_url: 'https://corridor.app/uploads/lobby.png' }] },
+  };
+  const r = normaliseStatus(payload);
+  check('the full-quality raw render is preferred over min', r.videoUrl === 'https://cdn/x.mp4');
+  check('the echoed input photo is never the result', !String(r.videoUrl).includes('/uploads/'));
+
+  // min alone must still work — not every payload carries both.
+  const minOnly = normaliseStatus({ jobs: [{ status: 'completed', results: { min: { url: 'https://cdn/y_min.mp4', type: 'video' } } }] });
+  check('falls back to min when raw is absent', minOnly.videoUrl === 'https://cdn/y_min.mp4');
+}

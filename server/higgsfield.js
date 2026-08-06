@@ -448,6 +448,26 @@ function collectStatuses(node, out = [], depth = 0) {
   return out;
 }
 
+/**
+ * Prefer the full-quality render over the compressed preview.
+ *
+ * A completed job carries both: `results.min` (a small, heavily compressed
+ * proof) and `results.raw` (the actual deliverable). A generic deep scan returns
+ * whichever appears first in the payload, and `min` sorts first — so every tour
+ * was shipping the preview while the render the credits paid for went unused.
+ * On a broker's listing that difference is the whole product.
+ */
+function bestVideoUrl(data) {
+  const jobs = Array.isArray(data?.jobs) ? data.jobs : [];
+  for (const quality of ['raw', 'min']) {
+    for (const job of jobs) {
+      const url = job?.results?.[quality]?.url;
+      if (isVideoUrl(url)) return url;
+    }
+  }
+  return null;
+}
+
 export function normaliseStatus(data) {
   const statuses = collectStatuses(data);
   const claimsDone = statuses.length > 0 && statuses.every((s) => s === 'completed');
@@ -455,7 +475,7 @@ export function normaliseStatus(data) {
   /* videoUrl is ONLY ever a video. There is no image fallback: an image can
    * never be the result of an image-to-video job, and treating one as such is
    * exactly what published a still frame as a finished tour. */
-  const videoUrl = deepFind(data, isVideoUrl) || (claimsDone ? deepFind(data, isResultUrl) : null);
+  const videoUrl = bestVideoUrl(data) || deepFind(data, isVideoUrl) || (claimsDone ? deepFind(data, isResultUrl) : null);
   const imageUrl = deepFind(data, isImageUrl);
 
   let status;
