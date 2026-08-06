@@ -108,8 +108,10 @@ entire tour before spending a credit. **Cinematic** goes to Higgsfield.
   facade signage. Specific and prominent works.
 - **The start frame decides what motion is possible.** A pull-back only works from a
   tight crop — the camera needs somewhere to retreat to.
-- **Model cost** (preflighted, 5s, no audio): `cinematic_studio_video_v2` 5.0 credits ·
-  `kling3_0` 7.5 · `seedance_2_0` 17.5.
+- **Model**: `/v1/image2video/dop` accepts only `dop-lite`, `dop-preview` and
+  `dop-turbo`. The platform model catalog (`cinematic_studio_video_v2`, `kling3_0`, …)
+  describes a *different* endpoint; an id from there rejects every submission.
+  Corridor uses `dop-turbo`, budgeted at 5.0 credits per 5s take.
 - **`dop-turbo` / `dop-lite` / `dop-preview` do not exist.** Those names appear in an
   SDK README but are absent from the live catalog. An unknown model id is accepted
   and BILLED, then returns a degenerate ~1 second clip. `npm run doctor` now fails

@@ -377,3 +377,16 @@ main().catch(async (err) => {
     check(`${tier} tier uses a dop variant (${m.id})`, DOP.includes(m.id));
   }
 }
+
+// --- stored model ids ------------------------------------------------------
+{
+  const { DOP_MODELS } = await import('../server/higgsfield.js');
+
+  // Shots persist the model chosen when the tour was planned. A shot saved
+  // under an older build carries an id this endpoint rejects, so the submit
+  // path must validate it rather than trust stored data to still be valid.
+  check('dop set is exactly the accepted ids',
+    DOP_MODELS.has('dop-turbo') && DOP_MODELS.has('dop-lite') && DOP_MODELS.has('dop-preview') &&
+    DOP_MODELS.size === 3);
+  check('a stale stored id is not in the accepted set', !DOP_MODELS.has('cinematic_studio_video_v2'));
+}

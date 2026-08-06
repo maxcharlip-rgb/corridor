@@ -181,6 +181,11 @@ async function submitWithFallback(params) {
   throw firstError;
 }
 
+/* The complete set of models /v1/image2video/dop accepts. Anything else is a
+   validation failure, not a quality trade-off. */
+export const DOP_MODELS = new Set(['dop-lite', 'dop-preview', 'dop-turbo']);
+const FALLBACK_MODEL = 'dop-turbo';
+
 export async function submitImageToVideo({ imageUrls, prompt, motionKey, duration, seed, model, aspectRatio, sound }) {
   assertConfigured();
 
@@ -227,12 +232,17 @@ export async function submitImageToVideo({ imageUrls, prompt, motionKey, duratio
           { type: 'image_url', image_url: imageUrls[1], role: 'end_image' },
         ];
 
-  /* Honour the planned model. tourAgent picks a model per shot (hero shots get
-   * a stronger one) and that choice used to be silently discarded here in
-   * favour of the global config default — so every careful per-shot decision
-   * was thrown away and one wrong global name broke every generation at once.
-   */
-  const chosenModel = model || config.higgsfield.model;
+  /* Honour the planned model — but only if this endpoint accepts it.
+   *
+   * The per-shot model is persisted when a tour is planned, so shots created
+   * under an older build carry ids this endpoint rejects. Trusting stored data
+   * to still be a valid enum meant every existing listing failed to submit even
+   * after the default was corrected. Validate at the point of use. */
+  const requested = model || config.higgsfield.model;
+  const chosenModel = DOP_MODELS.has(requested) ? requested : FALLBACK_MODEL;
+  if (chosenModel !== requested) {
+    console.warn(`[higgsfield] "${requested}" is not accepted here; submitting as ${chosenModel}`);
+  }
 
   const params = {
     model: chosenModel,
