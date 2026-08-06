@@ -14,24 +14,17 @@ import { config } from '../config.js';
  */
 
 /**
- * Model costs, preflighted with get_cost at 5s / no audio (2026-08-05):
+ * Model tiers for `/v1/image2video/dop`.
  *
- *   cinematic_studio_video_v2   5.0 credits   Higgsfield's own cinematic
- *                                             camera+colour model. Validated on
- *                                             real Waterford footage.
- *   kling3_0 (std)              7.5 credits   +50%. Stronger physical motion and
- *                                             start/end frame handling.
- *   seedance_2_0 (fast, 720p)  17.5 credits   +250%. Built for identity
- *                                             consistency in characters and
- *                                             products — irrelevant to empty
- *                                             architecture. Used nowhere.
- *
- * Strategy: the standard model everywhere, upgrading only the shots that decide
- * whether anyone keeps watching. The first five seconds carry the whole video.
+ * The endpoint accepts only dop-lite, dop-preview and dop-turbo. Both tiers
+ * point at dop-turbo for now: it is the one variant validated end to end on
+ * real footage, and promoting hero shots to dop-preview is not worth doing
+ * blind — its per-second cost is unmeasured, and an unverified upgrade applied
+ * to every listing spends a client's credits to satisfy a guess.
  */
 export const MODELS = {
-  standard: { id: 'cinematic_studio_video_v2', credits: 5.0 },
-  hero: { id: 'kling3_0', credits: 7.5 },
+  standard: { id: 'dop-turbo', credits: 5.0 },
+  hero: { id: 'dop-turbo', credits: 5.0 },
 };
 
 /**
@@ -103,15 +96,14 @@ export function durationFor({ spaceType, spec, pace = 'standard', model }) {
   return Math.min(Math.max(Math.round(raw), range.min), range.max);
 }
 
-/** Duration limits per model, mirroring the live catalog. */
-export const MODEL_DURATION = {
-  cinematic_studio_video_v2: { min: 3, max: 12 },
-  cinematic_studio_3_0: { min: 4, max: 15 },
-  kling3_0: { min: 3, max: 15 },
-  kling3_0_turbo: { min: 3, max: 15 },
-  seedance_2_0: { min: 4, max: 15 },
-  veo3_1: { min: 4, max: 8 },
-};
+/**
+ * Duration limits per model.
+ *
+ * The dop family's real range is unpublished, so it is deliberately absent:
+ * an invented range would quietly truncate a long tour, while an out-of-range
+ * value now comes back as a readable 422 instead.
+ */
+export const MODEL_DURATION = {};
 
 const fmtSf = (n) => (typeof n === 'number' ? `${n.toLocaleString('en-US')} SF` : null);
 

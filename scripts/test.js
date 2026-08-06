@@ -363,3 +363,17 @@ main().catch(async (err) => {
   check('describeError passes plain strings through', describeError({ detail: 'Model not found' }) === 'Model not found');
   check('describeError tolerates an empty body', describeError(null) === null);
 }
+
+// --- Higgsfield model id ----------------------------------------------------
+{
+  const { MODELS } = await import('../server/agents/tour-agent.js');
+  const { config } = await import('../server/config.js');
+  const DOP = ['dop-lite', 'dop-preview', 'dop-turbo'];
+
+  // /v1/image2video/dop rejects anything outside this set, so a wrong id here
+  // does not degrade quality — it fails every single generation.
+  check('default model is a dop variant', DOP.includes(config.higgsfield.model));
+  for (const [tier, m] of Object.entries(MODELS)) {
+    check(`${tier} tier uses a dop variant (${m.id})`, DOP.includes(m.id));
+  }
+}

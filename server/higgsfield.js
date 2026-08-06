@@ -31,20 +31,14 @@ let resolvedStatusPath = null;
 
 
 /**
- * Per-model duration limits, from the live catalog. Sending a value outside a
- * model's range gets it clamped or dropped upstream with no error, so clamp
- * here where it can be logged instead.
+ * Per-model duration limits.
+ *
+ * Empty on purpose. The dop endpoint's supported range is undocumented, and the
+ * previous table listed models this endpoint does not even accept — clamping
+ * against it silently shortened tours. With no entry, the requested duration is
+ * sent as-is and an unsupported value surfaces as a readable validation error.
  */
-const MODEL_DURATION = {
-  cinematic_studio_video_v2: { min: 3, max: 12 },
-  cinematic_studio_3_0: { min: 4, max: 15 },
-  cinematic_studio_video: { min: 5, max: 10 },
-  kling3_0: { min: 3, max: 15 },
-  kling3_0_turbo: { min: 3, max: 15 },
-  kling2_6: { min: 5, max: 10 },
-  seedance_2_0: { min: 4, max: 15 },
-  veo3_1: { min: 4, max: 8 },
-};
+const MODEL_DURATION = {};
 
 export function clampDuration(model, seconds) {
   const range = MODEL_DURATION[model];
