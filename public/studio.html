@@ -424,7 +424,7 @@ function stepPhotos() {
       '<input type="file" id="files" multiple accept="image/*" hidden />' +
       '<span class="mono" style="display:block;margin-bottom:10px">DRAG IN \u00B7 CLICK TO BROWSE \u00B7 OR PASTE WITH \u2318V</span>' +
       '<b>Drop photos here, or click to choose</b>' +
-      '<span>JPEG, PNG, WebP or HEIC · up to 25 MB each</span>' +
+      '<span>JPEG, PNG or WebP · up to 25 MB each</span>' +
       '<span class="btn primary" style="display:inline-block">Upload photos</span>' +
     '</label>' +
     (has ? '<div class="row" style="margin:22px 0 14px"><span class="mono" style="margin-right:auto">' +
@@ -473,9 +473,16 @@ async function upload(files) {
     var form = new FormData();
     images.forEach(function (f) { form.append('photos', f); });
     toast('Uploading ' + images.length + ' photo' + (images.length > 1 ? 's' : '') + '…');
-    await api('/listings/' + S.listing.id + '/photos', { method: 'POST', body: form });
+    var up = await api('/listings/' + S.listing.id + '/photos', { method: 'POST', body: form });
     await refresh();
-    toast('Photos in. Next: a few details.');
+    /* A partial upload must not read as a complete one. The server keeps the
+       good photos and reports the rest; say which were skipped and why. */
+    var skipped = (up && up.rejected) || [];
+    if (skipped.length) {
+      toast(skipped.length + ' skipped \u2014 ' + skipped[0].reason, 'bad');
+    } else {
+      toast('Photos in. Next: a few details.');
+    }
   } catch (e) { toast(e.message, 'bad'); }
 }
 

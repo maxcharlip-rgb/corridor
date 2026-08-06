@@ -21,12 +21,23 @@ installSafeLogging();
 installProcessGuards({ onFatal: () => flush() });
 
 const app = express();
+
+/* Render terminates TLS at exactly one proxy hop in front of this process.
+   Without this, req.ip is the proxy's address — the same value for every
+   visitor — so every rate-limit bucket is shared and one busy account can lock
+   out all the others. It also makes the Secure-cookie decision in auth.js
+   correct, since req.secure is derived from the forwarded protocol. */
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // Uploads and renders are served as static assets. Higgsfield needs to be able
 // to fetch /uploads/* directly when rendering in Cinematic quality.
 app.use('/uploads', express.static(config.uploadsDir, { maxAge: '1h' }));
-app.use('/renders', express.static(config.rendersDir, { maxAge: '1h' }));
+/* Render filenames are stable and their contents are not: a re-render writes
+   ${shot.id}_preview.mp4 and ${slug}_reel.mp4 again. A one-hour immutable cache
+   therefore serves the previous cut — a broker rebuilds a tour, downloads it,
+   and gets the old video with no indication anything is stale. */
+app.use('/renders', express.static(config.rendersDir, { maxAge: 0, etag: true }));
 app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // Session is loaded for every request; requireAuth decides what is gated.

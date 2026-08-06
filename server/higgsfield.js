@@ -343,9 +343,15 @@ export async function submitImageGeneration({ imageUrl, prompt, model, aspectRat
 export async function getStatus(requestId) {
   assertConfigured();
 
-  const candidates = resolvedStatusPath
-    ? [resolvedStatusPath]
-    : STATUS_PATH_CANDIDATES;
+  /* A transient 4xx on the known-good path must not be read as "no path
+     works". Once resolvedStatusPath is memoised the candidate list is a single
+     entry, so one 429 exhausted it immediately and the caller treated that as
+     permanent — abandoning a job that had already been paid for and was still
+     running. Retry the full list before concluding anything, and never call a
+     retryable status exhausted. */
+  const memoised = resolvedStatusPath;
+  const candidates = memoised ? [memoised, ...STATUS_PATH_CANDIDATES] : STATUS_PATH_CANDIDATES;
+  const RETRYABLE = new Set([408, 425, 429]);
 
   let lastError = null;
   for (const buildPath of candidates) {
@@ -368,12 +374,19 @@ export async function getStatus(requestId) {
       if (!err.status || err.status >= 500) throw err;
     }
   }
+  // A path that worked before is still the right path; the failure was the
+  // request, not the route. Forget the memo so the next cycle re-derives it.
+  if (memoised) resolvedStatusPath = null;
+
+  const retryable = RETRYABLE.has(lastError?.status);
   const err = new Error(
     `Could not read job status from Higgsfield. Tried: ${STATUS_PATH_CANDIDATES.map((f) => f('<id>')).join(', ')}. ` +
       `Last response: ${lastError ? lastError.message : 'unknown'}. ` +
       'Set HIGGSFIELD_STATUS_PATH if your account uses a different route.'
   );
-  err.exhausted = true;
+  // Only a genuine "no route answers" is permanent. Rate limiting is not.
+  if (!retryable) err.exhausted = true;
+  err.status = lastError?.status;
   throw err;
 }
 

@@ -314,8 +314,17 @@ export async function stitchReel({ clipPaths, outPath, endCardPath }) {
    * timebase, the join itself is a stream copy — no re-encode, near-zero memory,
    * and faster than the filter graph it replaces.
    */
-  const workDir = path.join(path.dirname(outPath), `.stitch_${path.basename(outPath, '.mp4')}`);
-  fs.mkdirSync(workDir, { recursive: true });
+  /* A private work directory per invocation, not one derived from the output
+     name.
+     
+     Two builds of the same listing overlap on the normal path — the studio
+     schedules one on render-complete and issues another immediately — and with
+     a deterministic directory they wrote the same p000.mp4…pNNN.mp4 and list.txt.
+     One build then concatenated part files the other was still overwriting and
+     returned success with a full clip count while producing a half-length reel,
+     and the first to finish deleted the shared directory out from under the
+     second. Silently shipping half a tour is worse than failing. */
+  const workDir = fs.mkdtempSync(path.join(path.dirname(outPath), '.stitch_'));
 
   const parts = [];
   try {
@@ -333,11 +342,19 @@ export async function stitchReel({ clipPaths, outPath, endCardPath }) {
     const listFile = path.join(workDir, 'list.txt');
     fs.writeFileSync(listFile, parts.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join('\n'));
 
+    /* Encode to the work directory and move into place only on success, so a
+       failed or half-written build never appears at the URL a broker is about
+       to download. rename within the same filesystem is atomic. */
+    const staged = path.join(workDir, 'out.mp4');
     await run(
       config.ffmpeg,
-      ['-y', '-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', '-movflags', '+faststart', outPath],
+      ['-y', '-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', '-movflags', '+faststart', staged],
       { timeoutMs: 10 * 60 * 1000 }
     );
+
+    const bytes = fs.statSync(staged).size;
+    if (!bytes) throw new Error('the stitched reel came out empty.');
+    fs.renameSync(staged, outPath);
   } finally {
     fs.rmSync(workDir, { recursive: true, force: true });
   }

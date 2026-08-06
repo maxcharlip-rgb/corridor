@@ -297,7 +297,7 @@ function renderPhotos(pane) {
 
     <div class="dropzone" id="dropzone">
       <strong>Drop photos here, or click to choose</strong>
-      <span>JPEG, PNG, WebP or HEIC · up to 25&nbsp;MB each</span>
+      <span>JPEG, PNG or WebP · up to 25&nbsp;MB each</span>
       <input type="file" id="file-input" multiple accept="image/*" hidden />
     </div>
 

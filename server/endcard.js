@@ -109,9 +109,15 @@ export const fontsAvailable = () => Boolean(findFont(FONT_CANDIDATES)) && Boolea
 /** drawtext treats : \ ' % as syntax — escape before interpolating user text. */
 function esc(text) {
   return String(text ?? '')
+    /* A straight apostrophe cannot be escaped inside drawtext's text='...'
+       wrapper: av_get_token treats a backslash as literal there, so the quote
+       closes early and the rest of the filtergraph is swallowed as text. The
+       whole overlay then silently disappears — and CRE is full of names like
+       O'Brien and "Detroit's". The typographic apostrophe renders identically,
+       ships with DejaVu, and carries no syntax. */
+    .replace(/'/g, '\u2019')
     .replace(/\\/g, '\\\\')
     .replace(/:/g, '\\:')
-    .replace(/'/g, "\\\\'")
     .replace(/%/g, '\\%')
     .replace(/,/g, '\\,')
     .replace(/\[/g, '\\[')

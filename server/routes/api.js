@@ -38,7 +38,16 @@ import { envisionAgent, VISUALIZE_MODES, VISUAL_STYLES, IMAGE_MODELS } from '../
 export const api = express.Router();
 api.use(express.json({ limit: '2mb' }));
 
-const ALLOWED_IMAGE = /^image\/(jpeg|png|webp|heic|heif)$/i;
+/* Formats the whole pipeline can actually handle.
+ *
+ * HEIC is deliberately absent. It was accepted, stored and advertised in the
+ * UI, but nothing downstream can read it: express serves it as
+ * application/octet-stream so thumbnails render blank, the bundled ffmpeg has
+ * no HEIF demuxer so previews fail, and the cinematic path hands the URL to
+ * Higgsfield and spends credits on a file the model cannot decode. Accepting an
+ * upload we cannot use is worse than refusing it with instructions. */
+const ALLOWED_IMAGE = /^image\/(jpeg|png|webp)$/i;
+const HEIC_IMAGE = /^image\/(heic|heif)$/i;
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -49,11 +58,22 @@ const upload = multer({
     },
   }),
   limits: { fileSize: 25 * 1024 * 1024, files: 60 },
-  fileFilter: (_req, file, cb) => {
-    if (!ALLOWED_IMAGE.test(file.mimetype)) {
-      return cb(new Error(`${file.originalname}: only JPEG, PNG, WebP or HEIC images are accepted.`));
-    }
-    cb(null, true);
+  /* Skip a bad file rather than abort the request.
+   *
+   * multer aborts the whole upload on the first rejection, so one screenshot or
+   * one oversized frame in a 40-photo drop discarded every good photo and
+   * persisted nothing. A broker reads that as "the upload is broken". Record
+   * the reason and keep going; the handler reports what was skipped. */
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE.test(file.mimetype)) return cb(null, true);
+    req.rejectedFiles = req.rejectedFiles || [];
+    req.rejectedFiles.push({
+      name: file.originalname,
+      reason: HEIC_IMAGE.test(file.mimetype)
+        ? 'HEIC is not supported yet. On iPhone: Settings → Camera → Formats → "Most Compatible", or export as JPEG.'
+        : 'Only JPEG, PNG and WebP images are supported.',
+    });
+    cb(null, false);
   },
 });
 
@@ -247,7 +267,14 @@ api.post('/listings/:id/photos', upload.array('photos', 60), handle(async (req, 
 
   listing.updatedAt = now();
   save();
-  res.status(201).json(created);
+
+  /* Report both halves. The client needs the photos that landed AND the ones
+     that did not, or a partial upload looks like a complete one. */
+  const rejected = req.rejectedFiles || [];
+  if (!created.length && rejected.length) {
+    return res.status(400).json({ error: rejected[0].reason, rejected });
+  }
+  res.status(201).json(rejected.length ? { photos: created, rejected } : created);
 }));
 
 api.patch('/photos/:id', handle(async (req, res) => {
@@ -488,7 +515,15 @@ api.get('/shots/:id/prompt', handle(async (req, res) => {
   res.json({ prompt, motion: motion.label, model: config.higgsfield.model });
 }));
 
-api.post('/shots/:id/render', generateLimiter, dailyGenerateLimiter, handle(async (req, res) => {
+/* Apply the paid-generation limits only to generations that actually cost
+   money. A preview is a local ffmpeg render that spends nothing and calls
+   nothing, but it shared the 5/minute cap with Higgsfield submissions — so a
+   broker storyboarding an ordinary 8-shot tour was rate-limited out of the
+   free path partway through. */
+const costsCredits = (mw) => (req, res, next) =>
+  (req.body?.quality === 'cinematic' ? mw(req, res, next) : next());
+
+api.post('/shots/:id/render', costsCredits(generateLimiter), costsCredits(dailyGenerateLimiter), handle(async (req, res) => {
   const shot = requireShot(req);
   const quality = req.body?.quality === 'cinematic' ? 'cinematic' : 'preview';
 
@@ -850,7 +885,7 @@ api.post('/shots/:id/select-take', handle(async (req, res) => {
   res.json(decorateShot(updated));
 }));
 
-api.post('/listings/:id/render-all', generateLimiter, dailyGenerateLimiter, handle(async (req, res) => {
+api.post('/listings/:id/render-all', costsCredits(generateLimiter), costsCredits(dailyGenerateLimiter), handle(async (req, res) => {
   const listing = requireListing(req);
   const quality = req.body?.quality === 'cinematic' ? 'cinematic' : 'preview';
   const targets = shotsRepo
@@ -886,8 +921,28 @@ api.post('/listings/:id/render-all', generateLimiter, dailyGenerateLimiter, hand
 
 // --- reel export -------------------------------------------------------------
 
+/* One reel build per listing at a time.
+ *
+ * stitchReel now isolates its own scratch space, but the montage, overlaid and
+ * end-card intermediates are still named per listing, so two overlapping builds
+ * would trample each other's inputs. The studio issues two builds on the normal
+ * path (one scheduled on render-complete, one immediate), so this is the
+ * default flow rather than an edge case. Concurrent callers await the build
+ * already running and receive its result instead of starting a second one. */
+const reelBuilds = new Map();
+
 api.post('/listings/:id/reel', handle(async (req, res) => {
   const listing = requireListing(req);
+
+  const inFlight = reelBuilds.get(listing.id);
+  if (inFlight) return res.json(await inFlight);
+
+  const build = buildReel(req, listing).finally(() => reelBuilds.delete(listing.id));
+  reelBuilds.set(listing.id, build);
+  return res.json(await build);
+}));
+
+async function buildReel(req, listing) {
   const ordered = shotsRepo.forListing(listing.id);
   const clipPaths = ordered
     .map((shot) => {
@@ -1007,7 +1062,7 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
   listing.endCardPosition = position;
   save();
 
-  res.json({
+  return {
     url: `/renders/${outFile}`,
     clips: stitched.clips,
     endCard: Boolean(endCardPath),
@@ -1016,8 +1071,8 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
     overlaySkipped: overlayFailed || overlaySkipped,
     endCardSkipped,
     fonts: fontsAvailable(),
-  });
-}));
+  };
+}
 
 // --- publish, leads, analytics ----------------------------------------------
 

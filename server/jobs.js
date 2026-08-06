@@ -266,10 +266,23 @@ function pendingTakes() {
   return out;
 }
 
+/* One poll cycle at a time.
+ *
+ * A tick marks a take terminal before the slow part — download, still-codec
+ * probe, two-pass stabilisation — so the next tick five seconds later skipped
+ * that take and immediately started the same work on the next completed one.
+ * With several takes finishing together the ffmpeg processes stacked without
+ * bound, which is how a 512 MB instance got OOM-killed mid-tour. */
+let polling = false;
+
 export function startPolling() {
   if (pollTimer) return;
   pollTimer = setInterval(() => {
-    pollOnce().catch((err) => console.error('[jobs] poll error:', err.message));
+    if (polling) return;
+    polling = true;
+    pollOnce()
+      .catch((err) => console.error('[jobs] poll error:', err.message))
+      .finally(() => { polling = false; });
   }, config.higgsfield.pollIntervalMs);
   pollTimer.unref?.();
 }
