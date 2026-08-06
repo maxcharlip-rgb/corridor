@@ -17,9 +17,14 @@ import { motionIdFor } from './motions.js';
  */
 
 const STATUS_PATH_CANDIDATES = [
+  ...(process.env.HIGGSFIELD_STATUS_PATH
+    ? [(id) => process.env.HIGGSFIELD_STATUS_PATH.replace('{id}', id)]
+    : []),
   (id) => `/v1/requests/${id}/status`,
-  (id) => `/requests/${id}/status`,
   (id) => `/v1/job-sets/${id}`,
+  (id) => `/v1/jobs/${id}`,
+  (id) => `/v1/image2video/dop/${id}`,
+  (id) => `/requests/${id}/status`,
 ];
 
 let resolvedStatusPath = null;
@@ -233,10 +238,26 @@ export async function getStatus(requestId) {
       return normaliseStatus(data);
     } catch (err) {
       lastError = err;
-      if (err.status !== 404) throw err; // a real error, not a wrong path
+      /* Try the next candidate on ANY 4xx.
+       *
+       * This previously bailed unless the status was exactly 404 — but
+       * Higgsfield evaluates auth BEFORE routing, so an unknown path answers
+       * 401, not 404. The very first wrong candidate therefore threw and the
+       * remaining ones were never attempted. Polling then failed forever while
+       * the generation had already been submitted and billed: the user was
+       * charged and never saw a result. Only a network fault or a 5xx is worth
+       * abandoning the search for.
+       */
+      if (!err.status || err.status >= 500) throw err;
     }
   }
-  throw lastError || new Error('Unable to resolve Higgsfield status endpoint.');
+  const err = new Error(
+    `Could not read job status from Higgsfield. Tried: ${STATUS_PATH_CANDIDATES.map((f) => f('<id>')).join(', ')}. ` +
+      `Last response: ${lastError ? lastError.message : 'unknown'}. ` +
+      'Set HIGGSFIELD_STATUS_PATH if your account uses a different route.'
+  );
+  err.exhausted = true;
+  throw err;
 }
 
 function normaliseStatus(data) {

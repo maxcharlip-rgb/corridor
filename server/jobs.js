@@ -312,11 +312,28 @@ async function pollOnce() {
       shot.updatedAt = now();
       save();
     } catch (err) {
-      // Transient network/API errors should not fail the take — the next tick
-      // retries. Only record the message for visibility.
+      /* A transient blip should retry; a permanent fault must not spin forever.
+       *
+       * Previously every poll error was treated as transient, so a take whose
+       * status could never be read stayed "queued" indefinitely — the
+       * generation had been submitted and BILLED, but nothing ever appeared for
+       * the user and no error was raised. Silent, paid-for, and invisible.
+       */
       take.lastPollError = err.message;
+      take.pollFailures = (take.pollFailures || 0) + 1;
+      console.error(`[jobs] poll ${shot.id}/${take.id} (attempt ${take.pollFailures}):`, err.message);
+
+      const permanent = err.exhausted || err.status === 401 || err.status === 403;
+      if (permanent || take.pollFailures >= 8) {
+        take.status = 'failed';
+        take.error = permanent
+          ? `Higgsfield accepted and billed this generation, but its status could not be read: ${err.message}`
+          : `Gave up reading status after ${take.pollFailures} attempts: ${err.message}`;
+        shot.error = take.error;
+        const takes = shot.takes || [];
+        if (takes.every((t) => t.error)) shot.status = 'failed';
+      }
       save();
-      console.error(`[jobs] poll ${shot.id}/${take.id}:`, err.message);
     }
   }
 }
