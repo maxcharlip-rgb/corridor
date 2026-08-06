@@ -440,3 +440,45 @@ main().catch(async (err) => {
   check('fontsAvailable() requires the filter, not just a font file',
     fontsAvailable() === (Boolean(config.ffmpegText) && fontsAvailable()));
 }
+
+// --- defects found auditing the delivery pipeline ---------------------------
+{
+  const fsx = await import('node:fs');
+  const apiSrc = fsx.readFileSync(new URL('../server/routes/api.js', import.meta.url), 'utf8');
+  const idxSrc = fsx.readFileSync(new URL('../server/index.js', import.meta.url), 'utf8');
+  const rpSrc = fsx.readFileSync(new URL('../server/render-preview.js', import.meta.url), 'utf8');
+  const jobSrc = fsx.readFileSync(new URL('../server/jobs.js', import.meta.url), 'utf8');
+
+  // Two builds of one listing overlap on the normal path; a shared scratch dir
+  // made one concatenate part files the other was still writing.
+  check('reel stitching uses a private scratch directory', /mkdtempSync\(/.test(rpSrc));
+  check('the reel is published by atomic rename', /renameSync\(staged, outPath\)/.test(rpSrc));
+  check('reel builds are serialised per listing', /reelBuilds/.test(apiSrc));
+
+  // Without trust proxy every visitor shares one rate-limit bucket on Render.
+  check("trust proxy is set", /app\.set\('trust proxy'/.test(idxSrc));
+
+  // Render filenames are stable while their contents change.
+  check('renders revalidate instead of caching for an hour', /rendersDir, \{ maxAge: 0/.test(idxSrc));
+
+  // A free local preview must not consume the paid-generation allowance.
+  check('paid limits apply only to cinematic renders', /costsCredits\(generateLimiter\)/.test(apiSrc));
+
+  // Stacked stabilisation passes were an OOM cause on a 512 MB instance.
+  check('the poller refuses to re-enter while a cycle is running', /if \(polling\) return;/.test(jobSrc));
+
+  // Accepting an upload nothing downstream can read spends credits on it.
+  check('HEIC is not accepted', !/heic/i.test(apiSrc.match(/const ALLOWED_IMAGE =.*/)[0]));
+  check('a rejected file is reported rather than aborting the batch', /rejectedFiles/.test(apiSrc));
+}
+
+// --- apostrophes in overlay text --------------------------------------------
+{
+  const { buildSpecLine } = await import('../server/endcard.js');
+  // Inside drawtext's text='...' a backslash is literal, so a straight
+  // apostrophe closes the quote and swallows the rest of the filtergraph —
+  // deleting every overlay. CRE names are full of them.
+  const src = (await import('node:fs')).readFileSync(new URL('../server/endcard.js', import.meta.url), 'utf8');
+  check('esc() replaces the straight apostrophe', /replace\(\/'\/g, '\\u2019'\)/.test(src));
+  check('buildSpecLine is still callable', typeof buildSpecLine === 'function');
+}
