@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import { getDb, save, flush, now } from './store.js';
+import { fontsAvailable } from './endcard.js';
 
 /**
  * Production hardening.
@@ -227,8 +228,16 @@ export function healthSnapshot() {
     }
   } catch { /* dir missing */ }
 
+  /* Overlays and the end card are silently skipped when no font resolves, so
+     whether fonts are present has to be observable from outside the process —
+     otherwise a reel ships without the address and specs and nothing says why. */
+  let fonts = false;
+  try { fonts = fontsAvailable(); } catch { /* module failed to load */ }
+
   return {
     uptimeSec: Math.round(process.uptime()),
+    fonts,
+    dataDirPersistent: !/\/(app|opt\/render)\/(src|project)/.test(config.dataDir) || Boolean(process.env.CORRIDOR_DATA_DIR),
     listings: (db.listings || []).length,
     accounts: (db.accounts || []).length,
     pendingTakes,

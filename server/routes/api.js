@@ -929,6 +929,13 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
   };
 
   let bodyPath = montagePath;
+  /* Why overlays were skipped has to travel back to the caller. Silently
+     returning overlays:false is how a reel shipped without the address and
+     specs for weeks with the explanation sitting in a server log nobody read. */
+  let overlaySkipped = null;
+  let overlayFailed = null;
+  if (!overlayOpts) overlaySkipped = 'not requested';
+  else if (!fontsAvailable()) overlaySkipped = 'no usable font on this host — set FONT_PATH or reinstall dependencies';
   if (overlayOpts && fontsAvailable()) {
     try {
       const overlaidPath = work('overlaid');
@@ -951,6 +958,8 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
       });
       bodyPath = overlaidPath;
     } catch (err) {
+      overlaySkipped = null;
+      overlayFailed = err.message;
       console.error('[api] overlays failed, continuing without them:', err.message);
     }
   }
@@ -962,6 +971,9 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
     : 'end';
 
   let endCardPath = null;
+  let endCardSkipped = null;
+  if (position === 'none') endCardSkipped = 'not requested';
+  else if (!fontsAvailable()) endCardSkipped = 'no usable font on this host';
   if (position !== 'none' && fontsAvailable()) {
     try {
       endCardPath = work('endcard');
@@ -976,6 +988,7 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
       });
     } catch (err) {
       console.error('[api] end card failed, building reel without it:', err.message);
+      endCardSkipped = err.message;
       endCardPath = null;
     }
   }
@@ -1000,6 +1013,9 @@ api.post('/listings/:id/reel', handle(async (req, res) => {
     endCard: Boolean(endCardPath),
     endCardPosition: position,
     overlays: bodyPath !== montagePath,
+    overlaySkipped: overlayFailed || overlaySkipped,
+    endCardSkipped,
+    fonts: fontsAvailable(),
   });
 }));
 
