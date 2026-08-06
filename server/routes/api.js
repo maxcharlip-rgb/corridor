@@ -221,9 +221,28 @@ api.get('/listings/:id', handle(async (req, res) => {
 api.patch('/listings/:id', handle(async (req, res) => {
   const listing = requireListing(req);
   const fields = ['name', 'address', 'propertyType', 'headline', 'specs', 'cta', 'published'];
+  const previousName = listing.name;
   for (const field of fields) {
     if (req.body[field] !== undefined) listing[field] = req.body[field];
   }
+
+  /* Let the slug follow the name.
+   *
+   * The upload flow creates the listing as "Untitled tour" before the broker
+   * has named anything, and the slug was fixed at creation — so a renamed
+   * building kept /t/untitled-tour as its public link and untitled-tour_reel.mp4
+   * as its download, forever. That link is the product: it goes on the sign,
+   * the QR code and the CoStar post.
+   *
+   * The old slug is kept as an alias so anything already shared keeps resolving. */
+  if (listing.name !== previousName) {
+    const next = slugify(listing.name);
+    if (next !== listing.slug) {
+      listing.slugAliases = [...new Set([...(listing.slugAliases || []), listing.slug])];
+      listing.slug = next;
+    }
+  }
+
   listing.updatedAt = now();
   save();
   res.json(summarise(listing));

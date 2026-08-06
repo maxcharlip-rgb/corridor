@@ -292,7 +292,17 @@ async function boot() {
        their upload worked — the exact complaint that the photos "don't make it
        into the platform". */
     if (wanted) { S.step = 'photos'; draw(); }
-  } else render(stepPhotos());
+  } else {
+    /* draw(), not render(). render() only writes innerHTML — it is draw() that
+       attaches the handlers. Rendering the photos step directly left the file
+       input, the drop zone and paste-to-upload with no listeners at all, so a
+       brand-new account with no tours yet could click "Upload photos" and have
+       literally nothing happen, forever. Every other path reaches this step
+       through draw() and works, which is why it survived: it only breaks on the
+       very first visit. */
+    S.step = 'photos';
+    draw();
+  }
   paintTop();
 }
 
@@ -727,7 +737,16 @@ async function generate() {
     await refresh();
     genProgress(true);
     startPolling();
-  } catch (e) { toast(e.message, 'bad'); $('#g-go').disabled = false; }
+  } catch (e) {
+    toast(e.message, 'bad');
+  } finally {
+    /* Always re-enable. On the success path the button was left disabled
+       forever, so if generation then failed and the modal closed, the broker was
+       returned to a Generate step whose only button was dead — clicking it did
+       nothing, which is indistinguishable from the app being broken. */
+    var go = $('#g-go');
+    if (go) go.disabled = false;
+  }
 }
 
 function startPolling() {

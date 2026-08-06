@@ -544,3 +544,36 @@ main().catch(async (err) => {
   check('no MCP or vendor SDK among dependencies',
     !deps.some((d) => /mcp|higgsfield|anthropic|openai/i.test(d)));
 }
+
+// --- studio first-run wiring ------------------------------------------------
+{
+  const fsx = await import('node:fs');
+  const studio = fsx.readFileSync(new URL('../public/studio.html', import.meta.url), 'utf8');
+
+  /* render() only writes innerHTML; draw() is what attaches handlers. boot()
+     rendered the photos step directly on the no-listings path, so a brand-new
+     account had a file input, drop zone and paste handler with no listeners —
+     clicking "Upload photos" did nothing at all, forever. */
+  check('boot() never renders a step without wiring it',
+    !/}\s*else\s+render\(step/.test(studio));
+
+  // The generate button was disabled on click and only re-enabled in catch, so
+  // the success path left it dead.
+  const gen = studio.slice(studio.indexOf('async function generate()'), studio.indexOf('function startPolling()'));
+  check('generate() re-enables its button on every path', /finally\s*\{/.test(gen));
+}
+
+// --- the public link follows the building name ------------------------------
+{
+  const { slugify, listings } = await import('../server/store.js');
+  const apiSrc = (await import('node:fs')).readFileSync(new URL('../server/routes/api.js', import.meta.url), 'utf8');
+  const storeSrc = (await import('node:fs')).readFileSync(new URL('../server/store.js', import.meta.url), 'utf8');
+
+  // The upload flow creates a listing as "Untitled tour" before it is named, so
+  // a slug frozen at creation means the shared link and the downloaded reel are
+  // both called untitled-tour — and that link is what goes on the sign.
+  check('renaming a listing updates its slug', /listing\.slug = next;/.test(apiSrc));
+  check('the previous slug is kept as an alias', /slugAliases/.test(apiSrc));
+  check('bySlug resolves an aliased slug', /slugAliases \|\| \[\]\)\.includes\(slug\)/.test(storeSrc));
+  check('slugify still de-duplicates', typeof slugify === 'function' && typeof listings.bySlug === 'function');
+}

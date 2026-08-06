@@ -116,7 +116,12 @@ export function slugify(text, fallback = 'tour') {
 export const listings = {
   all: () => getDb().listings,
   byId: (listingId) => getDb().listings.find((l) => l.id === listingId) || null,
-  bySlug: (slug) => getDb().listings.find((l) => l.slug === slug) || null,
+  // Also match a previous slug: renaming a listing must not break a link that
+  // is already on a sign or in a QR code.
+  bySlug: (slug) =>
+    getDb().listings.find((l) => l.slug === slug) ||
+    getDb().listings.find((l) => (l.slugAliases || []).includes(slug)) ||
+    null,
 };
 
 export const photos = {
