@@ -328,9 +328,47 @@ async function downloadRemote(url, filename) {
   return filename;
 }
 
-/** Resume polling for anything still in flight after a restart. */
+/**
+ * Resume work after a restart.
+ *
+ * Two different kinds of in-flight job, and only one of them used to survive:
+ *
+ *  - Higgsfield takes live on the remote side, so a request id is enough to
+ *    pick polling back up.
+ *  - Local preview renders live in an IN-MEMORY queue. A restart — a deploy, an
+ *    OOM kill, a crash — destroys the queue while the database still says
+ *    "rendering". Those shots were orphaned permanently: no worker owned them,
+ *    nothing ever failed them, and the UI showed a spinner forever. Clicking
+ *    Generate again just produced more stuck shots.
+ *
+ * So anything left mid-render is re-queued here. This is what makes the render
+ * pipeline actually restart-safe rather than merely restart-tolerant.
+ */
 export function resumePending() {
   if (pendingTakes().length) startPolling();
+
+  const orphans = getDb().shots.filter(
+    (s) => (s.status === 'rendering' || s.status === 'queued') && s.photoIds?.length
+  );
+  if (!orphans.length) return;
+
+  if (!ffmpegAvailable()) {
+    for (const shot of orphans) {
+      shot.status = 'failed';
+      shot.error = 'Rendering was interrupted and ffmpeg is unavailable to retry.';
+    }
+    save();
+    return;
+  }
+
+  console.log(`[jobs] re-queueing ${orphans.length} render(s) interrupted by a restart`);
+  for (const shot of orphans) {
+    shot.status = 'queued';
+    shot.error = null;
+    if (!queue.includes(shot.id)) queue.push(shot.id);
+  }
+  save();
+  pump();
 }
 
 export function queueDepth() {
