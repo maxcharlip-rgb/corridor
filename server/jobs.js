@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import path from 'node:path';
 import { config } from './config.js';
 import { getDb, save, id, shots as shotsRepo, photos as photosRepo, listings, now } from './store.js';
@@ -319,12 +321,19 @@ async function pollOnce() {
   }
 }
 
+/**
+ * Stream the finished render straight to disk.
+ *
+ * Buffering the whole file with arrayBuffer() held the entire video in RAM
+ * before writing a single byte — on a small instance, several of those
+ * alongside an ffmpeg process is enough to get the service OOM-killed. Piping
+ * keeps memory flat regardless of clip length.
+ */
 async function downloadRemote(url, filename) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Downloading render failed: ${res.status} ${res.statusText}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
   const outPath = path.join(config.rendersDir, filename);
-  fs.writeFileSync(outPath, buffer);
+  await pipeline(Readable.fromWeb(res.body), fs.createWriteStream(outPath));
   return filename;
 }
 

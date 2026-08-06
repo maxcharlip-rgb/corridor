@@ -256,32 +256,47 @@ export async function stitchReel({ clipPaths, outPath, endCardPath }) {
     return { path: outPath, clips: 1, endCard: false };
   }
 
-  // Normalise every clip through the same filter graph before concat: sources
-  // mix locally-rendered previews, Higgsfield downloads and the end card, all
-  // potentially at different sizes. Everything lands at 1920x1080 / 24 fps.
-  const inputs = all.flatMap((clipPath) => ['-i', clipPath]);
-  const normalised = all
-    .map(
-      (_, i) =>
-        `[${i}:v]scale=${W}:${H}:force_original_aspect_ratio=increase,` +
-        `crop=${W}:${H},fps=${FPS},setsar=1,format=yuv420p[v${i}]`
-    )
-    .join(';');
-  const concatInputs = all.map((_, i) => `[v${i}]`).join('');
+  /**
+   * Normalise one clip at a time, then join with the concat DEMUXER.
+   *
+   * The obvious implementation — every clip as an `-i` input into one
+   * filter_complex `concat` — opens N decoders and N scale filters
+   * simultaneously. Memory then scales with shot count, so the longer the tour
+   * the more certain the out-of-memory kill: an 11-shot tour meant 11 live
+   * decoders. That is what kept killing the hosted instance mid-reel.
+   *
+   * Normalising sequentially keeps peak memory flat at one decoder regardless
+   * of tour length, and because every temp file then shares a codec and
+   * timebase, the join itself is a stream copy — no re-encode, near-zero memory,
+   * and faster than the filter graph it replaces.
+   */
+  const workDir = path.join(path.dirname(outPath), `.stitch_${path.basename(outPath, '.mp4')}`);
+  fs.mkdirSync(workDir, { recursive: true });
 
-  await run(
-    config.ffmpeg,
-    [
-      '-y',
-      ...inputs,
-      '-filter_complex',
-      `${normalised};${concatInputs}concat=n=${all.length}:v=1:a=0[out]`,
-      '-map', '[out]',
-      ...ENCODE_ARGS,
-      outPath,
-    ],
-    { timeoutMs: 15 * 60 * 1000 }
-  );
+  const parts = [];
+  try {
+    for (const [i, clipPath] of all.entries()) {
+      const part = path.join(workDir, `p${String(i).padStart(3, '0')}.mp4`);
+      await run(config.ffmpeg, [
+        '-y', '-i', clipPath,
+        '-vf', `scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},fps=${FPS},setsar=1,format=yuv420p`,
+        ...ENCODE_ARGS,
+        part,
+      ]);
+      parts.push(part);
+    }
+
+    const listFile = path.join(workDir, 'list.txt');
+    fs.writeFileSync(listFile, parts.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join('\n'));
+
+    await run(
+      config.ffmpeg,
+      ['-y', '-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', '-movflags', '+faststart', outPath],
+      { timeoutMs: 10 * 60 * 1000 }
+    );
+  } finally {
+    fs.rmSync(workDir, { recursive: true, force: true });
+  }
 
   return { path: outPath, clips: clipPaths.length, endCard: all.length > clipPaths.length };
 }
