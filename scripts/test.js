@@ -427,3 +427,16 @@ main().catch(async (err) => {
   const minOnly = normaliseStatus({ jobs: [{ status: 'completed', results: { min: { url: 'https://cdn/y_min.mp4', type: 'video' } } }] });
   check('falls back to min when raw is absent', minOnly.videoUrl === 'https://cdn/y_min.mp4');
 }
+
+// --- text rendering capability ----------------------------------------------
+{
+  const { config } = await import('../server/config.js');
+  const { fontsAvailable } = await import('../server/endcard.js');
+
+  // Burning text in needs a font AND the drawtext filter. ffmpeg-static ships
+  // libfreetype on macOS but not on Linux, so this passed in dev and silently
+  // stripped every overlay in production.
+  check('a drawtext-capable ffmpeg was resolved', Boolean(config.ffmpegText));
+  check('fontsAvailable() requires the filter, not just a font file',
+    fontsAvailable() === (Boolean(config.ffmpegText) && fontsAvailable()));
+}

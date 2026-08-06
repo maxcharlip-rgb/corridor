@@ -103,6 +103,20 @@ DOP_MODELS.includes(config.higgsfield.model)
       `"${config.higgsfield.model}" is not accepted by /v1/image2video/dop, so every ` +
       `generation will fail validation. Set HIGGSFIELD_MODEL to one of: ${DOP_MODELS.join(', ')}.`);
 
+// --- text rendering (free) ---------------------------------------------------
+/* ffmpeg-static compiles libfreetype on macOS but not on Linux, so drawtext is
+   present in development and absent in production. Every overlay and end card
+   is skipped when it is missing, and the reel still builds — so nothing fails,
+   the video just stops carrying the address, specs and CTA. */
+config.ffmpegText
+  ? add(config.ffmpegText === config.ffmpeg ? OK : WARN, 'text rendering',
+      config.ffmpegText === config.ffmpeg
+        ? 'drawtext available in the primary ffmpeg'
+        : `primary ffmpeg has no drawtext; using ${config.ffmpegText}`)
+  : add(FAIL, 'text rendering',
+      'no ffmpeg build with the drawtext filter — reels will render without the address, ' +
+      'spec line, captions or end card. Install a full ffmpeg or set FFMPEG_TEXT_PATH.');
+
 // --- live Higgsfield probe (free) -------------------------------------------
 if (higgsfieldConfigured) {
   const { diagnose } = await import('../server/higgsfield-diagnose.js');

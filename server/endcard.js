@@ -95,7 +95,16 @@ function findFont(candidates) {
   return null;
 }
 
-export const fontsAvailable = () => Boolean(findFont(FONT_CANDIDATES));
+/**
+ * Can this host burn text into a video?
+ *
+ * Both halves are required and each failed independently: a host with no fonts
+ * (fixed by bundling DejaVu) and a binary with no drawtext filter (ffmpeg-static
+ * compiles libfreetype on macOS but not on Linux). Reporting "fonts available"
+ * while the filter is missing is what made the overlay failure look like a font
+ * problem for so long.
+ */
+export const fontsAvailable = () => Boolean(findFont(FONT_CANDIDATES)) && Boolean(config.ffmpegText);
 
 /** drawtext treats : \ ' % as syntax — escape before interpolating user text. */
 function esc(text) {
@@ -153,7 +162,9 @@ export async function applyTextOverlays({
   fps = 24,
   height = 1080,
 }) {
-  if (!config.ffmpeg) throw new Error('ffmpeg was not found — overlays are unavailable.');
+  if (!config.ffmpegText) {
+    throw new Error('no ffmpeg build with the drawtext filter is available — overlays are unavailable.');
+  }
 
   const bold = findFont(FONT_CANDIDATES);
   const regular = findFont(REGULAR_CANDIDATES) || bold;
@@ -247,7 +258,7 @@ export async function applyTextOverlays({
     return { path: outPath, applied: false };
   }
 
-  await run(config.ffmpeg, [
+  await run(config.ffmpegText, [
     '-y', '-i', inPath,
     '-vf', `${filters.join(',')},format=yuv420p`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
@@ -286,7 +297,9 @@ export async function renderEndCard({
   height = 1080,
   outPath,
 }) {
-  if (!config.ffmpeg) throw new Error('ffmpeg was not found — end cards are unavailable.');
+  if (!config.ffmpegText) {
+    throw new Error('no ffmpeg build with the drawtext filter is available — end cards are unavailable.');
+  }
 
   const bold = findFont(FONT_CANDIDATES);
   const regular = findFont(REGULAR_CANDIDATES) || bold;
@@ -360,6 +373,6 @@ export async function renderEndCard({
     outPath
   );
 
-  await run(config.ffmpeg, args);
+  await run(config.ffmpegText, args);
   return { path: outPath, durationSec };
 }

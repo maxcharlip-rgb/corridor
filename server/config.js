@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -83,6 +84,7 @@ export const config = {
   publicUrl: (process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 4182}`).replace(/\/$/, ''),
 
   ffmpeg: findBinary('ffmpeg', 'ffmpeg-static'),
+  ffmpegText: null, // filled in below once we know which build can draw text
   ffprobe: findBinary('ffprobe'),
 
   higgsfield: {
@@ -109,4 +111,48 @@ export const higgsfieldConfigured = Boolean(
 
 for (const dir of [config.dataDir, config.uploadsDir, config.rendersDir]) {
   fs.mkdirSync(dir, { recursive: true });
+}
+
+/**
+ * A build that can actually draw text.
+ *
+ * ffmpeg-static's macOS binary is compiled with libfreetype and its Linux
+ * binary is not, so `drawtext` exists in development and vanishes in
+ * production. The reel still rendered — it just silently lost the address,
+ * spec line, captions and end card, which is most of what makes it a marketing
+ * asset. The filter is either present in a binary or it is not, so pick the
+ * binary by capability instead of assuming one build behaves like another.
+ */
+function supportsDrawtext(binary) {
+  if (!binary) return false;
+  try {
+    const out = execFileSync(binary, ['-hide_banner', '-filters'], {
+      encoding: 'utf8', timeout: 15000, maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return /^\s*\S+\s+drawtext\s/m.test(out);
+  } catch {
+    return false;
+  }
+}
+
+function findTextBinary(primary) {
+  const candidates = [
+    process.env.FFMPEG_TEXT_PATH,
+    primary,
+    bundled('@ffmpeg-installer/ffmpeg'),
+    '/opt/homebrew/bin/ffmpeg',
+    '/usr/local/bin/ffmpeg',
+    '/usr/bin/ffmpeg',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (supportsDrawtext(candidate)) return candidate;
+  }
+  return null;
+}
+
+config.ffmpegText = findTextBinary(config.ffmpeg);
+if (config.ffmpeg && !config.ffmpegText) {
+  console.warn('[config] no ffmpeg build with drawtext was found — reels will render without text overlays or an end card.');
+} else if (config.ffmpegText && config.ffmpegText !== config.ffmpeg) {
+  console.log(`[config] using ${config.ffmpegText} for text rendering (the primary build has no drawtext)`);
 }

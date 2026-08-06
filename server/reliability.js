@@ -233,10 +233,15 @@ export function healthSnapshot() {
      otherwise a reel ships without the address and specs and nothing says why. */
   let fonts = false;
   try { fonts = fontsAvailable(); } catch { /* module failed to load */ }
+  /* Reported separately because they failed separately: a host with no font,
+     and a binary with no drawtext filter. Collapsing them into one flag is how
+     a missing filter looked like a missing font. */
+  const drawtext = Boolean(config.ffmpegText);
 
   return {
     uptimeSec: Math.round(process.uptime()),
     fonts,
+    drawtext,
     dataDirPersistent: !/\/(app|opt\/render)\/(src|project)/.test(config.dataDir) || Boolean(process.env.CORRIDOR_DATA_DIR),
     listings: (db.listings || []).length,
     accounts: (db.accounts || []).length,
