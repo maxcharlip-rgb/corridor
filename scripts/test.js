@@ -390,3 +390,17 @@ main().catch(async (err) => {
     DOP_MODELS.size === 3);
   check('a stale stored id is not in the accepted set', !DOP_MODELS.has('cinematic_studio_video_v2'));
 }
+
+// --- two-frame transitions --------------------------------------------------
+{
+  const { MOTION_BY_KEY, MOTIONS } = await import('../server/motions.js');
+
+  // /v1/image2video/dop rejects a request carrying two input images, so any
+  // two-input motion must be rendered locally rather than submitted. If a new
+  // two-input motion is added, submitCinematic must keep routing it away from
+  // Higgsfield or that shot fails validation and the tour loses a clip.
+  const twoInput = MOTIONS.filter((m) => m.inputs === 2);
+  check('blend_transition is a two-input motion', MOTION_BY_KEY.blend_transition?.inputs === 2);
+  check('every two-input motion has a local preview recipe',
+    twoInput.length > 0 && twoInput.every((m) => Boolean(m.preview)));
+}

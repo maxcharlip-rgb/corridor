@@ -166,6 +166,20 @@ export async function submitCinematic(shotId, takeCount = DEFAULT_TAKES) {
     throw new Error(`"${motion.label}" needs two photos — attach a start and an end frame.`);
   }
 
+  /* A two-frame blend never goes to Higgsfield.
+   *
+   * /v1/image2video/dop accepts exactly one input image and rejects two, so a
+   * transition shot could never have generated there. It also shouldn't: a
+   * crossfade between two stills is a deterministic ffmpeg operation, and
+   * paying generation credits for a model's approximation of a dissolve is
+   * worse output at higher cost. Render it locally and let the reel pick it up
+   * through the same preview file the tour already uses. */
+  if (motion.inputs === 2) {
+    console.log(`[jobs] ${shot.id} is a ${motion.label} transition — rendering locally, no credits spent`);
+    enqueuePreview(shotId);
+    return shot;
+  }
+
   const prompt = buildPrompt(shot, { listing, motion, spaceType });
   const imageUrls = photos
     .slice(0, motion.inputs)
