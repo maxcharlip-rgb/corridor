@@ -271,6 +271,15 @@ async function pollOnce() {
   for (const { shot, take } of pending) {
     try {
       const result = await getStatus(take.requestId);
+
+      /* Keep the last raw payload on the take.
+       *
+       * Every failure in this pipeline so far has been diagnosed by guessing at
+       * the response shape and shipping a fix to find out. Storing what actually
+       * came back turns "it doesn't work" into data, at the cost of a few KB.
+       * Exposed only to the listing owner via /debug/takes. */
+      take.lastPayload = JSON.stringify(result.raw || {}).slice(0, 4000);
+      take.lastParsed = { status: result.status, videoUrl: result.videoUrl || null, imageUrl: result.imageUrl || null };
       take.status = result.status;
 
       /* Completed with no URL used to fall through both branches, so nothing

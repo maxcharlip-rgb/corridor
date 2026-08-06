@@ -799,6 +799,50 @@ api.delete('/listings/:id/visuals/:visualId', handle(async (req, res) => {
   res.json({ ok: true });
 }));
 
+/**
+ * What Higgsfield actually returned. Owner-only, redacted.
+ *
+ * Exists because every video-side failure so far was diagnosed by shipping a
+ * guess and waiting to see. This shows the real payload, the parse result, and
+ * the file that landed on disk — enough to settle a question in one request
+ * instead of one deploy.
+ */
+api.get('/listings/:id/debug/takes', handle(async (req, res) => {
+  const listing = requireListing(req);
+  const { redact } = await import('../reliability.js');
+  const { probeVideoStream } = await import('../render-preview.js');
+
+  const out = [];
+  for (const shot of shotsRepo.forListing(listing.id)) {
+    for (const take of shot.takes || []) {
+      let onDisk = null;
+      if (take.file) {
+        const full = path.join(config.rendersDir, take.file);
+        if (fs.existsSync(full)) {
+          const stat = fs.statSync(full);
+          const probe = await probeVideoStream(full);
+          onDisk = { file: take.file, bytes: stat.size, codec: probe?.codec || null, seconds: probe?.seconds ?? null };
+        }
+      }
+      out.push({
+        shot: shot.title,
+        shotId: shot.id,
+        requestedDurationSec: shot.durationSec,
+        model: shot.model || config.higgsfield.model,
+        takeId: take.id,
+        requestId: take.requestId,
+        status: take.status,
+        error: take.error || null,
+        pollFailures: take.pollFailures || 0,
+        parsed: take.lastParsed || null,
+        onDisk,
+        rawPayload: take.lastPayload ? redact(take.lastPayload) : null,
+      });
+    }
+  }
+  res.json({ listing: listing.name, takes: out });
+}));
+
 /** Promote one take to be the version the tour and reel use. */
 api.post('/shots/:id/select-take', handle(async (req, res) => {
   const shot = requireShot(req);

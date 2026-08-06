@@ -344,3 +344,22 @@ main().catch(async (err) => {
   fs.rmSync(dataDir, { recursive: true, force: true });
   process.exit(1);
 });
+
+// --- Higgsfield error reporting -------------------------------------------
+{
+  const { describeError } = await import('../server/higgsfield.js');
+
+  // A FastAPI 422 arrives as an array of objects. Interpolating it straight
+  // into a message yields "[object Object]" and hides which field was wrong —
+  // that is exactly how a one-field validation error survived several deploys.
+  const validation = describeError({
+    detail: [{ loc: ['body', 'params', 'aspect_ratio'], msg: 'extra fields not permitted' }],
+  });
+  check(
+    'describeError names the offending field',
+    validation.includes('aspect_ratio') && validation.includes('not permitted')
+  );
+  check('describeError never yields [object Object]', !validation.includes('[object Object]'));
+  check('describeError passes plain strings through', describeError({ detail: 'Model not found' }) === 'Model not found');
+  check('describeError tolerates an empty body', describeError(null) === null);
+}

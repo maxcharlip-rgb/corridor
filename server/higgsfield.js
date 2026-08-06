@@ -69,6 +69,33 @@ function assertConfigured() {
   }
 }
 
+/**
+ * Turn an error body into something a human can read.
+ *
+ * A 422 arrives as FastAPI's validation shape — `detail` is an array of
+ * {loc, msg} objects. Interpolating that into a template literal yields
+ * "[object Object]", which is how a precise, self-describing error about a
+ * single bad field became days of guessing at the request body.
+ */
+export function describeError(json) {
+  if (!json) return null;
+  const detail = json.detail ?? json.message ?? json.error ?? json.errors;
+  if (!detail) return null;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => {
+        if (typeof d === 'string') return d;
+        // Drop the leading "body" segment; it is the same on every entry.
+        const field = Array.isArray(d.loc) ? d.loc.filter((x) => x !== 'body').join('.') : d.field;
+        const msg = d.msg || d.message || d.type || JSON.stringify(d);
+        return field ? `${field}: ${msg}` : msg;
+      })
+      .join('; ');
+  }
+  return JSON.stringify(detail);
+}
+
 async function request(pathname, { method = 'GET', body } = {}) {
   const url = `${config.higgsfield.baseUrl}${pathname}`;
   const res = await fetch(url, {
@@ -93,7 +120,7 @@ async function request(pathname, { method = 'GET', body } = {}) {
   }
 
   if (!res.ok) {
-    const detail = json?.detail || json?.message || json?.error || text || res.statusText;
+    const detail = describeError(json) || text || res.statusText;
     const err = new Error(`Higgsfield ${method} ${pathname} → ${res.status}: ${detail}`);
     err.status = res.status;
     err.body = json ?? text;
@@ -114,6 +141,52 @@ async function request(pathname, { method = 'GET', body } = {}) {
  * @param {number}   [opts.seed]
  * @returns {Promise<{requestId: string, raw: object}>}
  */
+/* Optional request fields, ordered least-essential first.
+ *
+ * A 422 is a validation rejection: nothing is queued and nothing is charged,
+ * so retrying costs only latency. Rather than have one unrecognised optional
+ * field fail every generation — and take a deploy to identify — drop the
+ * optional fields a tier at a time until the API accepts the job, then
+ * remember what worked so later takes submit in one round trip. */
+const OPTIONAL_TIERS = [
+  [],
+  ['seed', 'aspect_ratio'],
+  ['seed', 'aspect_ratio', 'sound'],
+  ['seed', 'aspect_ratio', 'sound', 'motion_id'],
+  ['seed', 'aspect_ratio', 'sound', 'motion_id', 'duration'],
+];
+
+let acceptedTier = 0;
+
+async function submitWithFallback(params) {
+  let firstError = null;
+
+  for (let tier = acceptedTier; tier < OPTIONAL_TIERS.length; tier += 1) {
+    const body = { ...params };
+    for (const field of OPTIONAL_TIERS[tier]) delete body[field];
+
+    try {
+      const data = await request('/v1/image2video/dop', { method: 'POST', body: { params: body } });
+      if (tier !== acceptedTier) {
+        console.warn(
+          `[higgsfield] submit accepted after dropping: ${OPTIONAL_TIERS[tier].join(', ') || 'nothing'}`
+        );
+        acceptedTier = tier;
+      }
+      return data;
+    } catch (err) {
+      // Only a validation rejection is safe to retry. Anything else (auth,
+      // rate limit, server fault) must surface as-is rather than being
+      // retried four times.
+      if (err.status !== 422) throw err;
+      firstError = firstError || err;
+      console.warn(`[higgsfield] 422 with [${OPTIONAL_TIERS[tier].join(', ') || 'full body'}] dropped: ${err.message}`);
+    }
+  }
+
+  throw firstError;
+}
+
 export async function submitImageToVideo({ imageUrls, prompt, motionKey, duration, seed, model, aspectRatio, sound }) {
   assertConfigured();
 
@@ -184,7 +257,7 @@ export async function submitImageToVideo({ imageUrls, prompt, motionKey, duratio
   if (sound) params.sound = sound;
   if (Number.isInteger(seed)) params.seed = seed;
 
-  const data = await request('/v1/image2video/dop', { method: 'POST', body: { params } });
+  const data = await submitWithFallback(params);
 
   const requestId =
     data.request_id || data.id || data.job_set_id || data.jobSetId || data.data?.id || null;
