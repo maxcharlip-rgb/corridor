@@ -20,7 +20,16 @@ import { submitImageToVideo, getStatus, TERMINAL_STATUSES } from './higgsfield.j
  * poller survives restarts because the request id lives on the shot record.
  */
 
-const PREVIEW_CONCURRENCY = 2;
+/* How many ffmpeg renders run at once.
+   ffmpeg is the memory ceiling, not the CPU ceiling: two concurrent zoompan
+   renders OOM-killed a 512 MB Render instance mid-job, so renders never
+   finished and the restart discarded them. Hosted platforms default to 1;
+   a local machine with real RAM keeps 2. Override with RENDER_CONCURRENCY. */
+const HOSTED = Boolean(
+  process.env.RENDER || process.env.RAILWAY_ENVIRONMENT || process.env.FLY_APP_NAME ||
+  process.env.DYNO || process.env.KUBERNETES_SERVICE_HOST
+);
+const PREVIEW_CONCURRENCY = Math.max(1, Number(process.env.RENDER_CONCURRENCY || (HOSTED ? 1 : 2)));
 const queue = [];
 let active = 0;
 let pollTimer = null;

@@ -22,10 +22,23 @@ import { config } from './config.js';
 const FPS = 24;
 const W = 1920;
 const H = 1080;
-// Working resolution above output: zoompan steps in integer pixels, so panning
-// at output resolution visibly stair-steps. Rendering 2x and scaling down hides it.
-const WORK_W = 3840;
-const WORK_H = 2160;
+/**
+ * Working resolution above output: zoompan steps in integer pixels, so panning
+ * at output resolution visibly stair-steps. Supersampling hides it.
+ *
+ * But zoompan buffers frames at THIS size, and it is the single largest memory
+ * consumer in the app. At 3840x2160 that is ~33 MB per buffered frame per
+ * process — which on a 512 MB host, with two renders running, exhausted the
+ * instance and got the service OOM-killed mid-render. Renders never completed
+ * and the restart wiped the work.
+ *
+ * 2x output (2560x1440) is still comfortably above 1080p, so the anti-stairstep
+ * benefit is retained at roughly half the memory. Raise RENDER_SUPERSAMPLE on a
+ * bigger box if you want the extra smoothness back.
+ */
+const SUPERSAMPLE = Math.max(1, Math.min(Number(process.env.RENDER_SUPERSAMPLE || 1.33), 2));
+const WORK_W = Math.round((1920 * SUPERSAMPLE) / 2) * 2;
+const WORK_H = Math.round((1080 * SUPERSAMPLE) / 2) * 2;
 
 export function ffmpegAvailable() {
   return Boolean(config.ffmpeg);
@@ -86,7 +99,13 @@ function kenBurnsChain(preview, frames) {
   ].join(',');
 }
 
+/* Cap encoder threads. libx264 allocates per-thread frame buffers, so an
+   unbounded thread count on a small instance multiplies memory for no wall-clock
+   gain when renders are already queued one at a time. */
+const FF_THREADS = String(Math.max(1, Number(process.env.FFMPEG_THREADS || 1)));
+
 const ENCODE_ARGS = [
+  '-threads', FF_THREADS,
   '-c:v', 'libx264',
   '-preset', 'veryfast',
   '-crf', '20',
