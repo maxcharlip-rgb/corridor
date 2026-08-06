@@ -134,6 +134,12 @@
 .take.bad{border-color:#E2B4AE;color:#B4544A;cursor:not-allowed}
 .take.busy{color:#8A94A3;cursor:default}
 .take-preview{width:100%;max-width:360px;border-radius:10px;margin-top:6px;display:block}
+
+.spec-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px}
+.spec-row input{font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);outline:none;min-width:0}
+.spec-row input:focus{border-color:var(--accent);background:var(--card)}
+.spec-x{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:10px;padding:0 12px;cursor:pointer;font-size:12px}
+.spec-x:hover{border-color:var(--bad);color:var(--bad)}
 </style>
 </head>
 <body>
@@ -417,6 +423,47 @@ async function upload(files) {
 
 /* -------------------------------------------------------------- 02  details */
 
+/* Facts a CRE prospect actually asks for. One click adds the row, the broker
+   fills the value. Deliberately short \u2014 a spec line with nine items is
+   unreadable at 1080p. These double as the fact whitelist: a number not entered
+   here is stripped from any caption before it reaches a viewer. */
+var SPEC_PRESETS = ['Available SF', 'Asking rate', 'Parking', 'Clear height', 'Year built', 'Divisible to', 'Occupancy'];
+
+function specRows(specs) {
+  var rows = (specs && specs.length ? specs : []).map(function (sp, i) { return specRow(sp.label, sp.value, i); });
+  if (!rows.length) rows.push(specRow('', '', 0));
+  return rows.join('');
+}
+
+function specRow(label, value, i) {
+  return '<div class="spec-row" data-i="' + i + '">' +
+    '<input class="spec-label" placeholder="Available SF" value="' + esc(label || '') + '" />' +
+    '<input class="spec-value" placeholder="24,000" value="' + esc(value || '') + '" />' +
+    '<button type="button" class="spec-x" title="Remove">\u2715</button></div>';
+}
+
+function collectSpecs() {
+  return [].slice.call(document.querySelectorAll('.spec-row')).map(function (r) {
+    return { label: r.querySelector('.spec-label').value.trim(), value: r.querySelector('.spec-value').value.trim() };
+  }).filter(function (sp) { return sp.label || sp.value; });
+}
+
+function wireSpecs() {
+  document.querySelectorAll('[data-addspec]').forEach(function (b) {
+    b.onclick = function () {
+      var host = document.getElementById('spec-rows');
+      host.insertAdjacentHTML('beforeend', specRow(b.dataset.addspec, '', host.children.length));
+      wireSpecs();
+      var rows = host.querySelectorAll('.spec-row');
+      var last = rows[rows.length - 1];
+      (b.dataset.addspec ? last.querySelector('.spec-value') : last.querySelector('.spec-label')).focus();
+    };
+  });
+  document.querySelectorAll('.spec-x').forEach(function (x) {
+    x.onclick = function () { x.closest('.spec-row').remove(); };
+  });
+}
+
 function stepDetails() {
   var l = S.listing || {};
   var specs = (l.spec && l.spec.specs) || l.specs || [];
@@ -438,8 +485,18 @@ function stepDetails() {
         '<button class="btn" id="d-back">← Photos</button>' +
         '<button class="btn dark" id="d-next" style="margin-left:auto">Next: generate →</button></div>' +
     '</div>' +
-    (specs.length ? '<div style="margin-top:16px" class="row">' + specs.map(function (s) {
-        return '<span class="chip">' + esc(s.label ? s.label + ': ' + s.value : s) + '</span>'; }).join('') + '</div>' : '') +
+    '<div class="card" style="margin-top:16px">' +
+      '<div class="row" style="margin-bottom:6px"><span class="mono" style="margin-right:auto">On-screen facts</span></div>' +
+      '<p class="note" style="margin:0 0 14px">These get burned into the video \u2014 address over the opening, this line bottom-right throughout, your number at the close. ' +
+        'Only numbers entered here can appear on screen: anything Corridor cannot trace back to you is stripped before a viewer sees it.</p>' +
+      '<div id="spec-rows">' + specRows(specs) + '</div>' +
+      '<div class="row" style="margin-top:10px">' +
+        SPEC_PRESETS.map(function (pz) {
+          return '<button type="button" class="chip btnish" data-addspec="' + esc(pz) + '">+ ' + esc(pz) + '</button>';
+        }).join('') +
+        '<button type="button" class="chip btnish" data-addspec="" style="margin-left:auto">+ Custom</button>' +
+      '</div>' +
+    '</div>' +
     '</div><div class="col-side"><div class="card sticky">' +
       '<h2>What happens next</h2>' +
       '<p class="note">We sequence the photos the way a walkthrough actually runs — street, entrance, lobby, corridor, floor plate, amenities, roof — and give each space the camera move that suits it. You never have to touch a timeline.</p>' +
@@ -458,7 +515,8 @@ async function saveDetails(announce) {
   var name = $('#f-name').value.trim();
   try {
     await api('/listings/' + S.listing.id, { method: 'PATCH', body: {
-      name: name || 'Untitled tour', address: $('#f-address').value, propertyType: $('#f-type').value, headline: $('#f-headline').value
+      name: name || 'Untitled tour', address: $('#f-address').value, propertyType: $('#f-type').value,
+      headline: $('#f-headline').value, specs: collectSpecs()
     }});
     await api('/listings/' + S.listing.id + '/specs', { method: 'POST', body: {
       notes: $('#f-notes').value, address: $('#f-address').value,
@@ -805,7 +863,7 @@ async function refresh(skipDraw) {
 
 function draw() {
   if (S.step === 'photos') { render(stepPhotos()); wireSteps(); wirePhotos(); }
-  else if (S.step === 'details') { render(stepDetails()); wireSteps(); wireDetails(); }
+  else if (S.step === 'details') { render(stepDetails()); wireSteps(); wireDetails(); wireSpecs(); }
   else if (S.step === 'generate') { render(stepGenerate()); wireSteps(); wireGenerate(); wireTakes(); }
   else { render(stepShare()); wireSteps(); wireShare(); }
 }
