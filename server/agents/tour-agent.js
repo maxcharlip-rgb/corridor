@@ -43,18 +43,74 @@ export const MODELS = {
  * wreck a listing video. Camera direction lives in the prompt.
  */
 export const SHOT_STYLES = {
-  exterior:   { motionKey: 'dolly_in',       durationSec: 6, tier: 'hero',     intent: 'establish the building and its street presence' },
-  entrance:   { motionKey: 'dolly_in',       durationSec: 5, tier: 'standard', intent: 'arrive at and push toward the entry doors' },
-  lobby:      { motionKey: 'crane_up',       durationSec: 6, tier: 'hero',     intent: 'reveal the volume and finish level of the arrival space' },
-  corridor:   { motionKey: 'push_forward',   durationSec: 6, tier: 'standard', intent: 'walk the length of the circulation and show depth' },
-  floor:      { motionKey: 'truck_lateral',  durationSec: 6, tier: 'standard', intent: 'show the width and openness of the floor plate' },
-  workspace:  { motionKey: 'pull_back',      durationSec: 5, tier: 'standard', intent: 'reveal the full workstation layout from a detail' },
-  conference: { motionKey: 'orbit_360',      durationSec: 5, tier: 'standard', intent: 'circle the table to show the room in the round' },
-  breakroom:  { motionKey: 'orbit_360',      durationSec: 5, tier: 'standard', intent: 'sweep the amenity space and its finishes' },
-  amenity:    { motionKey: 'orbit_360',      durationSec: 6, tier: 'hero',     intent: 'sweep the amenity as a selling feature' },
-  rooftop:    { motionKey: 'crane_up',       durationSec: 6, tier: 'hero',     intent: 'rise to reveal the outdoor space and the view beyond' },
-  detail:     { motionKey: 'static_hold',    durationSec: 4, tier: 'standard', intent: 'hold on a finish detail' },
-  transition: { motionKey: 'blend_transition', durationSec: 6, tier: 'standard', intent: 'travel continuously between two rooms' },
+  exterior:   { motionKey: 'dolly_in',       weight: 1.30, tier: 'hero',     intent: 'establish the building and its street presence' },
+  entrance:   { motionKey: 'dolly_in',       weight: 0.90, tier: 'standard', intent: 'arrive at and push toward the entry doors' },
+  lobby:      { motionKey: 'crane_up',       weight: 1.25, tier: 'hero',     intent: 'reveal the volume and finish level of the arrival space' },
+  corridor:   { motionKey: 'push_forward',   weight: 1.15, tier: 'standard', intent: 'walk the length of the circulation and show depth' },
+  floor:      { motionKey: 'truck_lateral',  weight: 1.50, tier: 'standard', intent: 'show the width and openness of the floor plate' },
+  workspace:  { motionKey: 'pull_back',      weight: 1.15, tier: 'standard', intent: 'reveal the full workstation layout from a detail' },
+  conference: { motionKey: 'orbit_360',      weight: 0.95, tier: 'standard', intent: 'circle the table to show the room in the round' },
+  breakroom:  { motionKey: 'orbit_360',      weight: 0.90, tier: 'standard', intent: 'sweep the amenity space and its finishes' },
+  amenity:    { motionKey: 'orbit_360',      weight: 1.10, tier: 'hero',     intent: 'sweep the amenity as a selling feature' },
+  rooftop:    { motionKey: 'crane_up',       weight: 1.30, tier: 'hero',     intent: 'rise to reveal the outdoor space and the view beyond' },
+  detail:     { motionKey: 'static_hold',    weight: 0.70, tier: 'standard', intent: 'hold on a finish detail' },
+  transition: { motionKey: 'blend_transition', weight: 1.05, tier: 'standard', intent: 'travel continuously between two rooms' },
+};
+
+/**
+ * How long a shot should run.
+ *
+ * A fixed 5 seconds everywhere is wrong in both directions: a detail shot
+ * outstays its welcome while a 24,000 SF floor plate gets cut off before the
+ * eye has crossed it. Length has to track how much there is to look at.
+ *
+ * Three inputs:
+ *   weight  — how much attention the space itself deserves. A floor plate reads
+ *             slowly and is the thing being leased; a break room does not.
+ *   scale   — the property's size. The same lateral truck across 60,000 SF has
+ *             far more ground to cover than across 4,000.
+ *   pace    — the broker's call on overall tour length.
+ *
+ * The result is clamped to the model's real range, because an out-of-range
+ * duration is silently ignored upstream.
+ */
+export const PACES = {
+  quick:     { key: 'quick',     label: 'Quick cut',  factor: 0.78, blurb: 'Tighter shots. Best for social.' },
+  standard:  { key: 'standard',  label: 'Standard',   factor: 1.00, blurb: 'Balanced. The default.' },
+  cinematic: { key: 'cinematic', label: 'Cinematic',  factor: 1.30, blurb: 'Longer holds. Best for a pitch or a big property.' },
+};
+
+const BASE_SECONDS = 5.5;
+
+/** Bigger properties earn longer moves — there is literally more to cross. */
+function scaleFactor(totalSf) {
+  if (!totalSf || !Number.isFinite(totalSf)) return 1;
+  if (totalSf < 3000) return 0.85;
+  if (totalSf < 8000) return 0.95;
+  if (totalSf < 20000) return 1.05;
+  if (totalSf < 50000) return 1.18;
+  if (totalSf < 120000) return 1.30;
+  return 1.40;
+}
+
+export function durationFor({ spaceType, spec, pace = 'standard', model }) {
+  const style = SHOT_STYLES[spaceType] || SHOT_STYLES.floor;
+  const paceFactor = (PACES[pace] || PACES.standard).factor;
+  const raw = BASE_SECONDS * style.weight * scaleFactor(spec?.totalSf) * paceFactor;
+
+  // Respect what the chosen model actually supports.
+  const range = MODEL_DURATION[model] || { min: 3, max: 12 };
+  return Math.min(Math.max(Math.round(raw), range.min), range.max);
+}
+
+/** Duration limits per model, mirroring the live catalog. */
+export const MODEL_DURATION = {
+  cinematic_studio_video_v2: { min: 3, max: 12 },
+  cinematic_studio_3_0: { min: 4, max: 15 },
+  kling3_0: { min: 3, max: 15 },
+  kling3_0_turbo: { min: 3, max: 15 },
+  seedance_2_0: { min: 4, max: 15 },
+  veo3_1: { min: 4, max: 8 },
 };
 
 const fmtSf = (n) => (typeof n === 'number' ? `${n.toLocaleString('en-US')} SF` : null);
@@ -157,7 +213,7 @@ function validate(call) {
  * @param {number} [input.budgetCredits] trim the plan to fit
  * @returns {{calls, estimate, warnings, rejected}}
  */
-export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true, budgetCredits = null }) {
+export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true, budgetCredits = null, pace = 'standard' }) {
   const warnings = [];
   const rejected = [];
   const byFile = new Map(photos.map((p) => [p.file, p]));
@@ -193,6 +249,7 @@ export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true
     const style = SHOT_STYLES[spaceType] || SHOT_STYLES.floor;
     const motion = MOTION_BY_KEY[style.motionKey] || MOTION_BY_KEY.dolly_in;
     const model = MODELS[style.tier] || MODELS.standard;
+    const durationSec = durationFor({ spaceType, spec, pace, model: model.id });
     const heroText = entry.shot.caption?.trim() || heroTextFor({ spaceType, spec });
 
     push({
@@ -204,13 +261,13 @@ export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true
       isTransition: false,
       motionKey: motion.key,
       photoIds: [entry.photo.id],
-      durationSec: style.durationSec,
+      durationSec,
       takes,
       tier: style.tier,
       request: {
         endpoint: '/v1/image2video/dop',
         model: model.id,
-        duration: style.durationSec,
+        duration: durationSec,
         aspectRatio: '16:9',
         sound: 'off',
         imageUrls: [urlFor(entry.photo)],
@@ -224,7 +281,7 @@ export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true
     const next = planned[index + 1];
     if (withTransitions && next && next.shot.spaceType !== spaceType) {
       const blend = MOTION_BY_KEY.blend_transition;
-      const style2 = SHOT_STYLES.transition;
+      const transitionSec = durationFor({ spaceType: 'transition', spec, pace, model: MODELS.standard.id });
       push({
         kind: 'video',
         order: order++,
@@ -234,13 +291,13 @@ export function tourAgent({ spec, photos = [], takes = 3, withTransitions = true
         isTransition: true,
         motionKey: blend.key,
         photoIds: [entry.photo.id, next.photo.id],
-        durationSec: style2.durationSec,
+        durationSec: transitionSec,
         takes,
         tier: 'standard',
         request: {
           endpoint: '/v1/image2video/dop',
           model: MODELS.standard.id,
-          duration: style2.durationSec,
+          duration: transitionSec,
           aspectRatio: '16:9',
           sound: 'off',
           imageUrls: [urlFor(entry.photo), urlFor(next.photo)],

@@ -262,6 +262,31 @@ async function main() {
       `got ${r.status}${r.videoUrl ? ' + url' : ''}`);
   }
 
+  // 8c. Shot duration scales with the property --------------------------------
+  section('8c. Shot duration scales with property and pace');
+  const { tourAgent: ta, durationFor } = await import(path.join(ROOT, 'server', 'agents', 'tour-agent.js'));
+  const ph = [
+    { id: 'x1', file: 'a.jpg', spaceType: 'floor' },
+    { id: 'x2', file: 'b.jpg', spaceType: 'breakroom' },
+  ];
+  const mkSpec = (sf) => ({ propertyType: 'office', totalSf: sf, shots: ph.map((p) => ({ photoFile: p.file, spaceType: p.spaceType })) });
+  const small = ta({ spec: mkSpec(4000), photos: ph, takes: 1, withTransitions: false });
+  const big = ta({ spec: mkSpec(90000), photos: ph, takes: 1, withTransitions: false });
+  const slow = ta({ spec: mkSpec(24000), photos: ph, takes: 1, withTransitions: false, pace: 'cinematic' });
+  const fast = ta({ spec: mkSpec(24000), photos: ph, takes: 1, withTransitions: false, pace: 'quick' });
+
+  check('bigger property yields longer runtime', big.estimate.runtimeSec > small.estimate.runtimeSec,
+    `${small.estimate.runtimeSec}s vs ${big.estimate.runtimeSec}s`);
+  check('cinematic pace is longer than quick', slow.estimate.runtimeSec > fast.estimate.runtimeSec,
+    `${fast.estimate.runtimeSec}s vs ${slow.estimate.runtimeSec}s`);
+  check('a floor plate runs longer than a break room',
+    big.calls.find((c) => c.spaceType === 'floor').durationSec >
+    big.calls.find((c) => c.spaceType === 'breakroom').durationSec);
+  check('duration stays inside the model range',
+    big.calls.every((c) => c.durationSec >= 3 && c.durationSec <= 15));
+  check('durations are never a constant 5',
+    new Set(big.calls.map((c) => c.durationSec)).size > 1);
+
   // 9. Secret hygiene --------------------------------------------------------
   section('9. Secret hygiene');
   const { redact } = await import(path.join(ROOT, 'server', 'reliability.js'));

@@ -616,6 +616,11 @@ function stepGenerate() {
           '<option value="preview"' + (S.quality !== 'cinematic' ? ' selected' : '') + '>Preview · free, instant</option>' +
           '<option value="cinematic"' + (cap.cinematic ? '' : ' disabled') + (S.quality === 'cinematic' ? ' selected' : '') + '>Cinematic · costs credits' + (cap.cinematic ? '' : ' (add API keys)') + '</option>' +
         '</select></label>' +
+        '<label class="field"><span>Pace</span><select id="g-pace" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff">' +
+          ((S.boot && S.boot.paces) || [{ key: 'standard', label: 'Standard' }]).map(function (pc) {
+            return '<option value="' + esc(pc.key) + '"' + ((S.pace || 'standard') === pc.key ? ' selected' : '') + '>' + esc(pc.label) + '</option>';
+          }).join('') +
+        '</select></label>' +
         '<label class="field"><span>Takes per shot</span><select id="g-takes" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff">' +
           [1, 3, 4].map(function (n) {
             var lbl = n === 1 ? '1 · cheapest' : (n === 3 ? '3 · recommended' : '4');
@@ -640,6 +645,7 @@ function wireGenerate() {
      stuck. Holding the value on S makes the re-render restore it instead. */
   if ($('#g-quality')) $('#g-quality').onchange = function () { S.quality = this.value; };
   if ($('#g-takes')) $('#g-takes').onchange = function () { S.takes = Number(this.value) || 3; };
+  if ($('#g-pace')) $('#g-pace').onchange = function () { S.pace = this.value; };
 
   if ($('#g-done')) $('#g-done').onclick = async function () { S.step = 'share'; await buildReel(); draw(); };
 }
@@ -647,7 +653,8 @@ function wireGenerate() {
 async function showCost() {
   try {
     var plan = await api('/listings/' + S.listing.id + '/plan', { method: 'POST', body: {
-      notes: S.listing.specNotes || '', takes: Number($('#g-takes').value) || 3
+      notes: S.listing.specNotes || '', takes: Number($('#g-takes').value) || 3,
+      pace: (($('#g-pace') || {}).value) || S.pace || 'standard'
     }});
     toast(plan.tour.calls.length + ' shots · ' + plan.total.credits + ' credits ≈ $' + plan.total.approxUsd +
       (plan.total.withinBudget ? '' : ' · over budget'), plan.total.withinBudget ? '' : 'bad');
@@ -706,7 +713,8 @@ async function generate() {
     var out = await api('/listings/' + S.listing.id + '/generate', { method: 'POST', body: {
       quality: (($('#g-quality') || {}).value) || S.quality || 'preview',
       takes: Number((($('#g-takes') || {}).value) || S.takes) || 3,
-      withTransitions: true
+      withTransitions: true,
+      pace: (($('#g-pace') || {}).value) || S.pace || 'standard'
     }});
     S.step = 'generate';
     await refresh();

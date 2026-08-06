@@ -32,7 +32,7 @@ import { ownsListing, authEnabled } from '../auth.js';
 import { collectFacts, stripUnverified, logFactUse, DISCLOSURES } from '../facts.js';
 import { brandingForAccount, brandingForListing, updateBranding, BRAND_FIELDS } from '../branding.js';
 import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
-import { tourAgent, captionTrack, heroTextFor } from '../agents/tour-agent.js';
+import { tourAgent, captionTrack, heroTextFor, PACES } from '../agents/tour-agent.js';
 import { envisionAgent, VISUALIZE_MODES, VISUAL_STYLES, IMAGE_MODELS } from '../agents/envision-agent.js';
 
 export const api = express.Router();
@@ -118,6 +118,7 @@ api.get('/bootstrap', (_req, res) => {
     spaceTypes: SPACE_TYPES,
     enhanceProfiles: ENHANCE_PROFILES,
     signFormats: Object.values(SIGN_FORMATS),
+    paces: Object.values(PACES),
     visualizeModes: Object.values(VISUALIZE_MODES),
     visualStyles: VISUAL_STYLES,
     imageModels: IMAGE_MODELS,
@@ -538,6 +539,7 @@ api.post('/listings/:id/plan', handle(async (req, res) => {
     photos: listingPhotos,
     takes: Number(req.body?.takes) || DEFAULT_TAKES,
     withTransitions: req.body?.withTransitions !== false,
+    pace: req.body?.pace || listing.pace || 'standard',
   });
 
   const envision = req.body?.envision
@@ -628,7 +630,9 @@ const generateHandler = handle(async (req, res) => {
     photos: listingPhotos,
     takes,
     withTransitions: req.body?.withTransitions !== false,
+    pace: req.body?.pace || listing.pace || 'standard',
   });
+  if (req.body?.pace) { listing.pace = req.body.pace; save(); }
   if (!plan.calls.length) {
     return res.status(400).json({ error: 'Nothing to generate.', warnings: plan.warnings });
   }
