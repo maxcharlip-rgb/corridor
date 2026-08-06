@@ -53,6 +53,7 @@
             <span style="display: block; font-size: 14.5px; color: #55606E; margin-bottom: 22px;">12 to 40 of them. Crooked phone shots welcome. No shoot day, no scheduling thread.</span>
             <span style="display: inline-block; font-size: 15px; color: #fff; background: #2B4FD7; padding: 15px 28px; border-radius: 999px; font-weight: 500;">Upload photos</span>
           </label>
+          <p id="hero-note" style="display:none;margin:14px 0 0;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#2B4FD7;text-align:center"></p>
           <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A8778;">
             <span>No videographer</span>
             <span>No “circling back”</span>
@@ -263,10 +264,52 @@
   // Photos chosen on the landing page are handed to the studio, which owns the
   // upload + generate pipeline. Signed out, we take the account first.
   var heroFiles = document.getElementById('hero-files');
+  var pendingFiles = null;
+
+  /* Photos picked here have to survive the hop to the studio. Files cannot ride
+     a URL and a File object cannot go in sessionStorage, so the old
+     `location.href = '/studio?new=1'` silently dropped them and the broker
+     landed in an empty workspace. Instead we upload them for real from this
+     page — creating the listing first — and only then navigate. If the user
+     isn't signed in yet we hold the files and finish the upload right after
+     auth succeeds. */
+  async function sendToStudio(files) {
+    var note = document.getElementById('hero-note');
+    function say(t) { if (note) { note.textContent = t; note.style.display = 'block'; } }
+    try {
+      say('Creating your tour…');
+      var mk = await fetch('/api/listings', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Untitled tour', propertyType: 'office' })
+      });
+      var listing = await mk.json();
+      if (!mk.ok) throw new Error(listing.error || 'Could not start a tour.');
+
+      say('Uploading ' + files.length + ' photo' + (files.length > 1 ? 's' : '') + '…');
+      var form = new FormData();
+      files.forEach(function (f) { form.append('photos', f); });
+      var up = await fetch('/api/listings/' + listing.id + '/photos', {
+        method: 'POST', credentials: 'same-origin', body: form
+      });
+      if (!up.ok) {
+        var e = await up.json().catch(function () { return {}; });
+        throw new Error(e.error || 'Upload failed.');
+      }
+      say('Done — opening your workspace…');
+      // Hand off the exact tour we just filled, so the studio cannot open a different one.
+      location.href = '/studio?listing=' + encodeURIComponent(listing.id);
+    } catch (e) {
+      say(e.message + ' You can also upload inside the studio.');
+    }
+  }
+
   if (heroFiles) {
     heroFiles.addEventListener('change', function () {
       if (!heroFiles.files || !heroFiles.files.length) return;
-      if (account) { location.href = '/studio?new=1'; return; }
+      var files = Array.prototype.slice.call(heroFiles.files);
+      if (account) { sendToStudio(files); return; }
+      pendingFiles = files;
       openAuth('signup');
     });
   }
@@ -286,6 +329,8 @@
       return res.text().then(function (text) {
         var data = text ? JSON.parse(text) : null;
         if (!res.ok) throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+        account = (data && data.account) || account;
+        if (pendingFiles && pendingFiles.length) { closeAuth(); return sendToStudio(pendingFiles); }
         location.href = '/studio';
       });
     }).catch(function (e) {

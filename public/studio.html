@@ -258,9 +258,27 @@ async function boot() {
   try { S.boot = await api('/bootstrap'); }
   catch (e) { render(offline(e.message)); return; }
 
-  var last = S.boot.listings[0];
-  if (last) await openListing(last.id);
-  else render(stepPhotos());
+  /* Which tour to open. An explicit ?listing=<id> wins — that is how the landing
+     page hands off the tour it just created and uploaded into. Otherwise open the
+     most RECENTLY touched one: listings[0] is the oldest, so defaulting to it
+     meant a tour you had just started never appeared. */
+  var wanted = new URLSearchParams(location.search).get('listing');
+  var pick = null;
+  if (wanted) pick = S.boot.listings.filter(function (l) { return l.id === wanted; })[0] || null;
+  if (!pick) {
+    pick = S.boot.listings.slice().sort(function (a, b) {
+      return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || ''));
+    })[0] || null;
+  }
+  if (pick) {
+    await openListing(pick.id);
+    /* Arriving from the landing page: show the photos step so the broker SEES
+       what they just uploaded. openListing otherwise skips ahead to details as
+       soon as photos exist, which lands them on a form with no confirmation
+       their upload worked — the exact complaint that the photos "don't make it
+       into the platform". */
+    if (wanted) { S.step = 'photos'; draw(); }
+  } else render(stepPhotos());
   paintTop();
 }
 
@@ -355,6 +373,31 @@ function wireTours() {
 
 /* --------------------------------------------------------------- 01  photos */
 
+/* Paste (\u2318V / Ctrl+V). Brokers copy images straight out of Dropbox, Preview,
+   Slack or an email and paste them. With no handler that silently did nothing,
+   which reads as "the upload is broken". Clipboard images arrive as File objects
+   on the paste event, so they go through the exact same upload path as
+   drag-drop and the file picker. */
+function wirePaste() {
+  if (window.__corridorPaste) return;
+  window.__corridorPaste = true;
+  document.addEventListener('paste', function (e) {
+    if (/^(INPUT|TEXTAREA)$/.test((document.activeElement || {}).tagName)) return;
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    var files = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+        var f = items[i].getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (!files.length) return;
+    e.preventDefault();
+    if (S.step !== 'photos') { S.step = 'photos'; draw(); }
+    upload(files);
+  });
+}
+
 function stepPhotos() {
   var has = S.photos.length;
   var spaces = (S.boot && S.boot.spaceTypes) || [];
@@ -365,6 +408,7 @@ function stepPhotos() {
       : 'Twelve to forty of them. Exterior, lobby, floor plate, amenities. Crooked phone shots are fine.') + '</p>' +
     '<label class="drop" id="drop">' +
       '<input type="file" id="files" multiple accept="image/*" hidden />' +
+      '<span class="mono" style="display:block;margin-bottom:10px">DRAG IN \u00B7 CLICK TO BROWSE \u00B7 OR PASTE WITH \u2318V</span>' +
       '<b>Drop photos here, or click to choose</b>' +
       '<span>JPEG, PNG, WebP or HEIC · up to 25 MB each</span>' +
       '<span class="btn primary" style="display:inline-block">Upload photos</span>' +
@@ -868,6 +912,7 @@ function draw() {
   else { render(stepShare()); wireSteps(); wireShare(); }
 }
 
+wirePaste();
 $('#chat-close').onclick = function () { $('#chat').classList.remove('open'); };
 $('#chat-send').onclick = function () { sendChat(); };
 $('#chat-apply').onclick = applyChat;
