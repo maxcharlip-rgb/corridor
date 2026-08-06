@@ -40,6 +40,26 @@ const SUPERSAMPLE = Math.max(1, Math.min(Number(process.env.RENDER_SUPERSAMPLE |
 const WORK_W = Math.round((1920 * SUPERSAMPLE) / 2) * 2;
 const WORK_H = Math.round((1080 * SUPERSAMPLE) / 2) * 2;
 
+
+/**
+ * Read a clip's duration using ffmpeg alone (ffprobe is not bundled).
+ * Returns seconds, or null if it cannot be determined.
+ */
+export function probeDurationSec(filePath) {
+  return new Promise((resolve) => {
+    if (!config.ffmpeg) return resolve(null);
+    const child = spawn(config.ffmpeg, ['-i', filePath], { stdio: ['ignore', 'ignore', 'pipe'] });
+    let err = '';
+    child.stderr.on('data', (c) => { err += c; });
+    child.on('error', () => resolve(null));
+    child.on('close', () => {
+      const m = err.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+      if (!m) return resolve(null);
+      resolve(Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]));
+    });
+  });
+}
+
 export function ffmpegAvailable() {
   return Boolean(config.ffmpeg);
 }

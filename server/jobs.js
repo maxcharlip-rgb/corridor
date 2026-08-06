@@ -10,6 +10,7 @@ import {
   renderBlendShot,
   renderPoster,
   stabilizeClip,
+  probeDurationSec,
   ffmpegAvailable,
 } from './render-preview.js';
 import { submitImageToVideo, getStatus, TERMINAL_STATUSES } from './higgsfield.js';
@@ -179,6 +180,12 @@ export async function submitCinematic(shotId, takeCount = DEFAULT_TAKES) {
         prompt,
         motionKey: shot.motionKey,
         duration: shot.durationSec,
+        /* Use the model the planner chose for this shot. Falling back to the
+           global default here is what silently discarded every per-shot
+           decision tourAgent made. */
+        model: shot.model || undefined,
+        aspectRatio: '16:9',
+        sound: 'off',
         // Distinct seeds so the takes actually differ; identical seeds would
         // just buy the same defect three times.
         seed: Math.floor(Math.random() * 1_000_000),
@@ -295,6 +302,19 @@ async function pollOnce() {
 
         const posterPath = path.join(config.rendersDir, `${take.id}.jpg`);
         await renderPoster({ videoPath: finalPath, outPath: posterPath });
+
+        /* Validate what we actually got. A paid generation that comes back far
+           shorter than requested used to flow straight into the tour as if
+           correct — the "why is my video 1 second" failure. Surface it. */
+        const actual = await probeDurationSec(finalPath);
+        const wanted = shot.durationSec || 5;
+        if (actual != null && actual < wanted * 0.5) {
+          take.shortDuration = { actualSec: Number(actual.toFixed(2)), expectedSec: wanted };
+          take.error =
+            `Higgsfield returned a ${actual.toFixed(1)}s clip for a ${wanted}s request. ` +
+            'Usually means the model id or duration was rejected upstream. Credits were still spent.';
+          console.error(`[jobs] ${shot.id}: short clip ${actual.toFixed(1)}s vs ${wanted}s requested`);
+        }
 
         take.file = path.basename(finalPath);
         take.poster = fs.existsSync(posterPath) ? path.basename(posterPath) : null;

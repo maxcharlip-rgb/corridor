@@ -90,7 +90,16 @@ export const config = {
     keySecret: process.env.HIGGSFIELD_KEY_SECRET || '',
     baseUrl: (process.env.HIGGSFIELD_BASE_URL || 'https://platform.higgsfield.ai').replace(/\/$/, ''),
     // dop-turbo (cheap/fast) | dop-lite | dop-preview (highest quality)
-    model: process.env.HIGGSFIELD_MODEL || 'dop-turbo',
+    /* Default image-to-video model.
+     *
+     * NOT 'dop-turbo'. That name came from an SDK README and does not exist in
+     * the live model catalog — the API accepted it, billed the generation, and
+     * returned a degenerate ~1 second clip. Verified real ids include
+     * cinematic_studio_video_v2 (3-12s), cinematic_studio_3_0 (4-15s),
+     * kling3_0 (3-15s). cinematic_studio_video_v2 is Higgsfield's own cinematic
+     * camera model and is the one validated at 5 credits per 5s take.
+     */
+    model: process.env.HIGGSFIELD_MODEL || 'cinematic_studio_video_v2',
     pollIntervalMs: Number(process.env.HIGGSFIELD_POLL_MS || 5000),
     timeoutMs: Number(process.env.HIGGSFIELD_TIMEOUT_MS || 10 * 60 * 1000),
   },

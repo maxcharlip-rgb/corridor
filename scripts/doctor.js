@@ -91,6 +91,19 @@ portFree
   ? add(OK, 'port', `${config.port} available`)
   : add(WARN, 'port', `${config.port} already in use — an instance may already be running`);
 
+// --- model sanity (free) -----------------------------------------------------
+const KNOWN_MODELS = [
+  'cinematic_studio_video_v2', 'cinematic_studio_3_0', 'cinematic_studio_video',
+  'kling3_0', 'kling3_0_turbo', 'kling2_6', 'seedance_2_0', 'seedance_2_0_mini',
+  'veo3', 'veo3_1', 'veo3_1_lite', 'minimax_hailuo', 'wan2_6', 'wan2_7',
+  'grok_video', 'grok_video_v15', 'flux_3_video', 'gemini_omni', 'higgsfield_preset',
+];
+KNOWN_MODELS.includes(config.higgsfield.model)
+  ? add(OK, 'video model', config.higgsfield.model)
+  : add(FAIL, 'video model',
+      `"${config.higgsfield.model}" is not a known Higgsfield model id. An unknown id is ` +
+      'accepted and BILLED but returns a degenerate clip. Use cinematic_studio_video_v2.');
+
 // --- live Higgsfield probe (free) -------------------------------------------
 if (higgsfieldConfigured) {
   const { diagnose } = await import('../server/higgsfield-diagnose.js');

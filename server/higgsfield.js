@@ -29,6 +29,33 @@ const STATUS_PATH_CANDIDATES = [
 
 let resolvedStatusPath = null;
 
+
+/**
+ * Per-model duration limits, from the live catalog. Sending a value outside a
+ * model's range gets it clamped or dropped upstream with no error, so clamp
+ * here where it can be logged instead.
+ */
+const MODEL_DURATION = {
+  cinematic_studio_video_v2: { min: 3, max: 12 },
+  cinematic_studio_3_0: { min: 4, max: 15 },
+  cinematic_studio_video: { min: 5, max: 10 },
+  kling3_0: { min: 3, max: 15 },
+  kling3_0_turbo: { min: 3, max: 15 },
+  kling2_6: { min: 5, max: 10 },
+  seedance_2_0: { min: 4, max: 15 },
+  veo3_1: { min: 4, max: 8 },
+};
+
+export function clampDuration(model, seconds) {
+  const range = MODEL_DURATION[model];
+  if (!range) return seconds;
+  const clamped = Math.min(Math.max(Math.round(seconds), range.min), range.max);
+  if (clamped !== seconds) {
+    console.warn(`[higgsfield] duration ${seconds}s is outside ${model} (${range.min}-${range.max}s); using ${clamped}s`);
+  }
+  return clamped;
+}
+
 function authHeader() {
   return `Key ${config.higgsfield.keyId}:${config.higgsfield.keySecret}`;
 }
@@ -87,7 +114,7 @@ async function request(pathname, { method = 'GET', body } = {}) {
  * @param {number}   [opts.seed]
  * @returns {Promise<{requestId: string, raw: object}>}
  */
-export async function submitImageToVideo({ imageUrls, prompt, motionKey, duration, seed }) {
+export async function submitImageToVideo({ imageUrls, prompt, motionKey, duration, seed, model, aspectRatio, sound }) {
   assertConfigured();
 
   if (!imageUrls?.length) throw new Error('At least one image URL is required.');
@@ -133,15 +160,28 @@ export async function submitImageToVideo({ imageUrls, prompt, motionKey, duratio
           { type: 'image_url', image_url: imageUrls[1], role: 'end_image' },
         ];
 
+  /* Honour the planned model. tourAgent picks a model per shot (hero shots get
+   * a stronger one) and that choice used to be silently discarded here in
+   * favour of the global config default — so every careful per-shot decision
+   * was thrown away and one wrong global name broke every generation at once.
+   */
+  const chosenModel = model || config.higgsfield.model;
+
   const params = {
-    model: config.higgsfield.model,
+    model: chosenModel,
     prompt,
     input_images: inputImages,
   };
 
   const motionId = motionKey ? motionIdFor(motionKey) : null;
   if (motionId) params.motion_id = motionId;
-  if (duration) params.duration = duration;
+
+  /* Duration must be sent, and must sit inside the model's supported range —
+   * an out-of-range value is silently clamped or ignored, which is how a 5s
+   * request came back as a 1s clip. */
+  if (duration) params.duration = clampDuration(chosenModel, duration);
+  if (aspectRatio) params.aspect_ratio = aspectRatio;
+  if (sound) params.sound = sound;
   if (Number.isInteger(seed)) params.seed = seed;
 
   const data = await request('/v1/image2video/dop', { method: 'POST', body: { params } });
