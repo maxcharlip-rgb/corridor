@@ -482,3 +482,65 @@ main().catch(async (err) => {
   check('esc() replaces the straight apostrophe', /replace\(\/'\/g, '\\u2019'\)/.test(src));
   check('buildSpecLine is still callable', typeof buildSpecLine === 'function');
 }
+
+// --- production path is REST-only -------------------------------------------
+{
+  const fsx = await import('node:fs');
+  const pathx = await import('node:path');
+  const urlx = await import('node:url');
+
+  const serverDir = urlx.fileURLToPath(new URL('../server', import.meta.url));
+  const walk = (dir) => fsx.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = pathx.join(dir, e.name);
+    return e.isDirectory() ? walk(full) : full.endsWith('.js') ? [full] : [];
+  });
+  // chat.sketch.js is an unwired sketch, not part of any route.
+  const files = walk(serverDir).filter((f) => !f.endsWith('chat.sketch.js'));
+  const sources = files.map((f) => ({ f, src: fsx.readFileSync(f, 'utf8') }));
+
+  /* Nothing the deployed server does may need a developer's machine.
+   *
+   * MCP is a client-side transport: it needs a session on someone's laptop, so
+   * a route that reached for it would work in development and fail on Render
+   * with no way to recover. The same is true of a CLI that expects an
+   * interactive browser login. */
+  // Match how the package is really named. An earlier version of this check
+  // looked for the literal "mcp" and therefore missed
+  // "@modelcontextprotocol/sdk" — the exact import it existed to catch.
+  const MCP_MODULE = /(?:import|require)[^\n]*['"][^'"]*(?:modelcontextprotocol|\bmcp[-/]|[-/]mcp\b|^mcp$)[^'"]*['"]/i;
+  const mcpImport = sources.filter(({ src }) => MCP_MODULE.test(src));
+  check('no server module imports an MCP client', mcpImport.length === 0);
+
+  const cliSpawn = sources.filter(({ src }) =>
+    /(spawn|exec|execFile|execSync|execFileSync)\s*\(\s*['"`][^'"`]*higgsfield/i.test(src)
+  );
+  check('no server module shells out to a higgsfield CLI', cliSpawn.length === 0);
+
+  const browserAuth = sources.filter(({ src }) => /pkce|device_code|authorization_code/i.test(src));
+  check('no server module performs a browser auth flow', browserAuth.length === 0);
+
+  // Every child process must be ffmpeg — bundled with the app, not a tool the
+  // operator has to install or log into.
+  const spawns = sources.flatMap(({ f, src }) =>
+    [...src.matchAll(/(?:spawn|execFileSync)\(\s*([A-Za-z_.$]+)/g)].map((m) => ({ f, arg: m[1] }))
+  );
+  check('every spawned process is an ffmpeg binary',
+    spawns.every(({ arg }) => /binary|ffmpeg|config\.ffmpeg/i.test(arg)));
+
+  // Generation reaches Higgsfield one way only.
+  const hf = sources.find(({ f }) => f.endsWith('higgsfield.js')).src;
+  check('Higgsfield is called over HTTP', /await fetch\(url/.test(hf));
+  check('auth uses the REST key header, not a bearer token or session',
+    /`Key \$\{config\.higgsfield\.keyId\}:\$\{config\.higgsfield\.keySecret\}`/.test(hf));
+  check('video generation posts to the dop endpoint', /'\/v1\/image2video\/dop'/.test(hf));
+
+  // A deployment needs the two REST keys and a reachable origin — nothing else.
+  const cfg = fsx.readFileSync(new URL('../server/config.js', import.meta.url), 'utf8');
+  check('cinematic is gated on the REST keys alone',
+    /higgsfieldConfigured = Boolean\(\s*config\.higgsfield\.keyId && config\.higgsfield\.keySecret\s*\)/.test(cfg));
+
+  const pkg = JSON.parse(fsx.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  const deps = Object.keys(pkg.dependencies || {});
+  check('no MCP or vendor SDK among dependencies',
+    !deps.some((d) => /mcp|higgsfield|anthropic|openai/i.test(d)));
+}
