@@ -125,7 +125,16 @@
     .visual { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--card); }
     .visual .im { aspect-ratio: 4/3; background: repeating-linear-gradient(135deg, #E7E4DA 0 7px, #F3F1EA 7px 14px); background-size: cover; background-position: center; }
     .visual .cap { padding: 9px 11px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
-  </style>
+  
+.takes{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:2px 0 10px 34px}
+.takes .mono{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8A94A3;margin-right:2px}
+.take{font:inherit;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid #D9D5CB;background:#fff;color:#2A3038;cursor:pointer}
+.take:hover:not(:disabled){border-color:#2B4FD7;color:#2B4FD7}
+.take.on{background:#2B4FD7;border-color:#2B4FD7;color:#fff}
+.take.bad{border-color:#E2B4AE;color:#B4544A;cursor:not-allowed}
+.take.busy{color:#8A94A3;cursor:default}
+.take-preview{width:100%;max-width:360px;border-radius:10px;margin-top:6px;display:block}
+</style>
 </head>
 <body>
   <div class="top">
@@ -174,6 +183,48 @@ function toast(message, kind) {
   el.textContent = message;
   $('#toasts').appendChild(el);
   setTimeout(function () { el.remove(); }, kind === 'bad' ? 6500 : 3200);
+}
+
+
+/* ---- take picker -----------------------------------------------------------
+   Roughly 2 shots in 5 come back with a defect (invented signage, an inverted
+   camera move), so several takes are generated per shot. Without a way to
+   choose between them you pay for three and use whichever landed first, which
+   is the whole benefit thrown away. Click a number to preview it, click the
+   same number again to make it the one the tour and reel use. -------------- */
+function takeStrip(s) {
+  var takes = s.takes || [];
+  if (takes.length < 2) return '';
+  var done = takes.filter(function (t) { return t.file; }).length;
+  var chips = takes.map(function (t, i) {
+    if (t.error) return '<button class="take bad" disabled title="' + esc(t.error) + '">' + (i + 1) + ' \u2715</button>';
+    if (!t.file) return '<button class="take busy" disabled>' + (i + 1) + '\u2026</button>';
+    var on = s.selectedTakeId === t.id;
+    return '<button class="take' + (on ? ' on' : '') + '" data-take="' + t.id + '" data-shot="' + s.id +
+      '" data-url="/renders/' + esc(t.file) + '">' + (i + 1) + (on ? ' \u2713' : '') + '</button>';
+  }).join('');
+  return '<div class="takes"><span class="mono">takes ' + done + '/' + takes.length + '</span>' + chips +
+    '<video class="take-preview" data-for="' + s.id + '" controls playsinline hidden></video></div>';
+}
+
+async function wireTakes() {
+  document.querySelectorAll('[data-take]').forEach(function (b) {
+    b.onclick = async function () {
+      var vid = document.querySelector('.take-preview[data-for="' + b.dataset.shot + '"]');
+      if (b.dataset.playing === '1') {
+        try {
+          await api('/shots/' + b.dataset.shot + '/select-take', { method: 'POST', body: { takeId: b.dataset.take } });
+          toast('Take selected \u2014 it will be used in the tour and reel.');
+          await refresh();
+        } catch (e) { toast(e.message); }
+        return;
+      }
+      document.querySelectorAll('[data-take]').forEach(function (x) { x.dataset.playing = '0'; });
+      b.dataset.playing = '1';
+      if (vid) { vid.src = b.dataset.url; vid.hidden = false; vid.play().catch(function () {}); }
+      toast('Playing this take. Click it again to use it.');
+    };
+  });
 }
 
 async function api(path, options) {
@@ -439,7 +490,8 @@ function stepGenerate() {
         '<div class="list">' + S.shots.map(function (s, i) {
           return '<div class="r"><span>' + String(i + 1).padStart(2, '0') + '</span>' +
             '<span style="flex:1;min-width:0">' + esc(s.title || 'Stop') + ' · ' + esc(s.motionLabel || s.motionKey) + '</span>' +
-            '<em>' + esc(s.status === 'ready' ? (s.bestQuality || 'ready') : s.status) + '</em></div>';
+            '<em>' + esc(s.status === 'ready' ? (s.bestQuality || 'ready') : s.status) + '</em></div>' +
+            takeStrip(s);
         }).join('') + '</div></div>' : '<div class="card"><p class="note">Nothing planned yet. Hit generate and Corridor will sequence the whole tour from your photos.</p></div>') +
     '</div><div class="col-side"><div class="card navy sticky">' +
       '<h2 style="color:#fff">Generate</h2>' +
@@ -493,7 +545,13 @@ function startPolling() {
   clearTimeout(S.poll);
   S.poll = setTimeout(async function () {
     await refresh();
-    var busy = S.shots.some(function (s) { return s.status === 'queued' || s.status === 'rendering'; });
+    // A shot flips to 'ready' the moment its FIRST take lands, while the others
+    // are still generating — so polling must also wait on outstanding takes,
+    // otherwise takes 2 and 3 never appear without a manual reload.
+    var busy = S.shots.some(function (s) {
+      if (s.status === 'queued' || s.status === 'rendering') return true;
+      return (s.takes || []).some(function (t) { return t.requestId && !t.file && !t.error; });
+    });
     if (busy) return startPolling();
     var ready = S.shots.filter(function (s) { return s.status === 'ready'; }).length;
     if (ready) { toast('Tour rendered.'); S.step = 'share'; await buildReel(); draw(); }
@@ -748,7 +806,7 @@ async function refresh(skipDraw) {
 function draw() {
   if (S.step === 'photos') { render(stepPhotos()); wireSteps(); wirePhotos(); }
   else if (S.step === 'details') { render(stepDetails()); wireSteps(); wireDetails(); }
-  else if (S.step === 'generate') { render(stepGenerate()); wireSteps(); wireGenerate(); }
+  else if (S.step === 'generate') { render(stepGenerate()); wireSteps(); wireGenerate(); wireTakes(); }
   else { render(stepShare()); wireSteps(); wireShare(); }
 }
 
