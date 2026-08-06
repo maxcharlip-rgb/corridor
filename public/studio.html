@@ -152,6 +152,20 @@
 
   <div class="wrap" id="app"></div>
 
+  <div id="gen-modal" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(16,20,24,.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px">
+    <div style="background:#fff;border-radius:22px;padding:30px;width:min(440px,100%);box-shadow:0 30px 80px rgba(0,0,0,.25)">
+      <p class="mono" id="gen-kicker" style="margin:0 0 10px">Generating</p>
+      <h2 id="gen-title" style="margin:0 0 6px">Cutting your tour</h2>
+      <p class="note" id="gen-sub" style="margin:0 0 20px">Sequencing the photos and rendering each move.</p>
+      <div class="bar" style="height:8px"><i id="gen-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <span class="mono" id="gen-count" style="margin-right:auto">0 of 0 shots</span>
+        <span class="mono" id="gen-pct">0%</span>
+      </div>
+      <button class="btn link" id="gen-hide" style="width:100%;text-align:center;margin-top:16px">Hide — keep working</button>
+    </div>
+  </div>
+
   <div class="drawer" id="chat">
     <div class="head">
       <span class="mono" style="margin-right:auto">Refine this tour</span>
@@ -640,16 +654,63 @@ async function showCost() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
+/* Generation progress. Rendering runs for minutes; with no visible signal the
+   app looks hung, which is how a working pipeline gets reported as broken.
+   Live bar, then advances to Share on its own once the last shot lands. */
+function genProgress(show) {
+  var m = document.getElementById('gen-modal');
+  if (!m) return;
+  if (show === false) { m.style.display = 'none'; return; }
+  if (show === true) m.style.display = 'flex';
+
+  var total = S.shots.length;
+  var done = S.shots.filter(function (s) { return s.videoUrl; }).length;
+  var failed = S.shots.filter(function (s) { return s.status === 'failed'; }).length;
+  var pct = total ? Math.round((done / total) * 100) : 0;
+
+  var bar = document.getElementById('gen-bar');
+  if (bar) bar.style.width = pct + '%';
+  var c = document.getElementById('gen-count');
+  if (c) c.textContent = done + ' of ' + total + ' shots' + (failed ? ' \u00B7 ' + failed + ' failed' : '');
+  var p = document.getElementById('gen-pct');
+  if (p) p.textContent = pct + '%';
+
+  var sub = document.getElementById('gen-sub');
+  if (sub) {
+    sub.textContent = (failed && done + failed >= total)
+      ? 'Finished with ' + failed + ' shot(s) that could not render.'
+      : (done === 0 ? 'Sequencing the photos and rendering each move.'
+        : 'Rendering shot ' + Math.min(done + 1, total) + ' of ' + total + '.');
+  }
+}
+
+function genDone() {
+  var done = S.shots.filter(function (s) { return s.videoUrl; }).length;
+  genProgress();
+  var t = document.getElementById('gen-title');
+  if (t) t.textContent = done ? 'Your tour is ready' : 'Nothing rendered';
+  setTimeout(async function () {
+    genProgress(false);
+    if (done) { S.step = 'share'; await buildReel(); draw(); }
+  }, 900);
+}
+
 async function generate() {
-  if (!S.listing) return;
+  /* Never fail silently. A bare `return` here meant clicking Generate with no
+     tour open did absolutely nothing — no message, no spinner, no error — which
+     is indistinguishable from a broken button. */
+  if (!S.listing) { toast('Start a tour and add photos first.', 'bad'); S.step = 'photos'; draw(); return; }
+  if (!S.photos.length) { toast('Add at least one photo before generating.', 'bad'); S.step = 'photos'; draw(); return; }
   $('#g-go').disabled = true;
   try {
     var out = await api('/listings/' + S.listing.id + '/generate', { method: 'POST', body: {
-      quality: $('#g-quality').value, takes: Number($('#g-takes').value) || 3, withTransitions: true
+      quality: (($('#g-quality') || {}).value) || S.quality || 'preview',
+      takes: Number((($('#g-takes') || {}).value) || S.takes) || 3,
+      withTransitions: true
     }});
-    toast(out.shots + ' shots submitted. Sit tight.');
     S.step = 'generate';
     await refresh();
+    genProgress(true);
     startPolling();
   } catch (e) { toast(e.message, 'bad'); $('#g-go').disabled = false; }
 }
@@ -665,7 +726,10 @@ function startPolling() {
       if (s.status === 'queued' || s.status === 'rendering') return true;
       return (s.takes || []).some(function (t) { return t.requestId && !t.file && !t.error; });
     });
+    genProgress();
     if (busy) return startPolling();
+    var gm = document.getElementById('gen-modal');
+    if (gm && gm.style.display === 'flex') genDone();
     var ready = S.shots.filter(function (s) { return s.status === 'ready'; }).length;
     if (ready) { toast('Tour rendered.'); S.step = 'share'; await buildReel(); draw(); }
   }, 2500);
@@ -930,6 +994,8 @@ function draw() {
   else { render(stepShare()); wireSteps(); wireShare(); }
 }
 
+var genHide = document.getElementById('gen-hide');
+if (genHide) genHide.onclick = function () { genProgress(false); };
 wirePaste();
 $('#chat-close').onclick = function () { $('#chat').classList.remove('open'); };
 $('#chat-send').onclick = function () { sendChat(); };

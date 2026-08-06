@@ -1,4 +1,26 @@
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
+
+const requireCjs = createRequire(import.meta.url);
+
+/**
+ * A bundled font, so text can never silently vanish.
+ *
+ * Render's Node image ships no fonts. With none available, drawtext cannot run
+ * and end cards, address bands, spec lines and captions were all skipped — the
+ * reel still built and downloaded fine, it just carried none of the information
+ * a broker needs on it. Nothing errored, so nothing surfaced. Depending on the
+ * host having fonts was the mistake; DejaVu now travels with the app.
+ */
+function bundledFont(file) {
+  try {
+    return requireCjs.resolve(`dejavu-fonts-ttf/ttf/${file}`);
+  } catch {
+    return null;
+  }
+}
+
+
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { config } from './config.js';
@@ -28,6 +50,7 @@ import { config } from './config.js';
  */
 const FONT_CANDIDATES = [
   process.env.FONT_PATH,
+  bundledFont('DejaVuSans-Bold.ttf'),
   // macOS
   '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
   '/System/Library/Fonts/Supplemental/Arial.ttf',
@@ -52,6 +75,7 @@ const FONT_CANDIDATES = [
 
 const REGULAR_CANDIDATES = [
   process.env.FONT_PATH_REGULAR,
+  bundledFont('DejaVuSans.ttf'),
   '/System/Library/Fonts/Supplemental/Arial.ttf',
   '/Library/Fonts/Arial Unicode.ttf',
   '/System/Library/Fonts/Helvetica.ttc',
