@@ -265,6 +265,20 @@ async function pollOnce() {
       const result = await getStatus(take.requestId);
       take.status = result.status;
 
+      /* Completed with no URL used to fall through both branches, so nothing
+         was saved and the same job was polled forever — the exact "charged but
+         nothing appears" failure. Treat it as terminal and say so. */
+      if (result.status === 'completed' && !result.videoUrl) {
+        take.status = 'failed';
+        take.error =
+          'Higgsfield reported this generation complete but returned no downloadable file. ' +
+          'The payload has been logged so the response shape can be checked.';
+        shot.error = take.error;
+        shot.updatedAt = now();
+        save();
+        continue;
+      }
+
       if (result.status === 'completed' && result.videoUrl) {
         const rawFile = await downloadRemote(result.videoUrl, `${take.id}_raw.mp4`);
         const rawPath = path.join(config.rendersDir, rawFile);

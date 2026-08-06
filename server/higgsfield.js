@@ -260,25 +260,79 @@ export async function getStatus(requestId) {
   throw err;
 }
 
-function normaliseStatus(data) {
-  const job = data.jobs?.[0] || data.job || data;
-  const status = String(data.status || job.status || 'queued').toLowerCase();
+/**
+ * Normalise a status response.
+ *
+ * Response shapes differ per route — /v1/job-sets/{id} does not look like the
+ * documented request-status payload — and guessing one specific nesting is what
+ * left generations billed but never collected: the poll returned 200, the URL
+ * was not where the code looked, nothing was saved, and it polled the same job
+ * forever.
+ *
+ * So rather than assume a shape, walk the whole object for the first media URL
+ * and the most specific status present. Tolerant beats precise here: the cost of
+ * a wrong guess is an invisible paid-for generation.
+ */
+function deepFind(node, predicate, depth = 0) {
+  if (!node || depth > 6) return null;
+  if (typeof node === 'string') return predicate(node) ? node : null;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const hit = deepFind(item, predicate, depth + 1);
+      if (hit) return hit;
+    }
+    return null;
+  }
+  if (typeof node === 'object') {
+    for (const value of Object.values(node)) {
+      const hit = deepFind(value, predicate, depth + 1);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
 
-  const videoUrl =
-    job.results?.raw?.url ||
-    job.results?.min?.url ||
-    job.result?.url ||
-    job.video?.url ||
-    data.results?.raw?.url ||
-    null;
+const isVideoUrl = (v) => /^https?:\/\//i.test(v) && /\.(mp4|mov|webm)(\?|$)/i.test(v);
+const isImageUrl = (v) => /^https?:\/\//i.test(v) && /\.(jpe?g|png|webp)(\?|$)/i.test(v);
 
-  const previewUrl = job.results?.min?.url || job.preview?.url || null;
+function collectStatuses(node, out = [], depth = 0) {
+  if (!node || depth > 5 || typeof node !== 'object') return out;
+  if (Array.isArray(node)) {
+    for (const item of node) collectStatuses(item, out, depth + 1);
+    return out;
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'status' && typeof value === 'string') out.push(value.toLowerCase());
+    else collectStatuses(value, out, depth + 1);
+  }
+  return out;
+}
+
+export function normaliseStatus(data) {
+  const statuses = collectStatuses(data);
+  const mediaUrl = deepFind(data, isVideoUrl) || deepFind(data, isImageUrl);
+
+  // A media URL is the ground truth: if one exists the work is done, whatever
+  // any status field claims.
+  let status;
+  if (mediaUrl) status = 'completed';
+  else if (statuses.some((s) => s === 'failed' || s === 'error')) status = 'failed';
+  else if (statuses.some((s) => s === 'nsfw')) status = 'nsfw';
+  else if (statuses.length && statuses.every((s) => s === 'completed')) status = 'completed';
+  else status = statuses[0] || 'queued';
+
+  // Terminal-but-empty is the dangerous case: it would otherwise loop forever.
+  // Surface the payload so the shape can be read from the logs.
+  if (status === 'completed' && !mediaUrl) {
+    console.error('[higgsfield] job reported complete but no media URL was found. Payload:',
+      JSON.stringify(data).slice(0, 900));
+  }
 
   return {
-    status, // queued | in_progress | completed | failed | nsfw
-    videoUrl,
-    previewUrl,
-    error: data.error || job.error || job.failure_reason || null,
+    status,
+    videoUrl: mediaUrl,
+    previewUrl: deepFind(data, isImageUrl),
+    error: data.error || data.detail || deepFind(data, (v) => /failed|rejected/i.test(v) && v.length < 200) || null,
     raw: data,
   };
 }

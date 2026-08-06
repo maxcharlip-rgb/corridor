@@ -246,6 +246,22 @@ async function main() {
   check('fabricated number stripped',
     !verifyText(stripUnverified('99,000 SF available', facts).text, facts).offending.length);
 
+  // 8b. Status parsing -------------------------------------------------------
+  section('8b. Higgsfield status parsing (shape-agnostic)');
+  const { normaliseStatus } = await import(path.join(ROOT, 'server', 'higgsfield.js'));
+  const shapes = [
+    ['documented shape', { status: 'completed', jobs: [{ results: { raw: { url: 'https://c/x.mp4' } } }] }, 'completed', true],
+    ['job-set shape', { id: 'a', jobs: [{ status: 'completed', results: { min: { url: 'https://c/y.mp4' } } }] }, 'completed', true],
+    ['deeply nested url', { data: { items: [{ output: { video: { url: 'https://c/d.mp4' } } }] } }, 'completed', true],
+    ['still queued', { jobs: [{ status: 'queued' }] }, 'queued', false],
+    ['failed', { jobs: [{ status: 'failed' }] }, 'failed', false],
+  ];
+  for (const [name, payload, wantStatus, wantUrl] of shapes) {
+    const r = normaliseStatus(payload);
+    check(`parses ${name}`, r.status === wantStatus && Boolean(r.videoUrl) === wantUrl,
+      `got ${r.status}${r.videoUrl ? ' + url' : ''}`);
+  }
+
   // 9. Secret hygiene --------------------------------------------------------
   section('9. Secret hygiene');
   const { redact } = await import(path.join(ROOT, 'server', 'reliability.js'));
