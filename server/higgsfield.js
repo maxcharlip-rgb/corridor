@@ -313,27 +313,49 @@ export async function getStatus(requestId) {
  * and the most specific status present. Tolerant beats precise here: the cost of
  * a wrong guess is an invisible paid-for generation.
  */
-function deepFind(node, predicate, depth = 0) {
+/*
+ * Higgsfield echoes the REQUEST back inside status payloads, so a response for a
+ * still-queued job contains `params.input_images[].image_url` — the .jpg we
+ * uploaded. A key-blind scan for "any media URL" found that photo, concluded the
+ * job was complete, downloaded a JPEG as .mp4 (vidstab accepts it without
+ * complaint) and published a 0.04s frozen frame while the real render was paid
+ * for and abandoned.
+ *
+ * So the scan is now key-aware: never descend into an echo of our own request,
+ * and track whether a URL was found under a key that plausibly holds a RESULT.
+ */
+const ECHO_KEYS = /^(params|input|inputs|input_images|image_url|image_urls|source|request|payload|body)$/i;
+const RESULT_KEYS = /^(results?|output|outputs|assets?|video|videos|media|files?|min|raw)$/i;
+
+function deepFind(node, predicate, depth = 0, inResults = false) {
   if (!node || depth > 6) return null;
-  if (typeof node === 'string') return predicate(node) ? node : null;
+  if (typeof node === 'string') return predicate(node, inResults) ? node : null;
   if (Array.isArray(node)) {
     for (const item of node) {
-      const hit = deepFind(item, predicate, depth + 1);
+      const hit = deepFind(item, predicate, depth + 1, inResults);
       if (hit) return hit;
     }
     return null;
   }
   if (typeof node === 'object') {
-    for (const value of Object.values(node)) {
-      const hit = deepFind(value, predicate, depth + 1);
+    for (const [key, value] of Object.entries(node)) {
+      if (ECHO_KEYS.test(key)) continue; // our own request, never a render
+      const hit = deepFind(value, predicate, depth + 1, inResults || RESULT_KEYS.test(key));
       if (hit) return hit;
     }
   }
   return null;
 }
 
-const isVideoUrl = (v) => /^https?:\/\//i.test(v) && /\.(mp4|mov|webm)(\?|$)/i.test(v);
-const isImageUrl = (v) => /^https?:\/\//i.test(v) && /\.(jpe?g|png|webp)(\?|$)/i.test(v);
+const isHttp = (v) => /^https?:\/\//i.test(v);
+const isVideoUrl = (v) => isHttp(v) && /\.(mp4|mov|webm|m4v)(\?|$)/i.test(v);
+const isImageUrl = (v) => isHttp(v) && /\.(jpe?g|png|webp)(\?|$)/i.test(v);
+
+/* Signed CDN URLs sometimes carry no extension. Tolerate that, but only under a
+ * result key AND only once the job itself claims to be finished — otherwise the
+ * tolerance fires mid-flight, which is how the original bug triggered. */
+const isResultUrl = (v, inResults) =>
+  isHttp(v) && inResults && !isImageUrl(v) && !/\.(json|txt|log|trf)(\?|$)/i.test(v);
 
 function collectStatuses(node, out = [], depth = 0) {
   if (!node || depth > 5 || typeof node !== 'object') return out;
@@ -342,6 +364,7 @@ function collectStatuses(node, out = [], depth = 0) {
     return out;
   }
   for (const [key, value] of Object.entries(node)) {
+    if (ECHO_KEYS.test(key)) continue; // an echoed status is not job state
     if (key === 'status' && typeof value === 'string') out.push(value.toLowerCase());
     else collectStatuses(value, out, depth + 1);
   }
@@ -350,29 +373,32 @@ function collectStatuses(node, out = [], depth = 0) {
 
 export function normaliseStatus(data) {
   const statuses = collectStatuses(data);
-  const mediaUrl = deepFind(data, isVideoUrl) || deepFind(data, isImageUrl);
+  const claimsDone = statuses.length > 0 && statuses.every((s) => s === 'completed');
 
-  // A media URL is the ground truth: if one exists the work is done, whatever
-  // any status field claims.
+  /* videoUrl is ONLY ever a video. There is no image fallback: an image can
+   * never be the result of an image-to-video job, and treating one as such is
+   * exactly what published a still frame as a finished tour. */
+  const videoUrl = deepFind(data, isVideoUrl) || (claimsDone ? deepFind(data, isResultUrl) : null);
+  const imageUrl = deepFind(data, isImageUrl);
+
   let status;
-  if (mediaUrl) status = 'completed';
+  if (videoUrl) status = 'completed';
   else if (statuses.some((s) => s === 'failed' || s === 'error')) status = 'failed';
   else if (statuses.some((s) => s === 'nsfw')) status = 'nsfw';
-  else if (statuses.length && statuses.every((s) => s === 'completed')) status = 'completed';
+  else if (claimsDone) status = 'completed';
   else status = statuses[0] || 'queued';
 
-  // Terminal-but-empty is the dangerous case: it would otherwise loop forever.
-  // Surface the payload so the shape can be read from the logs.
-  if (status === 'completed' && !mediaUrl) {
+  if (status === 'completed' && !videoUrl && !imageUrl) {
     console.error('[higgsfield] job reported complete but no media URL was found. Payload:',
       JSON.stringify(data).slice(0, 900));
   }
 
   return {
     status,
-    videoUrl: mediaUrl,
-    previewUrl: deepFind(data, isImageUrl),
-    error: data.error || data.detail || deepFind(data, (v) => /failed|rejected/i.test(v) && v.length < 200) || null,
+    videoUrl,
+    imageUrl,
+    previewUrl: imageUrl,
+    error: data.error || data.detail || null,
     raw: data,
   };
 }

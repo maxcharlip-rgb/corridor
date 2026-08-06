@@ -11,6 +11,7 @@ import {
   renderPoster,
   stabilizeClip,
   probeDurationSec,
+  probeVideoStream,
   ffmpegAvailable,
 } from './render-preview.js';
 import { submitImageToVideo, getStatus, TERMINAL_STATUSES } from './higgsfield.js';
@@ -290,6 +291,24 @@ async function pollOnce() {
         const rawFile = await downloadRemote(result.videoUrl, `${take.id}_raw.mp4`);
         const rawPath = path.join(config.rendersDir, rawFile);
 
+        /* A render must actually be moving video. ffmpeg and vidstab both accept
+           a JPEG renamed .mp4 without error, so without this check a single
+           still frame becomes a 0.04s "tour". Runs BEFORE stabilisation because
+           stabilisation is not a filter for it. */
+        const STILL_CODECS = new Set(['mjpeg', 'png', 'webp', 'bmp', 'gif']);
+        const probe = await probeVideoStream(rawPath);
+        if (!probe || STILL_CODECS.has(probe.codec) || (probe.seconds != null && probe.seconds < 0.5)) {
+          fs.rmSync(rawPath, { force: true });
+          take.status = 'failed';
+          take.error =
+            `Higgsfield returned a still image rather than a video (${probe ? probe.codec : 'no video stream'}). ` +
+            'Credits were spent. This usually means the job was read before it finished.';
+          shot.error = take.error;
+          shot.updatedAt = now();
+          save();
+          continue;
+        }
+
         // Stabilise before the take is ever shown. Generated motion always
         // carries some wobble, and it is cheaper to fix here than to have a
         // broker notice it.
@@ -324,7 +343,7 @@ async function pollOnce() {
 
         // Auto-select the first take to land so the tour is never blocked on a
         // human; the operator can switch to a better take afterwards.
-        if (!shot.selectedTakeId) {
+        if (!shot.selectedTakeId && !take.error) {
           shot.selectedTakeId = take.id;
           shot.cinematic = { ...take };
           shot.status = 'ready';
@@ -471,8 +490,11 @@ async function pollVisualsOnce() {
       const result = await getStatus(visual.requestId);
       visual.status = result.status;
 
-      if (result.status === 'completed' && (result.videoUrl || result.raw?.jobs?.[0]?.results?.raw?.url)) {
-        const url = result.videoUrl || result.raw.jobs[0].results.raw.url;
+      const visualUrl = result.imageUrl || result.videoUrl || result.raw?.jobs?.[0]?.results?.raw?.url;
+      if (result.status === 'completed' && !visualUrl) {
+        visual.error = 'Higgsfield reported this image complete but returned no downloadable file (payload logged).';
+      } else if (result.status === 'completed' && visualUrl) {
+        const url = visualUrl;
         const file = await downloadRemote(url, `${visual.id}.jpg`);
         visual.file = file;
         visual.remoteUrl = url;

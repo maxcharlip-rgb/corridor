@@ -254,6 +254,12 @@ async function main() {
     ['job-set shape', { id: 'a', jobs: [{ status: 'completed', results: { min: { url: 'https://c/y.mp4' } } }] }, 'completed', true],
     ['deeply nested url', { data: { items: [{ output: { video: { url: 'https://c/d.mp4' } } }] } }, 'completed', true],
     ['still queued', { jobs: [{ status: 'queued' }] }, 'queued', false],
+    ['queued job echoing our own input photo',
+      { id: 'a', status: 'queued', params: { input_images: [{ image_url: 'https://x/uploads/a.jpg' }] }, jobs: [{ status: 'queued' }] },
+      'queued', false],
+    ['in-progress echoing our own input photo',
+      { status: 'in_progress', params: { input_images: [{ image_url: 'https://x/uploads/b.jpg' }] }, jobs: [{ status: 'in_progress' }] },
+      'in_progress', false],
     ['failed', { jobs: [{ status: 'failed' }] }, 'failed', false],
   ];
   for (const [name, payload, wantStatus, wantUrl] of shapes) {

@@ -60,6 +60,30 @@ export function probeDurationSec(filePath) {
   });
 }
 
+
+/**
+ * Inspect the first video stream. Used to reject a still image delivered with a
+ * .mp4 name — ffmpeg and vidstab both accept a JPEG without complaint, so type
+ * checking is the only thing standing between a frozen frame and a published
+ * "tour".
+ */
+export function probeVideoStream(filePath) {
+  return new Promise((resolve) => {
+    if (!config.ffmpeg) return resolve(null);
+    const child = spawn(config.ffmpeg, ['-i', filePath], { stdio: ['ignore', 'ignore', 'pipe'] });
+    let err = '';
+    child.stderr.on('data', (c) => { err += c; });
+    child.on('error', () => resolve(null));
+    child.on('close', () => {
+      const m = err.match(/Stream #\d+:\d+[^\n]*: Video:\s*([a-z0-9_]+)/i);
+      if (!m) return resolve(null);
+      const dur = err.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+      const seconds = dur ? Number(dur[1]) * 3600 + Number(dur[2]) * 60 + Number(dur[3]) : null;
+      resolve({ codec: m[1].toLowerCase(), seconds });
+    });
+  });
+}
+
 export function ffmpegAvailable() {
   return Boolean(config.ffmpeg);
 }
