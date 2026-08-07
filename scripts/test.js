@@ -616,3 +616,26 @@ main().catch(async (err) => {
   check('a stripped sentence does not leave a broken one', !/Asking\s+built/.test(out));
   check('brochure styles are offered', BROCHURE_STYLES.length >= 3);
 }
+
+// --- brochure: the fact gate must not eat the design ------------------------
+{
+  const { _internals } = await import('../server/agents/brochure-agent.js');
+  const { collectFacts } = await import('../server/facts.js');
+  const { enforceFacts } = _internals;
+  const listing = { name: 'X', specs: [{ label: 'Available', value: '24,000 SF' }] };
+  const facts = collectFacts(listing, null);
+
+  /* A <style> block's contents sit between > and < like any text node, so a
+     naive scan read "8.5in", "10.5pt" and "600" as unverified claims and
+     deleted them — returning a completely unstyled page. */
+  const withCss = '<style>.page{width:8.5in;font:10.5pt/1.5 serif;font-weight:600}h1{font-size:42pt}</style><p>24,000 SF available.</p>';
+  const out = enforceFacts(withCss, facts).html;
+  check('CSS lengths survive the fact gate', /8\.5in/.test(out) && /42pt/.test(out) && /10\.5pt/.test(out));
+  check('prose is still checked alongside CSS', /24,000 SF/.test(out));
+
+  // A spec row that loses its value leaves a visible hole in the document.
+  const table = '<table><tr><td>Available</td><td>24,000 SF</td></tr><tr><td>Ceilings</td><td>14ft clear</td></tr></table>';
+  const rows = enforceFacts(table, facts).html;
+  check('a spec row emptied by the gate is removed entirely', !/Ceilings/.test(rows));
+  check('a verified spec row is kept', /24,000 SF/.test(rows));
+}

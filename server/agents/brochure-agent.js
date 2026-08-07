@@ -114,7 +114,36 @@ function sanitiseHtml(raw) {
 function enforceFacts(html, facts) {
   const stripped = [];
 
-  const out = html.replace(/>([^<>]+)</g, (match, text) => {
+  /* Never treat CSS as prose.
+   *
+   * The contents of a <style> block sit between > and < like any text node, so
+   * a naive scan reads "8.5in", "10.5pt" and "600" as unverified claims and
+   * deletes them — silently destroying the stylesheet and returning an unstyled
+   * page. Split the document around style blocks and enforce only on the rest.
+   */
+  const segments = html.split(/(<style\b[\s\S]*?<\/style>)/gi);
+
+  let out = segments.map((segment) =>
+    /^<style\b/i.test(segment) ? segment : enforceFactsInMarkup(segment)
+  ).join('');
+
+  /* A spec row that loses its value leaves "Ceilings" beside an empty cell —
+   * a visible hole that reads as a mistake in a document a broker hands to a
+   * client. If the whole row went blank, take the row with it. */
+  out = out.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (row, inner) => {
+    const cells = [...inner.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((m) => m[1].trim());
+    if (!cells.length) return row;
+    // Keep the row only if every cell still carries content.
+    return cells.some((c) => c === '') ? '' : row;
+  });
+
+  // Same for a definition-style pair or a list item emptied by the same rule.
+  out = out.replace(/<li\b[^>]*>\s*<\/li>/gi, '');
+
+  return { html: out, stripped: [...new Set(stripped)] };
+
+  function enforceFactsInMarkup(markup) {
+    return markup.replace(/>([^<>]+)</g, (match, text) => {
     if (!/\d/.test(text)) return match;
 
     /* Drop the whole sentence, not just the number.
@@ -146,11 +175,10 @@ function enforceFacts(html, facts) {
       if (isFragment && remainder.length > 2 && !orphanedUnit) kept.push(remainder);
     }
 
-    const joined = kept.join(' ').replace(/\s{2,}/g, ' ').trim();
-    return `>${joined}<`;
-  });
-
-  return { html: out, stripped: [...new Set(stripped)] };
+      const joined = kept.join(' ').replace(/\s{2,}/g, ' ').trim();
+      return `>${joined}<`;
+    });
+  }
 }
 
 // --- prompt ------------------------------------------------------------------
