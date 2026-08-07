@@ -190,7 +190,7 @@
    Talks only to the existing API; no routes were added for this UI. */
 
 var S = { account: null, authEnabled: false, boot: null, listing: null, photos: [], shots: [],
-          step: 'photos', chat: [], visuals: [], poll: null, visualPoll: null, reelUrl: null,
+          step: 'photos', chat: [], visuals: [], brochures: [], brochureStyle: 'editorial', reviseFrom: null, poll: null, visualPoll: null, reelUrl: null,
           share: null, busy: false };
 
 var $ = function (sel, root) { return (root || document).querySelector(sel); };
@@ -803,6 +803,21 @@ function stepShare() {
         stops.map(function (s, i) { return '<div class="r"><span>' + String(i + 1).padStart(2, '0') + '</span>' +
           '<span style="flex:1;min-width:0">' + esc(s.title || 'Stop') + '</span><em>' + (s.durationSec || 5) + 's</em></div>'; }).join('') +
       '</div></div>' +
+    '</div>' +
+    '<div class="card" style="margin-top:26px"><h2>Brochure</h2>' +
+      '<p class="note" style="margin-bottom:16px">Describe how it should look. Corridor lays out a print-ready brochure from this listing\u2019s photos and the details you entered \u2014 then you save it as a PDF. It can only state numbers you typed in yourself.</p>' +
+      (S.boot && S.boot.capabilities && S.boot.capabilities.brochure === false
+        ? '<p class="mono">BROCHURES NEED ANTHROPIC_API_KEY ON THE SERVER</p>'
+        : '<div class="row" style="margin-bottom:12px">' +
+            '<select id="b-style" style="font-size:14px;padding:11px 13px;border-radius:999px;border:1px solid var(--line);background:var(--paper)"></select>' +
+            '<span class="mono" id="b-photo-note" style="margin-left:auto"></span>' +
+          '</div>' +
+          '<textarea id="b-prompt" rows="3" placeholder="Two pages. Big exterior on the cover with the address over it, specs in a clean table, floor plate photo full width on page two. Navy and warm grey." style="width:100%;padding:13px;border-radius:14px;border:1px solid var(--line);background:var(--paper);font:inherit;font-size:14px"></textarea>' +
+          '<div class="row" style="margin-top:12px">' +
+            '<button class="btn primary" id="b-go">Make the brochure</button>' +
+            '<span class="mono" id="b-status"></span>' +
+          '</div>' +
+          '<div id="b-list" style="margin-top:16px"></div>') +
     '</div>' + tours();
 }
 
@@ -820,7 +835,114 @@ function wireShare() {
     $('#v-go').onclick = makeVisuals;
     paintVisuals();
   }
+  wireBrochure();
   wireTours();
+}
+
+/* ------------------------------------------------------------- 04b brochure */
+
+function wireBrochure() {
+  var sel = $('#b-style');
+  if (!sel) return;
+  var styles = (S.boot && S.boot.brochureStyles) || [];
+  sel.innerHTML = styles.map(function (st) {
+    return '<option value="' + esc(st.key) + '"' + (st.key === S.brochureStyle ? ' selected' : '') + '>' + esc(st.label) + '</option>';
+  }).join('');
+  sel.onchange = function () { S.brochureStyle = this.value; };
+
+  var note = $('#b-photo-note');
+  if (note) note.textContent = (S.photos.length + ' PHOTO' + (S.photos.length === 1 ? '' : 'S') + ' WILL BE USED').toUpperCase();
+
+  $('#b-go').onclick = function () { makeBrochure(null); };
+  loadBrochures();
+}
+
+async function loadBrochures() {
+  if (!S.listing || !$('#b-list')) return;
+  try {
+    var data = await api('/listings/' + S.listing.id + '/brochures');
+    S.brochures = data.brochures || [];
+    paintBrochures();
+  } catch (e) { /* the panel simply stays empty */ }
+}
+
+function paintBrochures() {
+  var box = $('#b-list');
+  if (!box) return;
+  var list = (S.brochures || []).slice().reverse();
+  if (!list.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = list.map(function (b) {
+    var base = '/api/listings/' + S.listing.id + '/brochures/' + b.id;
+    /* Say what was removed rather than hiding it. A broker who wrote "$18.50
+       NNN" in the prompt and does not see it on the page needs to know the
+       system dropped it because that number is not in their entered specs —
+       otherwise the tool looks broken instead of careful. */
+    var warn = (b.stripped && b.stripped.length)
+      ? '<p class="mono" style="color:var(--warn,#b45309);margin:8px 0 0">REMOVED (NOT IN YOUR SPECS): ' + esc(b.stripped.join(', ')) + '</p>'
+      : '';
+    return '<div class="r" style="display:block;padding:14px 0;border-top:1px solid var(--line)">' +
+      '<div class="row">' +
+        '<b style="margin-right:auto">v' + (b.version || 1) + ' \u00B7 ' + esc(b.style || '') + '</b>' +
+        '<a class="btn sm" href="' + base + '?print=1" target="_blank" rel="noopener">Open &amp; save as PDF</a>' +
+        '<a class="btn sm" href="' + base + '/download">Download HTML</a>' +
+        '<button class="btn sm" data-revise="' + b.id + '">Revise</button>' +
+        '<button class="x" data-brdel="' + b.id + '">Remove</button>' +
+      '</div>' +
+      (b.prompt ? '<p class="note" style="margin:8px 0 0">' + esc(b.prompt.slice(0, 200)) + '</p>' : '') +
+      warn +
+    '</div>';
+  }).join('');
+
+  Array.prototype.forEach.call(box.querySelectorAll('[data-revise]'), function (el) {
+    el.onclick = function () {
+      var input = $('#b-prompt');
+      input.value = '';
+      input.placeholder = 'What should change? e.g. make the headline bigger, move specs above the photos, warmer colour.';
+      input.focus();
+      S.reviseFrom = el.getAttribute('data-revise');
+      $('#b-go').textContent = 'Apply the change';
+    };
+  });
+  Array.prototype.forEach.call(box.querySelectorAll('[data-brdel]'), function (el) {
+    el.onclick = async function () {
+      try {
+        await api('/listings/' + S.listing.id + '/brochures/' + el.getAttribute('data-brdel'), { method: 'DELETE' });
+        await loadBrochures();
+      } catch (e) { toast(e.message, 'bad'); }
+    };
+  });
+}
+
+async function makeBrochure() {
+  var btn = $('#b-go');
+  var status = $('#b-status');
+  var prompt = ($('#b-prompt') || {}).value || '';
+  if (!S.photos.length) { toast('Add photos before building a brochure.', 'bad'); return; }
+
+  btn.disabled = true;
+  if (status) status.textContent = S.reviseFrom ? 'REVISING\u2026' : 'LAYING IT OUT\u2026';
+  try {
+    var made = await api('/listings/' + S.listing.id + '/brochure', { method: 'POST', body: {
+      prompt: prompt,
+      style: (($('#b-style') || {}).value) || S.brochureStyle || 'editorial',
+      fromId: S.reviseFrom || null
+    }});
+    S.reviseFrom = null;
+    $('#b-prompt').value = '';
+    btn.textContent = 'Make the brochure';
+    await loadBrochures();
+    toast(made.stripped && made.stripped.length
+      ? 'Brochure ready \u2014 ' + made.stripped.length + ' unverifiable number(s) removed.'
+      : 'Brochure ready.');
+  } catch (e) {
+    toast(e.message, 'bad');
+  } finally {
+    // Same lesson as the generate button: a disabled control the user cannot
+    // recover from is indistinguishable from a broken one.
+    btn.disabled = false;
+    if (status) status.textContent = '';
+  }
 }
 
 async function buildReel() {

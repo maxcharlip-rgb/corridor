@@ -14,6 +14,7 @@ import {
 import { MOTIONS, MOTION_BY_KEY, SPACE_TYPES, SPACE_BY_KEY, guessSpaceType, buildPrompt, motionEnvKey } from '../motions.js';
 import { enqueuePreview, submitCinematic, selectTake, queueDepth, startVisualPolling, DEFAULT_TAKES } from '../jobs.js';
 import { renderEndCard, applyTextOverlays, buildSpecLine, fontsAvailable } from '../endcard.js';
+import crypto from 'node:crypto';
 import {
   canGenerateVideo,
   recordCreditSpend,
@@ -22,6 +23,7 @@ import {
   CREDITS_PER_TAKE,
   generateLimiter,
   dailyGenerateLimiter,
+  rateLimit,
 } from '../limits.js';
 import { ffmpegAvailable, stitchReel } from '../render-preview.js';
 import { enhancePhoto, stagePhoto, stagingConfigured, ENHANCE_PROFILES } from '../photo-ops.js';
@@ -34,6 +36,7 @@ import { brandingForAccount, brandingForListing, updateBranding, BRAND_FIELDS } 
 import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
 import { tourAgent, captionTrack, heroTextFor, PACES } from '../agents/tour-agent.js';
 import { envisionAgent, VISUALIZE_MODES, VISUAL_STYLES, IMAGE_MODELS } from '../agents/envision-agent.js';
+import { brochureAgent, BROCHURE_STYLES, brochureConfigured } from '../agents/brochure-agent.js';
 
 export const api = express.Router();
 api.use(express.json({ limit: '2mb' }));
@@ -141,12 +144,14 @@ api.get('/bootstrap', (_req, res) => {
     paces: Object.values(PACES),
     visualizeModes: Object.values(VISUALIZE_MODES),
     visualStyles: VISUAL_STYLES,
+    brochureStyles: BROCHURE_STYLES,
     imageModels: IMAGE_MODELS,
     shareChannels: SHARE_CHANNELS,
     capabilities: {
       preview: ffmpegAvailable(),
       cinematic: higgsfieldConfigured,
       staging: stagingConfigured(),
+      brochure: brochureConfigured(),
       publicUrl: config.publicUrl,
       publicUrlIsLocal: /localhost|127\.0\.0\.1/i.test(config.publicUrl),
       model: config.higgsfield.model,
@@ -849,6 +854,174 @@ api.get('/listings/:id/visuals', handle(async (req, res) => {
 api.delete('/listings/:id/visuals/:visualId', handle(async (req, res) => {
   const listing = requireListing(req);
   listing.visuals = (listing.visuals || []).filter((v) => v.id !== req.params.visualId);
+  save();
+  res.json({ ok: true });
+}));
+
+// --- brochures ---------------------------------------------------------------
+
+/**
+ * Wrap a sanitised brochure fragment in a real document.
+ *
+ * The CSP is the second line of defence behind the sanitiser: even if some
+ * markup slipped through, the page can load nothing, run nothing and talk to
+ * nobody. Only same-origin images and the inline <style> the layout needs.
+ * A nonce is issued for our own print button, which the model's HTML can never
+ * carry because scripts are stripped before this point.
+ */
+function brochureDocument({ listing, html, nonce = null, print = false }) {
+  const title = String(listing.name || 'Brochure').replace(/[<>&"]/g, '');
+  const printBar = nonce
+    ? `<div class="cx-bar">
+         <button id="cx-print">Save as PDF</button>
+         <span>Choose "Save as PDF" as the destination. Margins: none. Background graphics: on.</span>
+       </div>
+       <script nonce="${nonce}">document.getElementById('cx-print').onclick=function(){window.print()};</script>`
+    : '';
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+  body { margin:0; background:#e9e7e2; }
+  .cx-bar { position:sticky; top:0; z-index:9; display:flex; gap:14px; align-items:center;
+            padding:12px 18px; background:#111827; color:#fff; font:13px/1.4 ui-sans-serif,system-ui,sans-serif; }
+  .cx-bar button { font:600 13px ui-sans-serif,system-ui,sans-serif; padding:8px 16px; border:0;
+                   border-radius:999px; background:#fff; color:#111827; cursor:pointer; }
+  .cx-bar span { opacity:.7 }
+  @media print { .cx-bar { display:none } body { background:#fff } }
+</style>
+</head><body>${printBar}${html}</body></html>`;
+}
+
+function brochureCsp(nonce) {
+  return [
+    "default-src 'none'",
+    "img-src 'self' data:",
+    "style-src 'unsafe-inline'",
+    "font-src 'self'",
+    nonce ? `script-src 'nonce-${nonce}'` : "script-src 'none'",
+    "form-action 'none'",
+    "frame-ancestors 'self'",
+    "base-uri 'none'",
+  ].join('; ');
+}
+
+function findBrochure(listing, brochureId) {
+  const found = (listing.brochures || []).find((b) => b.id === brochureId);
+  if (!found) {
+    const err = new Error('Brochure not found.');
+    err.status = 404;
+    throw err;
+  }
+  return found;
+}
+
+/* Claude calls cost real money per request, so they get their own ceiling
+   rather than sharing the credit-gated video limits. */
+const brochureLimiter = rateLimit({ windowMs: 60_000, max: 6, scope: 'brochure' });
+
+api.post('/listings/:id/brochure', brochureLimiter, handle(async (req, res) => {
+  const listing = requireListing(req);
+  const all = photosRepo.forListing(listing.id);
+  const wanted = Array.isArray(req.body?.photoIds) && req.body.photoIds.length
+    ? all.filter((p) => req.body.photoIds.includes(p.id))
+    : all;
+
+  if (!wanted.length) return res.status(400).json({ error: 'Add at least one photo before building a brochure.' });
+  if (!brochureConfigured()) {
+    return res.status(503).json({ error: 'Brochures need ANTHROPIC_API_KEY set on the server.' });
+  }
+
+  // A revision starts from an existing brochure rather than a blank page.
+  const from = req.body?.fromId ? findBrochure(listing, req.body.fromId) : null;
+
+  let result;
+  try {
+    result = await brochureAgent({
+      listing,
+      photos: wanted,
+      prompt: String(req.body?.prompt || '').slice(0, 4000),
+      style: req.body?.style || from?.style || 'editorial',
+      previous: from?.html || null,
+    });
+  } catch (err) {
+    return res.status(502).json({ error: err.message });
+  }
+
+  // Provenance: if a number was removed, the record shows what and why.
+  if (result.stripped.length) {
+    logFactUse({
+      listingId: listing.id,
+      accountId: req.account?.id || null,
+      context: 'brochure',
+      facts: collectFacts(listing, listing.spec),
+      text: result.html.slice(0, 2000),
+      stripped: result.stripped,
+    });
+  }
+
+  const brochure = {
+    id: id('brc'),
+    listingId: listing.id,
+    prompt: String(req.body?.prompt || '').slice(0, 4000),
+    style: req.body?.style || from?.style || 'editorial',
+    photoIds: wanted.map((p) => p.id),
+    html: result.html,
+    stripped: result.stripped,
+    removed: result.removed,
+    model: result.model,
+    parentId: from?.id || null,
+    version: from ? (from.version || 1) + 1 : 1,
+    createdAt: now(),
+  };
+
+  listing.brochures = [...(listing.brochures || []), brochure];
+  listing.updatedAt = now();
+  save();
+
+  res.status(201).json({ ...brochure, viewUrl: `/api/listings/${listing.id}/brochures/${brochure.id}` });
+}));
+
+api.get('/listings/:id/brochures', handle(async (req, res) => {
+  const listing = requireListing(req);
+  // Metadata only — the HTML of every revision would be a large payload for a
+  // list the studio renders as a row of cards.
+  res.json({
+    brochures: (listing.brochures || []).map(({ html, ...rest }) => ({
+      ...rest,
+      bytes: html.length,
+      viewUrl: `/api/listings/${listing.id}/brochures/${rest.id}`,
+    })),
+    styles: BROCHURE_STYLES,
+    configured: brochureConfigured(),
+  });
+}));
+
+api.get('/listings/:id/brochures/:brochureId', handle(async (req, res) => {
+  const listing = requireListing(req);
+  const brochure = findBrochure(listing, req.params.brochureId);
+  const print = req.query.print === '1';
+  const nonce = print ? crypto.randomBytes(16).toString('base64') : null;
+
+  res.setHeader('Content-Security-Policy', brochureCsp(nonce));
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Cache-Control', 'no-store');
+  res.type('html').send(brochureDocument({ listing, html: brochure.html, nonce, print }));
+}));
+
+api.get('/listings/:id/brochures/:brochureId/download', handle(async (req, res) => {
+  const listing = requireListing(req);
+  const brochure = findBrochure(listing, req.params.brochureId);
+  res.setHeader('Content-Disposition', `attachment; filename="${listing.slug}-brochure.html"`);
+  res.setHeader('Content-Security-Policy', brochureCsp(null));
+  res.type('html').send(brochureDocument({ listing, html: brochure.html }));
+}));
+
+api.delete('/listings/:id/brochures/:brochureId', handle(async (req, res) => {
+  const listing = requireListing(req);
+  listing.brochures = (listing.brochures || []).filter((b) => b.id !== req.params.brochureId);
   save();
   res.json({ ok: true });
 }));
