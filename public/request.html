@@ -117,12 +117,13 @@
     </div>
 
     <div class="card">
-      <div class="mono" style="margin-bottom:16px">03 · What you want</div>
-      <div class="chips" id="wants">
-        <label class="chip on"><input type="checkbox" value="video tour" checked> Video tour</label>
-        <label class="chip"><input type="checkbox" value="brochure"> Brochure</label>
-      </div>
-      <label style="margin-top:18px"><span>How should it feel? (optional)</span>
+      <div class="mono" style="margin-bottom:16px">03 · How it should look</div>
+      <!-- Video only for now. The brochure agent still exists server-side and the
+           intake route still accepts 'brochure' in wants, so re-offering it is a
+           one-line change - but a form that offers two things converts worse than
+           one that offers the thing you are actually selling. -->
+      <div id="wants" hidden><input type="checkbox" value="video tour" checked></div>
+      <label><span>How should it feel? (optional)</span>
         <textarea name="notes" rows="4" placeholder="Cinematic and calm. Lead with the exterior at golden hour, then the lobby. Our brand colour is navy. Mention the new roof and covered parking."></textarea>
       </label>
     </div>
