@@ -57,6 +57,15 @@ services:
       # Cinematic video + image generation. Without both, the app still runs:
       # preview rendering, publishing, QR sign kit, tours and lead capture all
       # work. Only Higgsfield generation is disabled.
+      # Property intake. Requests are captured and listed at /requests without
+      # these, but neither you nor the broker is notified that one arrived.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: NOTIFY_EMAIL
+        sync: false
+
       - key: HIGGSFIELD_KEY_ID
         sync: false
       - key: HIGGSFIELD_KEY_SECRET

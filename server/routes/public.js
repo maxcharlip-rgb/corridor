@@ -1,6 +1,10 @@
+import path from 'node:path';
 import express from 'express';
+import multer from 'multer';
 import { config } from '../config.js';
 import { getDb, save, saveNow, id, now, listings as listingsRepo, shots as shotsRepo, photos as photosRepo } from '../store.js';
+import { sendMail, requestNotification, requestConfirmation, notifyAddress, mailConfigured } from '../mailer.js';
+import { rateLimit } from '../limits.js';
 import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
 import { DISCLOSURES } from '../facts.js';
@@ -20,6 +24,127 @@ function findPublished(slug) {
 
 /** The payload the public viewer renders. Deliberately excludes prompts,
  *  render internals, credit costs and lead data — this is a prospect's view. */
+
+// --- property intake ---------------------------------------------------------
+
+/* Photos arrive from people with no account, so the ceiling is lower than the
+   studio's and the filter is the same one the rest of the app uses. */
+const ALLOWED_IMAGE = /^image\/(jpeg|png|webp)$/i;
+
+const intakeUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, config.uploadsDir),
+    filename: (_req, file, cb) => {
+      const ext = (path.extname(file.originalname) || '.jpg').toLowerCase();
+      cb(null, `${id('img')}${ext}`);
+    },
+  }),
+  limits: { fileSize: 25 * 1024 * 1024, files: 40 },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE.test(file.mimetype)) return cb(null, true);
+    req.rejectedFiles = req.rejectedFiles || [];
+    req.rejectedFiles.push({
+      name: file.originalname,
+      reason: /heic|heif/i.test(file.mimetype)
+        ? 'HEIC is not supported. On iPhone: Settings → Camera → Formats → "Most Compatible".'
+        : 'Only JPEG, PNG and WebP images are supported.',
+    });
+    cb(null, false);
+  },
+});
+
+const intakeLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 12, scope: 'intake' });
+
+const WANTS = ['video tour', 'brochure'];
+const DEALS = ['for lease', 'for sale', 'both'];
+const clean = (v, max = 300) => String(v ?? '').trim().slice(0, max);
+
+/**
+ * A brokerage submits a property; we produce the marketing and email it back.
+ *
+ * The submission is saved BEFORE any mail is attempted and the response does not
+ * depend on mail succeeding. A provider outage must never present as "your
+ * request failed" to someone who has just uploaded forty photos — they would
+ * not send them twice, and we would never know they tried.
+ */
+publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), (req, res) => {
+  const body = req.body || {};
+
+  // Bots fill in every field they find. A human never sees this one.
+  if (clean(body.website)) return res.status(201).json({ ok: true });
+
+  const email = clean(body.email, 200);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return res.status(400).json({ error: 'A valid email address is required — it is where the video goes.' });
+  }
+  const address = clean(body.address);
+  if (!address) return res.status(400).json({ error: 'The property address is required.' });
+
+  const files = req.files || [];
+  if (!files.length) {
+    return res.status(400).json({
+      error: 'Add at least one photo of the property.',
+      rejected: req.rejectedFiles || [],
+    });
+  }
+
+  const wants = String(body.wants || 'video tour')
+    .split(',').map((w) => w.trim().toLowerCase()).filter((w) => WANTS.includes(w));
+
+  const request = {
+    id: id('req'),
+    firm: clean(body.firm),
+    name: clean(body.name),
+    email,
+    phone: clean(body.phone, 60),
+    address,
+    propertyType: clean(body.propertyType, 60),
+    deal: DEALS.includes(clean(body.deal, 40).toLowerCase()) ? clean(body.deal, 40).toLowerCase() : '',
+    size: clean(body.size, 80),
+    price: clean(body.price, 120),
+    notes: clean(body.notes, 4000),
+    wants: wants.length ? wants : ['video tour'],
+    photos: files.map((f, i) => ({ file: f.filename, originalName: f.originalname, order: i })),
+    rejected: req.rejectedFiles || [],
+    status: 'new',
+    createdAt: now(),
+    source: clean(body.source, 80) || 'web',
+  };
+
+  const db = getDb();
+  db.requests = db.requests || [];
+  db.requests.push(request);
+  // Durable immediately: this is somebody's job, not a cache entry.
+  saveNow();
+
+  res.status(201).json({
+    ok: true,
+    id: request.id,
+    photos: files.length,
+    rejected: request.rejected,
+    // Tell the truth about delivery rather than implying an email is on its way.
+    emailConfigured: mailConfigured(),
+  });
+
+  // Notifications happen after the response; the record is already safe.
+  (async () => {
+    const note = requestNotification(request, request.photos);
+    const toOperator = await sendMail({ to: notifyAddress(), subject: note.subject, html: note.html, replyTo: email });
+
+    const confirm = requestConfirmation(request);
+    const toBroker = await sendMail({ to: email, subject: confirm.subject, html: confirm.html });
+
+    const stored = (getDb().requests || []).find((r) => r.id === request.id);
+    if (stored) {
+      stored.notified = { operator: toOperator, broker: toBroker, at: now() };
+      save();
+    }
+    if (!toOperator.ok) {
+      console.error(`[intake] request ${request.id} saved but the operator was NOT emailed: ${toOperator.error}`);
+    }
+  })();
+});
+
 publicApi.get('/tours/:slug', (req, res) => {
   const listing = findPublished(req.params.slug);
   if (!listing) return res.status(404).json({ error: 'Tour not found.' });

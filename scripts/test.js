@@ -639,3 +639,36 @@ main().catch(async (err) => {
   check('a spec row emptied by the gate is removed entirely', !/Ceilings/.test(rows));
   check('a verified spec row is kept', /24,000 SF/.test(rows));
 }
+
+// --- property intake --------------------------------------------------------
+{
+  const fsx = await import('node:fs');
+  const pub = fsx.readFileSync(new URL('../server/routes/public.js', import.meta.url), 'utf8');
+  const apiSrc = fsx.readFileSync(new URL('../server/routes/api.js', import.meta.url), 'utf8');
+  const { mailStatus, sendMail } = await import('../server/mailer.js');
+
+  /* A submission is somebody's job, not a cache entry. It must be durable
+     before any mail is attempted, and the response must not depend on mail
+     succeeding — a provider outage presenting as "your request failed" to
+     someone who just uploaded forty photos loses the customer silently. */
+  const intake = pub.slice(pub.indexOf("publicApi.post('/requests'"), pub.indexOf("publicApi.get('/tours/:slug'"));
+  check('a request is persisted durably on arrival', /saveNow\(\)/.test(intake));
+  check('the response is sent before mail is attempted',
+    intake.indexOf('res.status(201)') < intake.indexOf('sendMail'));
+  check('a spam honeypot is checked', /body\.website/.test(intake));
+  check('the intake route is rate limited', /intakeLimiter/.test(intake));
+  check('an email address is required', /valid email address is required/.test(intake));
+
+  // Never throws: the caller decides what a failed send means.
+  const sent = await sendMail({ to: 'x@example.com', subject: 's', html: 'h' });
+  check('sendMail reports failure instead of throwing', sent.ok === false && typeof sent.error === 'string');
+  check('mailStatus explains why it is off when unconfigured',
+    mailStatus().configured === true || typeof mailStatus().reason === 'string');
+
+  /* Marking delivered must follow the email actually being accepted. A request
+     shown as delivered when nothing left the building leaves a customer waiting
+     forever on work that was finished days ago. */
+  const deliver = apiSrc.slice(apiSrc.indexOf("api.post('/requests/:id/deliver'"), apiSrc.indexOf("api.delete('/requests/:id'"));
+  check('delivery bails out before marking delivered when the send fails',
+    deliver.indexOf('if (!sent.ok)') < deliver.indexOf("request.status = 'delivered'"));
+}

@@ -44,16 +44,14 @@
           Photos in · tour out · about two minutes
         </div>
         <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #2B4FD7;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
-        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #55606E; margin: 0 auto 34px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Drop the photos in, get a cinematic walkthrough back, post it everywhere by lunch.</p>
+        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #55606E; margin: 0 auto 34px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Send the photos in, get a cinematic walkthrough back in your inbox, post it everywhere.</p>
 
         <div style="max-width: 680px; margin: 0 auto;">
-          <label style="display: block; border: 1px dashed #C9C5B8; background: #fff; border-radius: 22px; padding: clamp(28px, 5vw, 46px) 24px; cursor: pointer;" data-hover="border-color: #2B4FD7;">
-            <input type="file" multiple accept="image/*" id="hero-files" style="display: none;" />
-            <span style="display: block; font-size: 17px; font-weight: 500; margin-bottom: 8px;">Drag in the photos already sitting in your Dropbox</span>
-            <span style="display: block; font-size: 14.5px; color: #55606E; margin-bottom: 22px;">12 to 40 of them. Crooked phone shots welcome. No shoot day, no scheduling thread.</span>
-            <span style="display: inline-block; font-size: 15px; color: #fff; background: #2B4FD7; padding: 15px 28px; border-radius: 999px; font-weight: 500;">Upload photos</span>
-          </label>
-          <p id="hero-note" style="display:none;margin:14px 0 0;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#2B4FD7;text-align:center"></p>
+          <a href="/request" style="display: block; text-decoration: none; color: inherit; border: 1px dashed #C9C5B8; background: #fff; border-radius: 22px; padding: clamp(28px, 5vw, 46px) 24px; cursor: pointer;" data-hover="border-color: #2B4FD7;">
+            <span style="display: block; font-size: 17px; font-weight: 500; margin-bottom: 8px;">Send us the photos already sitting in your Dropbox</span>
+            <span style="display: block; font-size: 14.5px; color: #55606E; margin-bottom: 22px;">12 to 40 of them. Crooked phone shots welcome. We cut it and email it back — usually within two business days.</span>
+            <span style="display: inline-block; font-size: 15px; color: #fff; background: #2B4FD7; padding: 15px 28px; border-radius: 999px; font-weight: 500;">Send us a property</span>
+          </a>
           <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A8778;">
             <span>No videographer</span>
             <span>No “circling back”</span>
@@ -151,7 +149,7 @@
               <div>Chat refinements + concept images</div>
               <div>QR sign artwork, print-ready</div>
             </div>
-            <button type="button" data-open-auth="signup" style="width: 100%; font-size: 15px; color: #101418; background: transparent; border: 1px solid #101418; padding: 14px; border-radius: 999px; cursor: pointer;" data-hover="background: #101418; color: #fff;">Start free tour</button>
+            <a href="/request" style="display:block;text-align:center;width: 100%; font-size: 15px; color: #101418; background: transparent; border: 1px solid #101418; padding: 14px; border-radius: 999px; cursor: pointer; text-decoration:none; box-sizing:border-box;" data-hover="background: #101418; color: #fff;">Send us a property</a>
           </div>
           <div style="background: #101E33; color: #fff; border-radius: 22px; padding: clamp(22px, 3vw, 30px);">
             <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8FA6D8; margin-bottom: 16px;">Brokerage</div>
@@ -261,58 +259,9 @@
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
 
-  // Photos chosen on the landing page are handed to the studio, which owns the
-  // upload + generate pipeline. Signed out, we take the account first.
-  var heroFiles = document.getElementById('hero-files');
-  var pendingFiles = null;
-
-  /* Photos picked here have to survive the hop to the studio. Files cannot ride
-     a URL and a File object cannot go in sessionStorage, so the old
-     `location.href = '/studio?new=1'` silently dropped them and the broker
-     landed in an empty workspace. Instead we upload them for real from this
-     page — creating the listing first — and only then navigate. If the user
-     isn't signed in yet we hold the files and finish the upload right after
-     auth succeeds. */
-  async function sendToStudio(files) {
-    var note = document.getElementById('hero-note');
-    function say(t) { if (note) { note.textContent = t; note.style.display = 'block'; } }
-    try {
-      say('Creating your tour…');
-      var mk = await fetch('/api/listings', {
-        method: 'POST', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Untitled tour', propertyType: 'office' })
-      });
-      var listing = await mk.json();
-      if (!mk.ok) throw new Error(listing.error || 'Could not start a tour.');
-
-      say('Uploading ' + files.length + ' photo' + (files.length > 1 ? 's' : '') + '…');
-      var form = new FormData();
-      files.forEach(function (f) { form.append('photos', f); });
-      var up = await fetch('/api/listings/' + listing.id + '/photos', {
-        method: 'POST', credentials: 'same-origin', body: form
-      });
-      if (!up.ok) {
-        var e = await up.json().catch(function () { return {}; });
-        throw new Error(e.error || 'Upload failed.');
-      }
-      say('Done — opening your workspace…');
-      // Hand off the exact tour we just filled, so the studio cannot open a different one.
-      location.href = '/studio?listing=' + encodeURIComponent(listing.id);
-    } catch (e) {
-      say(e.message + ' You can also upload inside the studio.');
-    }
-  }
-
-  if (heroFiles) {
-    heroFiles.addEventListener('change', function () {
-      if (!heroFiles.files || !heroFiles.files.length) return;
-      var files = Array.prototype.slice.call(heroFiles.files);
-      if (account) { sendToStudio(files); return; }
-      pendingFiles = files;
-      openAuth('signup');
-    });
-  }
+  /* The landing page no longer uploads anything. Brokers send a property
+     through /request and we produce the marketing for them; the studio is the
+     internal tool that fulfils those requests, not a self-serve product. */
 
   function authenticate() {
     submit.disabled = true;
@@ -330,7 +279,6 @@
         var data = text ? JSON.parse(text) : null;
         if (!res.ok) throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
         account = (data && data.account) || account;
-        if (pendingFiles && pendingFiles.length) { closeAuth(); return sendToStudio(pendingFiles); }
         location.href = '/studio';
       });
     }).catch(function (e) {

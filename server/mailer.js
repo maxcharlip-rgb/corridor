@@ -1,0 +1,153 @@
+import { config } from './config.js';
+
+/**
+ * Outbound email.
+ *
+ * Uses an HTTP email API rather than SMTP so there is no new dependency and no
+ * long-lived socket to babysit on a small instance — it is one fetch.
+ *
+ * The governing rule here is that email is a NOTIFICATION, never the record. A
+ * request that reached the server is already saved before this module is
+ * called, and a send that fails is reported rather than thrown. Losing a
+ * broker's job because a mail provider had a bad minute would be the single
+ * worst bug this product could have: the customer believes they have ordered,
+ * and nobody knows they exist.
+ */
+
+const RESEND_ENDPOINT = 'https://api.resend.com/emails';
+
+export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY && mailFrom());
+
+/** Where notifications land. Falls back to the from-address so a half-configured
+ *  install still reaches somebody rather than silently reaching nobody. */
+export const notifyAddress = () => process.env.NOTIFY_EMAIL || process.env.MAIL_FROM || null;
+
+export const mailFrom = () => process.env.MAIL_FROM || null;
+
+export function mailStatus() {
+  return {
+    configured: mailConfigured(),
+    from: mailFrom(),
+    notify: notifyAddress(),
+    reason: mailConfigured()
+      ? null
+      : !process.env.RESEND_API_KEY
+        ? 'RESEND_API_KEY is not set'
+        : 'MAIL_FROM is not set',
+  };
+}
+
+const esc = (s) =>
+  String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/**
+ * @returns {Promise<{ok: boolean, id?: string, error?: string, skipped?: boolean}>}
+ *          Never throws. The caller decides what a failure means.
+ */
+export async function sendMail({ to, subject, html, replyTo }) {
+  if (!mailConfigured()) {
+    return { ok: false, skipped: true, error: mailStatus().reason };
+  }
+  if (!to) return { ok: false, error: 'no recipient' };
+
+  try {
+    const res = await fetch(RESEND_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: mailFrom(),
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+        ...(replyTo ? { reply_to: replyTo } : {}),
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = data?.message || data?.error?.message || `HTTP ${res.status}`;
+      console.error('[mail] send failed:', detail);
+      return { ok: false, error: detail };
+    }
+    return { ok: true, id: data.id };
+  } catch (err) {
+    console.error('[mail] send failed:', err.message);
+    return { ok: false, error: err.message };
+  }
+}
+
+// --- templates ---------------------------------------------------------------
+
+const SHELL = (body) => `<div style="font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;max-width:620px">
+${body}
+<p style="margin-top:28px;font-size:12px;color:#9aa0a6">Corridor · cinematic marketing for commercial real estate</p>
+</div>`;
+
+const row = (label, value) =>
+  value
+    ? `<tr><td style="padding:7px 16px 7px 0;color:#6b7280;white-space:nowrap;vertical-align:top">${esc(label)}</td><td style="padding:7px 0;font-weight:500">${esc(value)}</td></tr>`
+    : '';
+
+/** What lands in the operator's inbox: everything needed to start work. */
+export function requestNotification(request, photos) {
+  const links = photos
+    .map((p, i) => `<a href="${config.publicUrl}/uploads/${esc(p.file)}" style="color:#2B4FD7">Photo ${i + 1}</a>`)
+    .join(' · ');
+
+  return {
+    subject: `New Corridor request — ${request.address || request.firm || 'untitled'}`,
+    html: SHELL(`
+      <h2 style="margin:0 0 4px;font-size:20px">New request</h2>
+      <p style="margin:0 0 18px;color:#6b7280">${esc(request.wants.join(' + ') || 'video tour')}</p>
+      <table style="border-collapse:collapse;font-size:14px">
+        ${row('Firm', request.firm)}
+        ${row('Contact', request.name)}
+        ${row('Email', request.email)}
+        ${row('Phone', request.phone)}
+        ${row('Address', request.address)}
+        ${row('Type', request.propertyType)}
+        ${row('Deal', request.deal)}
+        ${row('Size', request.size)}
+        ${row('Price / rate', request.price)}
+        ${row('Photos', String(photos.length))}
+      </table>
+      ${request.notes ? `<p style="margin:18px 0 0"><b>What they want it to look like</b><br>${esc(request.notes).replace(/\n/g, '<br>')}</p>` : ''}
+      ${links ? `<p style="margin:18px 0 0;font-size:13px">${links}</p>` : ''}
+      <p style="margin:24px 0 0"><a href="${config.publicUrl}/requests" style="background:#2B4FD7;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Open the queue</a></p>
+    `),
+  };
+}
+
+/** What the broker gets back, so the form does not feel like a void. */
+export function requestConfirmation(request) {
+  return {
+    subject: 'We got your property — Corridor',
+    html: SHELL(`
+      <h2 style="margin:0 0 10px;font-size:20px">Thanks — we have it.</h2>
+      <p style="margin:0 0 16px">We are cutting the ${esc(request.wants.join(' and ') || 'video tour')} for
+      <b>${esc(request.address || 'your property')}</b> now. It comes back to this address, ready to post
+      on CoStar, LinkedIn, or anywhere else your listing lives.</p>
+      <p style="margin:0 0 16px;color:#6b7280">Most properties come back within two business days. If we need
+      anything else — a better exterior shot, a floor plate — we will reply to this email.</p>
+      <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
+    `),
+  };
+}
+
+/** Delivery: the finished work, sent back to the broker. */
+export function requestDelivery(request, { tourUrl, downloadUrl, note }) {
+  return {
+    subject: `Your video tour — ${request.address || 'Corridor'}`,
+    html: SHELL(`
+      <h2 style="margin:0 0 10px;font-size:20px">It is ready.</h2>
+      ${note ? `<p style="margin:0 0 16px">${esc(note).replace(/\n/g, '<br>')}</p>` : ''}
+      ${tourUrl ? `<p style="margin:0 0 12px"><a href="${esc(tourUrl)}" style="background:#2B4FD7;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Watch the tour</a></p>` : ''}
+      ${downloadUrl ? `<p style="margin:0 0 16px"><a href="${esc(downloadUrl)}" style="color:#2B4FD7">Download the MP4</a> — post it anywhere.</p>` : ''}
+      <p style="margin:16px 0 0;color:#6b7280;font-size:13px">Want a change? Reply to this email and say what to fix.</p>
+    `),
+  };
+}

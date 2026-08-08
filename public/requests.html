@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Queue — Corridor</title>
+<style>
+  html, body { margin:0; padding:0; background:#F5F3EE; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  body { color:#101418; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:15px; }
+  input, select, textarea, button { font-family:inherit; font-size:14px; }
+
+  header { position:sticky; top:0; z-index:20; background:rgba(245,243,238,.92); backdrop-filter:blur(12px);
+           border-bottom:1px solid #E4E0D6; }
+  .bar { max-width:1080px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; gap:9px; }
+  .mark { width:13px; height:22px; background:#2B4FD7; border-radius:7px 7px 2px 2px; }
+  .word { font-family:Georgia, serif; font-size:24px; }
+  .bar a { font-size:14px; color:#55606E; text-decoration:none; }
+
+  .wrap { max-width:1080px; margin:0 auto; padding:0 22px 80px; }
+  h1 { font-family:Georgia, serif; font-weight:400; font-size:38px; margin:40px 0 6px; }
+  .mono { font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.09em;
+          text-transform:uppercase; color:#8A9099; }
+  .warn { background:#FDF3E3; border:1px solid #EBD9B5; color:#7A5B15; border-radius:12px; padding:13px 16px;
+          margin:18px 0; font-size:14px; line-height:1.55; }
+
+  .req { background:#fff; border:1px solid #E4E0D6; border-radius:16px; padding:20px; margin-bottom:14px; }
+  .req h2 { font-size:18px; margin:0 0 2px; font-weight:600; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .pill { font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+          padding:5px 11px; border-radius:999px; border:1px solid #DDD9CE; color:#55606E; }
+  .pill.new { background:#E7ECFB; border-color:#C3D0F5; color:#2B4FD7; }
+  .pill.progress { background:#FDF3E3; border-color:#EBD9B5; color:#7A5B15; }
+  .pill.delivered { background:#E6F5EE; border-color:#B9E0CD; color:#0F7B4F; }
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:8px 20px; margin:14px 0; font-size:14px; }
+  .facts b { color:#8A9099; font-weight:400; display:block; font-size:12px; }
+  .thumbs { display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:7px; margin:12px 0; }
+  .thumb { aspect-ratio:4/3; border-radius:8px; background-size:cover; background-position:center; border:1px solid #E4E0D6; }
+  .notes { background:#FBFAF7; border:1px solid #EDEBE4; border-radius:11px; padding:12px 14px; margin:12px 0;
+           font-size:14px; line-height:1.55; white-space:pre-wrap; }
+  .btn { padding:9px 15px; border-radius:999px; border:1px solid #DDD9CE; background:#fff; cursor:pointer; }
+  .btn.primary { background:#2B4FD7; color:#fff; border-color:#2B4FD7; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .empty { text-align:center; color:#8A9099; padding:70px 0; }
+  a.mailto { color:#2B4FD7; text-decoration:none; }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a href="/" style="display:flex;align-items:center;gap:9px;color:inherit"><span class="mark"></span><span class="word">Corridor</span></a>
+  <a href="/studio" style="margin-left:auto">Studio →</a>
+</div></header>
+
+<div class="wrap" id="app"><p class="mono" style="margin-top:40px">LOADING…</p></div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+  var STATE = { requests: [], mail: null };
+
+  async function api(path, opts) {
+    var res = await fetch('/api' + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {},
+      opts && opts.body ? { body: JSON.stringify(opts.body) } : {}));
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+    return data;
+  }
+
+  async function load() {
+    try {
+      var data = await api('/requests');
+      STATE.requests = data.requests || [];
+      STATE.mail = data.mail;
+      draw();
+    } catch (e) {
+      $('#app').innerHTML = '<div class="empty"><p>' + esc(e.message) + '</p>' +
+        '<p><a class="btn" href="/studio">Sign in</a></p></div>';
+    }
+  }
+
+  function fact(label, value) {
+    return value ? '<div><b>' + esc(label) + '</b>' + esc(value) + '</div>' : '';
+  }
+
+  function draw() {
+    var mail = STATE.mail || {};
+    /* If mail is not configured, say so at the top rather than letting the
+       operator discover it when a delivery silently goes nowhere. */
+    var banner = mail.configured ? '' :
+      '<div class="warn"><b>Email is not sending.</b> ' + esc(mail.reason || '') +
+      '. Requests are still captured and listed here, but neither you nor the broker is being notified. ' +
+      'Set RESEND_API_KEY and MAIL_FROM to turn it on.</div>';
+
+    if (!STATE.requests.length) {
+      $('#app').innerHTML = '<h1>Queue</h1>' + banner +
+        '<div class="empty">Nothing yet. Send brokers to <a class="mailto" href="/request">/request</a>.</div>';
+      return;
+    }
+
+    $('#app').innerHTML = '<h1>Queue</h1>' +
+      '<p class="mono">' + STATE.requests.length + ' REQUEST' + (STATE.requests.length === 1 ? '' : 'S') + '</p>' +
+      banner +
+      STATE.requests.map(function (r) {
+        var cls = r.status === 'new' ? 'new' : r.status === 'delivered' ? 'delivered'
+                : r.status === 'in progress' ? 'progress' : '';
+        return '<div class="req">' +
+          '<div class="row">' +
+            '<div style="margin-right:auto"><h2>' + esc(r.address || 'No address') + '</h2>' +
+              '<span class="mono">' + esc(r.firm || 'Unknown firm') + ' · ' + esc((r.wants || []).join(' + ')) + '</span></div>' +
+            '<span class="pill ' + cls + '">' + esc(r.status) + '</span>' +
+          '</div>' +
+          '<div class="facts">' +
+            fact('Contact', r.name) +
+            (r.email ? '<div><b>Email</b><a class="mailto" href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></div>' : '') +
+            fact('Phone', r.phone) +
+            fact('Type', r.propertyType) +
+            fact('Deal', r.deal) +
+            fact('Size', r.size) +
+            fact('Price', r.price) +
+            fact('Received', (r.createdAt || '').slice(0, 16).replace('T', ' ')) +
+          '</div>' +
+          (r.notes ? '<div class="notes">' + esc(r.notes) + '</div>' : '') +
+          '<div class="thumbs">' + (r.photoUrls || []).map(function (u) {
+            return '<a class="thumb" href="' + esc(u) + '" target="_blank" rel="noopener" style="background-image:url(' + esc(u) + ')"></a>';
+          }).join('') + '</div>' +
+          '<div class="row" style="margin-top:12px">' +
+            '<span class="mono">' + (r.photoUrls || []).length + ' PHOTOS</span>' +
+            '<span style="margin-left:auto"></span>' +
+            (r.status !== 'in progress' ? '<button class="btn" data-status="in progress" data-id="' + r.id + '">Start</button>' : '') +
+            '<button class="btn" data-status="declined" data-id="' + r.id + '">Decline</button>' +
+            '<button class="btn primary" data-deliver="' + r.id + '">Deliver…</button>' +
+          '</div>' +
+          '<div id="d-' + r.id + '"></div>' +
+        '</div>';
+      }).join('');
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-status]'), function (el) {
+      el.onclick = async function () {
+        el.disabled = true;
+        try { await api('/requests/' + el.getAttribute('data-id'), { method: 'PATCH', body: { status: el.getAttribute('data-status') } }); await load(); }
+        catch (e) { alert(e.message); el.disabled = false; }
+      };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-deliver]'), function (el) {
+      el.onclick = function () { deliverForm(el.getAttribute('data-deliver')); };
+    });
+  }
+
+  function deliverForm(reqId) {
+    var box = document.getElementById('d-' + reqId);
+    if (box.innerHTML) { box.innerHTML = ''; return; }
+    box.innerHTML =
+      '<div class="notes" style="margin-top:14px">' +
+        '<div class="mono" style="margin-bottom:10px">SEND THE FINISHED WORK</div>' +
+        '<input id="t-' + reqId + '" placeholder="Tour link (https://…/t/slug)" style="width:100%;padding:10px 12px;border:1px solid #DDD9CE;border-radius:10px;margin-bottom:8px">' +
+        '<input id="m-' + reqId + '" placeholder="MP4 link (https://…/renders/…mp4)" style="width:100%;padding:10px 12px;border:1px solid #DDD9CE;border-radius:10px;margin-bottom:8px">' +
+        '<textarea id="n-' + reqId + '" rows="2" placeholder="Optional note to the broker" style="width:100%;padding:10px 12px;border:1px solid #DDD9CE;border-radius:10px"></textarea>' +
+        '<div class="row" style="margin-top:10px"><button class="btn primary" id="s-' + reqId + '">Send it</button>' +
+        '<span class="mono" id="ds-' + reqId + '"></span></div>' +
+      '</div>';
+    document.getElementById('s-' + reqId).onclick = async function () {
+      var btn = this, status = document.getElementById('ds-' + reqId);
+      btn.disabled = true; status.textContent = 'SENDING…';
+      try {
+        await api('/requests/' + reqId + '/deliver', { method: 'POST', body: {
+          tourUrl: document.getElementById('t-' + reqId).value.trim(),
+          downloadUrl: document.getElementById('m-' + reqId).value.trim(),
+          note: document.getElementById('n-' + reqId).value.trim()
+        }});
+        await load();
+      } catch (e) { status.textContent = ''; alert(e.message); btn.disabled = false; }
+    };
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ const EMPTY = {
   shots: [],
   leads: [],
   events: [],
+  requests: [],
 };
 
 let db = null;
@@ -138,6 +139,11 @@ export const shots = {
       .shots.filter((s) => s.listingId === listingId)
       .sort((a, b) => a.order - b.order),
   byId: (shotId) => getDb().shots.find((s) => s.id === shotId) || null,
+};
+
+export const requests = {
+  all: () => getDb().requests || [],
+  byId: (rid) => (getDb().requests || []).find((r) => r.id === rid) || null,
 };
 
 export const leads = {

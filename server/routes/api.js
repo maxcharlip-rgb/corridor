@@ -37,6 +37,8 @@ import { specAgent, buildSpecFromBrokerInput } from '../agents/spec-agent.js';
 import { tourAgent, captionTrack, heroTextFor, PACES } from '../agents/tour-agent.js';
 import { envisionAgent, VISUALIZE_MODES, VISUAL_STYLES, IMAGE_MODELS } from '../agents/envision-agent.js';
 import { brochureAgent, BROCHURE_STYLES, brochureConfigured } from '../agents/brochure-agent.js';
+import { sendMail, requestDelivery, mailStatus } from '../mailer.js';
+import { requests as requestsRepo } from '../store.js';
 
 export const api = express.Router();
 api.use(express.json({ limit: '2mb' }));
@@ -152,6 +154,7 @@ api.get('/bootstrap', (_req, res) => {
       cinematic: higgsfieldConfigured,
       staging: stagingConfigured(),
       brochure: brochureConfigured(),
+      mail: mailStatus(),
       publicUrl: config.publicUrl,
       publicUrlIsLocal: /localhost|127\.0\.0\.1/i.test(config.publicUrl),
       model: config.higgsfield.model,
@@ -854,6 +857,92 @@ api.get('/listings/:id/visuals', handle(async (req, res) => {
 api.delete('/listings/:id/visuals/:visualId', handle(async (req, res) => {
   const listing = requireListing(req);
   listing.visuals = (listing.visuals || []).filter((v) => v.id !== req.params.visualId);
+  save();
+  res.json({ ok: true });
+}));
+
+// --- intake queue ------------------------------------------------------------
+
+/* Requests are not owned by an account: they arrive from brokerages with no
+   login, and whoever operates this install works the whole queue. Any signed-in
+   account can therefore see them, which is correct for a single-operator
+   service and must be revisited before a second firm is given a login. */
+
+api.get('/requests', handle(async (req, res) => {
+  const all = requestsRepo.all().slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  res.json({
+    requests: all.map((r) => ({ ...r, photoUrls: (r.photos || []).map((p) => `/uploads/${p.file}`) })),
+    counts: all.reduce((acc, r) => ({ ...acc, [r.status]: (acc[r.status] || 0) + 1 }), {}),
+    mail: mailStatus(),
+  });
+}));
+
+api.patch('/requests/:id', handle(async (req, res) => {
+  const request = requestsRepo.byId(req.params.id);
+  if (!request) return res.status(404).json({ error: 'Request not found.' });
+
+  const STATUSES = ['new', 'in progress', 'delivered', 'declined'];
+  if (req.body?.status !== undefined) {
+    if (!STATUSES.includes(req.body.status)) {
+      return res.status(400).json({ error: `Status must be one of: ${STATUSES.join(', ')}.` });
+    }
+    request.status = req.body.status;
+  }
+  if (req.body?.internalNote !== undefined) request.internalNote = String(req.body.internalNote).slice(0, 4000);
+  if (req.body?.listingId !== undefined) request.listingId = req.body.listingId || null;
+
+  request.updatedAt = now();
+  save();
+  res.json(request);
+}));
+
+/**
+ * Send the finished work back.
+ *
+ * Marking delivered is a side effect of the email actually being accepted, not
+ * of the button being pressed — a request shown as delivered when nothing left
+ * the building is how a customer ends up waiting forever on work that was
+ * finished days ago.
+ */
+api.post('/requests/:id/deliver', handle(async (req, res) => {
+  const request = requestsRepo.byId(req.params.id);
+  if (!request) return res.status(404).json({ error: 'Request not found.' });
+
+  const listing = req.body?.listingId ? listingsRepo.byId(req.body.listingId) : null;
+  const tourUrl = req.body?.tourUrl
+    || (listing?.published ? `${config.publicUrl}/t/${listing.slug}` : null);
+  const downloadUrl = req.body?.downloadUrl
+    || (listing?.reelFile ? `${config.publicUrl}/renders/${listing.reelFile}` : null);
+
+  if (!tourUrl && !downloadUrl) {
+    return res.status(400).json({ error: 'Nothing to deliver — publish the tour or build the reel first.' });
+  }
+
+  const mail = requestDelivery(request, { tourUrl, downloadUrl, note: req.body?.note || '' });
+  const sent = await sendMail({ to: request.email, subject: mail.subject, html: mail.html });
+
+  if (!sent.ok) {
+    return res.status(502).json({
+      error: sent.skipped
+        ? `Email is not configured (${sent.error}). The work is ready but nothing was sent.`
+        : `Delivery email failed: ${sent.error}`,
+      tourUrl,
+      downloadUrl,
+    });
+  }
+
+  request.status = 'delivered';
+  request.deliveredAt = now();
+  request.delivery = { tourUrl, downloadUrl, mailId: sent.id };
+  if (listing) request.listingId = listing.id;
+  save();
+
+  res.json({ ok: true, request });
+}));
+
+api.delete('/requests/:id', handle(async (req, res) => {
+  const db = getDb();
+  db.requests = (db.requests || []).filter((r) => r.id !== req.params.id);
   save();
   res.json({ ok: true });
 }));
