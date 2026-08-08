@@ -4,7 +4,7 @@ import express from 'express';
 import multer from 'multer';
 import { config, higgsfieldConfigured } from '../config.js';
 import {
-  getDb, save, id, now, slugify,
+  getDb, save, saveNow, id, now, slugify,
   listings as listingsRepo,
   photos as photosRepo,
   shots as shotsRepo,
@@ -938,6 +938,74 @@ api.post('/requests/:id/deliver', handle(async (req, res) => {
   save();
 
   res.json({ ok: true, request });
+}));
+
+/**
+ * Turn an intake request into a production listing.
+ *
+ * Without this the intake is a dead end: the broker's photos sit in uploads/ and
+ * the operator has to download each one and re-upload it into the studio by hand
+ * to produce anything. The files are already on disk, so the listing references
+ * them directly — no copy, no second upload. Deleting a photo from the listing
+ * only drops the DB record, so the request keeps its own copy either way.
+ */
+api.post('/requests/:id/create-listing', handle(async (req, res) => {
+  const request = requestsRepo.byId(req.params.id);
+  if (!request) return res.status(404).json({ error: 'Request not found.' });
+
+  const existing = request.listingId ? listingsRepo.byId(request.listingId) : null;
+  if (existing) {
+    return res.json({ listing: summarise(existing), photos: photosRepo.forListing(existing.id), reused: true });
+  }
+
+  const db = getDb();
+  const listing = {
+    id: id('lst'),
+    ownerId: req.account?.id || null,
+    slug: slugify(request.address || request.firm || 'tour'),
+    name: request.address || `${request.firm || 'Untitled'} tour`,
+    address: request.address || '',
+    propertyType: request.propertyType || 'office',
+    headline: [request.size, request.price].filter(Boolean).join(' · '),
+    // Only what the broker typed becomes a fact the video may state.
+    specs: [
+      request.size ? { label: 'Size', value: request.size } : null,
+      request.price ? { label: 'Price', value: request.price } : null,
+      request.deal ? { label: 'Availability', value: request.deal } : null,
+    ].filter(Boolean),
+    specNotes: request.notes || '',
+    cta: { label: 'Request a showing', enabled: true },
+    published: false,
+    fromRequestId: request.id,
+    createdAt: now(),
+    updatedAt: now(),
+  };
+  db.listings.push(listing);
+
+  const created = (request.photos || []).map((p, i) => {
+    const photo = {
+      id: id('pho'),
+      listingId: listing.id,
+      file: p.file,
+      originalName: p.originalName || p.file,
+      originalFile: p.file,
+      spaceType: guessSpaceType(p.originalName || ''),
+      caption: '',
+      staged: false,
+      enhanced: null,
+      order: i,
+      createdAt: now(),
+    };
+    db.photos.push(photo);
+    return photo;
+  });
+
+  request.listingId = listing.id;
+  if (request.status === 'new') request.status = 'in progress';
+  request.updatedAt = now();
+  saveNow();
+
+  res.status(201).json({ listing: summarise(listing), photos: created, reused: false });
 }));
 
 api.delete('/requests/:id', handle(async (req, res) => {

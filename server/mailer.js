@@ -131,7 +131,7 @@ export function requestConfirmation(request) {
       <p style="margin:0 0 16px">We are cutting the ${esc(request.wants.join(' and ') || 'video tour')} for
       <b>${esc(request.address || 'your property')}</b> now. It comes back to this address, ready to post
       on CoStar, LinkedIn, or anywhere else your listing lives.</p>
-      <p style="margin:0 0 16px;color:#6b7280">Most properties come back within two business days. If we need
+      <p style="margin:0 0 16px;color:#6b7280">Your video comes back in 24 hours or less. If we need
       anything else — a better exterior shot, a floor plate — we will reply to this email.</p>
       <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
     `),

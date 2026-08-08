@@ -672,3 +672,45 @@ main().catch(async (err) => {
   check('delivery bails out before marking delivered when the send fails',
     deliver.indexOf('if (!sent.ok)') < deliver.indexOf("request.status = 'delivered'"));
 }
+
+// --- intake photos must be visible and usable -------------------------------
+{
+  const fsx = await import('node:fs');
+  const queue = fsx.readFileSync(new URL('../public/requests.html', import.meta.url), 'utf8');
+  const apiSrc = fsx.readFileSync(new URL('../server/routes/api.js', import.meta.url), 'utf8');
+
+  /* The queue's photo tiles are <a> elements. An inline box ignores
+     aspect-ratio, so the tile collapsed to a sliver and the broker's photos
+     rendered as empty strips — the files were fine, the operator just could not
+     see them. */
+  const thumbRule = queue.slice(queue.indexOf('.thumb {'), queue.indexOf('}', queue.indexOf('.thumb {')));
+  check('queue photo tiles are block-level so aspect-ratio applies', /display:\s*block/.test(thumbRule));
+  check('queue photo tiles still declare an aspect ratio', /aspect-ratio/.test(thumbRule));
+  check('each tile links to the full-size file', /<a class="thumb" href/.test(queue));
+
+  /* Without a bridge from request to listing, the operator downloads every
+     photo and re-uploads it by hand to produce anything. */
+  const bridge = apiSrc.slice(apiSrc.indexOf("api.post('/requests/:id/create-listing'"),
+                              apiSrc.indexOf("api.delete('/requests/:id'"));
+  check('a request can become a production listing', bridge.length > 0);
+  check('the listing reuses the uploaded files rather than re-copying them', /file: p\.file/.test(bridge));
+  check('broker-entered specs carry over as the fact whitelist', /specs: \[/.test(bridge));
+  check('creating twice reuses the listing instead of duplicating it', /reused: true/.test(bridge));
+  check('the request is linked back to its listing', /request\.listingId = listing\.id/.test(bridge));
+}
+
+// --- the turnaround we promise ----------------------------------------------
+{
+  const fsx = await import('node:fs');
+  const files = ['../public/index.html', '../public/request.html', '../server/mailer.js'];
+  const stale = files.filter((f) =>
+    /two business days|2 business days/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
+  );
+  // A promise that differs between the landing page, the form and the email is
+  // one the customer will notice before we do.
+  check('no stale turnaround promise remains', stale.length === 0);
+  const promised = files.filter((f) =>
+    /24 hours or less/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
+  );
+  check('24-hour turnaround stated on landing, form and confirmation email', promised.length === 3);
+}

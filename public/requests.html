@@ -35,7 +35,12 @@
   .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:8px 20px; margin:14px 0; font-size:14px; }
   .facts b { color:#8A9099; font-weight:400; display:block; font-size:12px; }
   .thumbs { display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:7px; margin:12px 0; }
-  .thumb { aspect-ratio:4/3; border-radius:8px; background-size:cover; background-position:center; border:1px solid #E4E0D6; }
+  /* display:block matters. These tiles are <a> elements, and an inline box
+     ignores aspect-ratio — the tile collapsed to a sliver and the broker's
+     photos rendered as empty strips even though the files were fine. */
+  .thumb { display:block; aspect-ratio:4/3; border-radius:8px; background-size:cover;
+           background-position:center; background-color:#EDEBE4; border:1px solid #E4E0D6; }
+  .thumb:hover { outline:2px solid #2B4FD7; outline-offset:1px; }
   .notes { background:#FBFAF7; border:1px solid #EDEBE4; border-radius:11px; padding:12px 14px; margin:12px 0;
            font-size:14px; line-height:1.55; white-space:pre-wrap; }
   .btn { padding:9px 15px; border-radius:999px; border:1px solid #DDD9CE; background:#fff; cursor:pointer; }
@@ -131,7 +136,8 @@
           '<div class="row" style="margin-top:12px">' +
             '<span class="mono">' + (r.photoUrls || []).length + ' PHOTOS</span>' +
             '<span style="margin-left:auto"></span>' +
-            (r.status !== 'in progress' ? '<button class="btn" data-status="in progress" data-id="' + r.id + '">Start</button>' : '') +
+            '<button class="btn" data-tour="' + r.id + '">' +
+              (r.listingId ? 'Open tour →' : 'Create tour →') + '</button>' +
             '<button class="btn" data-status="declined" data-id="' + r.id + '">Decline</button>' +
             '<button class="btn primary" data-deliver="' + r.id + '">Deliver…</button>' +
           '</div>' +
@@ -148,6 +154,18 @@
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-deliver]'), function (el) {
       el.onclick = function () { deliverForm(el.getAttribute('data-deliver')); };
+    });
+    /* One click from an intake request to a studio listing with the broker's
+       photos already attached. Without it the operator downloads every photo and
+       re-uploads it by hand, which is the whole job. */
+    Array.prototype.forEach.call(document.querySelectorAll('[data-tour]'), function (el) {
+      el.onclick = async function () {
+        el.disabled = true; el.textContent = 'Opening…';
+        try {
+          var out = await api('/requests/' + el.getAttribute('data-tour') + '/create-listing', { method: 'POST' });
+          window.location.href = '/studio?listing=' + encodeURIComponent(out.listing.id);
+        } catch (e) { alert(e.message); el.disabled = false; el.textContent = 'Create tour →'; }
+      };
     });
   }
 

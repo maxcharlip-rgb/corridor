@@ -74,8 +74,9 @@
 
 <div class="wrap" id="app">
   <h1>Send us the property.<br>We send back the video.</h1>
-  <p class="lede">Drop in the photos you already have and the basics about the building. We cut the tour and email
-  it to you, ready to post on CoStar, LinkedIn, or anywhere your listing lives. No software to learn.</p>
+  <p class="lede">Drop in the photos you already have and the basics about the building.
+  <b style="color:#101418">We email the finished video back in 24 hours or less</b> — ready to post on CoStar,
+  LinkedIn, or anywhere your listing lives. No software to learn, no shoot day.</p>
 
   <form id="f" novalidate>
     <div class="card">
@@ -117,19 +118,12 @@
     </div>
 
     <div class="card">
-      <div class="mono" style="margin-bottom:16px">03 · How it should look</div>
+      <div class="mono" style="margin-bottom:16px">03 · Photos</div>
       <!-- Video only for now. The brochure agent still exists server-side and the
            intake route still accepts 'brochure' in wants, so re-offering it is a
            one-line change - but a form that offers two things converts worse than
            one that offers the thing you are actually selling. -->
       <div id="wants" hidden><input type="checkbox" value="video tour" checked></div>
-      <label><span>How should it feel? (optional)</span>
-        <textarea name="notes" rows="4" placeholder="Cinematic and calm. Lead with the exterior at golden hour, then the lobby. Our brand colour is navy. Mention the new roof and covered parking."></textarea>
-      </label>
-    </div>
-
-    <div class="card">
-      <div class="mono" style="margin-bottom:16px">04 · Photos</div>
       <label class="drop" id="drop">
         <input type="file" id="files" multiple accept="image/jpeg,image/png,image/webp" hidden>
         <span class="mono">DRAG IN · OR CLICK TO BROWSE</span>
@@ -138,6 +132,9 @@
       </label>
       <div class="thumbs" id="thumbs"></div>
       <p class="note" id="photo-note" style="margin:12px 0 0"></p>
+      <label style="margin:20px 0 0"><span>Anything we should know? (optional)</span>
+        <textarea name="notes" rows="3" placeholder="Cinematic and calm. Lead with the exterior at golden hour, then the lobby. Mention the new roof and covered parking."></textarea>
+      </label>
     </div>
 
     <!-- Bots complete every field they can see. A person never sees this one. -->
@@ -145,7 +142,7 @@
       <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
     </div>
 
-    <button class="go" id="go" type="submit">Send the property</button>
+    <button class="go" id="go" type="submit">Send it — video back in 24 hours</button>
     <p class="note" id="status" style="margin:14px 0 0;text-align:center"></p>
   </form>
 </div>
@@ -246,7 +243,7 @@
       $('#app').innerHTML =
         '<div class="done"><h2>Got it.</h2>' +
         '<p class="lede" style="margin:0 auto">We are cutting it now and it comes back to <b>' +
-        email.replace(/[<>&]/g, '') + '</b>, usually within two business days. ' +
+        email.replace(/[<>&]/g, '') + '</b> in 24 hours or less. ' +
         'If we need a better shot of anything, we will reply to that address.</p>' +
         skipped +
         '<p class="mono" style="margin-top:34px">REFERENCE ' + (data.id || '') + '</p></div>';
