@@ -714,3 +714,35 @@ main().catch(async (err) => {
   );
   check('24-hour turnaround stated on landing, form and confirmation email', promised.length === 3);
 }
+
+// --- payment must be confirmed, never assumed --------------------------------
+{
+  const fsx = await import('node:fs');
+  const pay = await import('../server/payments.js');
+  const pub = fsx.readFileSync(new URL('../server/routes/public.js', import.meta.url), 'utf8');
+
+  /* Checkout hands the browser a session id on redirect. An id in a query
+     string proves nothing — anyone can type one. The only answer that counts
+     comes from asking Stripe, and it is asked again at the moment the work is
+     committed to, not just when the form renders. */
+  const gate = pub.slice(pub.indexOf('let payment = {'), pub.indexOf('const request = {'));
+  check('payment is verified against Stripe, not the URL', /await verifyCheckout/.test(gate));
+  check('an unverified payment is refused with 402', /status\(402\)/.test(gate));
+  check('a comp code only works when one is configured', /compCode && comp/.test(gate));
+
+  // Card data must never reach this server: Checkout is hosted by Stripe.
+  const paySrc = fsx.readFileSync(new URL('../server/payments.js', import.meta.url), 'utf8');
+  check('no card fields are handled server-side',
+    !/\b(card_number|cvc|exp_month|exp_year)\b/.test(paySrc));
+  check('checkout is the hosted Stripe session flow', /checkout\/sessions/.test(paySrc));
+
+  // Prices come from one place so the page and the charge cannot disagree.
+  check('packages carry explicit prices', pay.PACKAGES.every((p) => Number.isFinite(p.price) && p.price > 0));
+  check('unit_amount is derived from the package price', /unit_amount: pkg\.price \* 100/.test(paySrc));
+
+  // Never throws, so a Stripe outage cannot take the form down with it.
+  const v = await pay.verifyCheckout('cs_test_definitely_not_real');
+  check('verifyCheckout reports failure instead of throwing', v.paid === false && typeof v.reason === 'string');
+  check('payments degrade to a clear reason when unconfigured',
+    pay.paymentsConfigured() || typeof pay.paymentStatus().reason === 'string');
+}

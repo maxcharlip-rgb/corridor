@@ -57,6 +57,13 @@ services:
       # Cinematic video + image generation. Without both, the app still runs:
       # preview rendering, publishing, QR sign kit, tours and lead capture all
       # work. Only Higgsfield generation is disabled.
+      # Checkout. Without these the pricing cards render and the form still
+      # takes submissions; it just says checkout is not switched on.
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: COMP_CODE
+        sync: false
+
       # Property intake. Requests are captured and listed at /requests without
       # these, but neither you nor the broker is notified that one arrived.
       - key: RESEND_API_KEY

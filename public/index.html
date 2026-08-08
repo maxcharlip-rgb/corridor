@@ -137,35 +137,12 @@
       </section>
 
       <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: 0 20px clamp(48px, 7vw, 88px);">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(16px, 2vw, 22px);">
-          <div style="background: #fff; border: 1px solid #E4E0D6; border-radius: 22px; padding: clamp(22px, 3vw, 30px);">
-            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8A8778; margin-bottom: 16px;">Solo broker</div>
-            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px;">
-              <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(38px, 5vw, 50px); line-height: 1;">$79</span>
-              <span style="font-size: 14px; color: #55606E;">/month</span>
-            </div>
-            <div style="display: grid; gap: 9px; margin-bottom: 24px; font-size: 14.5px;">
-              <div>3 tours a month, unlimited re-cuts</div>
-              <div>Chat refinements + concept images</div>
-              <div>QR sign artwork, print-ready</div>
-            </div>
-            <a href="/request" style="display:block;text-align:center;width: 100%; font-size: 15px; color: #101418; background: transparent; border: 1px solid #101418; padding: 14px; border-radius: 999px; cursor: pointer; text-decoration:none; box-sizing:border-box;" data-hover="background: #101418; color: #fff;">Send us a property</a>
-          </div>
-          <div style="background: #101E33; color: #fff; border-radius: 22px; padding: clamp(22px, 3vw, 30px);">
-            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8FA6D8; margin-bottom: 16px;">Brokerage</div>
-            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px;">
-              <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(38px, 5vw, 50px); line-height: 1;">$349</span>
-              <span style="font-size: 14px; color: #C4CEE0;">/month</span>
-            </div>
-            <div style="display: grid; gap: 9px; margin-bottom: 24px; font-size: 14.5px; color: #C4CEE0;">
-              <div>20 tours a month, pooled across seats</div>
-              <div>Firm branding on every tour</div>
-              <div>4K masters, SSO, onboarding</div>
-            </div>
-            <a href="mailto:hello@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="display: block; text-align: center; font-size: 15px; color: #101418; background: #fff; padding: 14px; border-radius: 999px; font-weight: 500;" data-hover="background: #E7ECFB; color: #101418;">Talk to us</a>
-          </div>
+        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4vw, 44px); letter-spacing: -.015em; margin: 0 0 10px;">Pick what the listing needs.</h2>
+        <p style="font-size: 16px; color: #55606E; margin: 0 0 30px; max-width: 54ch;">Pay once, per property. No subscription, no seats, nothing to cancel. You send the photos straight after checkout and the video comes back in 24 hours or less.</p>
+        <div id="pkgs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(16px, 2vw, 22px);">
+          <p style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8A8778;">LOADING PRICES…</p>
         </div>
-        <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #8A8778; margin: 20px 0 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · HELLO@CORRIDOR.TOURS</p>
+        <p id="pay-note" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #8A8778; margin: 20px 0 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · HELLO@CORRIDOR.TOURS</p>
       </section>
     </div>
 <div id="auth-modal" style="display: none;">
@@ -298,6 +275,63 @@
     .then(function (data) { if (data && data.account) account = data.account; })
     .catch(function () {});
 }());
+
+  /* Pricing comes from the server so the number on the card and the number
+     Stripe charges are the same number. A price that drifts between the page
+     and the receipt is the fastest way to lose a first customer. */
+  (function () {
+    var box = document.getElementById('pkgs');
+    if (!box) return;
+
+    fetch('/api/public/packages').then(function (r) { return r.json(); }).then(function (data) {
+      var pkgs = data.packages || [];
+      box.innerHTML = pkgs.map(function (p, i) {
+        var dark = i === 1;
+        return '<div style="background:' + (dark ? '#101E33' : '#fff') + ';color:' + (dark ? '#fff' : '#101418') +
+          ';border:1px solid ' + (dark ? '#101E33' : '#E4E0D6') + ';border-radius:22px;padding:clamp(22px,3vw,30px);display:flex;flex-direction:column">' +
+          '<div style="font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:' +
+            (dark ? '#8FA6D8' : '#8A8778') + ';margin-bottom:16px">' + p.name + '</div>' +
+          '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">' +
+            '<span style="font-family:\'Instrument Serif\',Georgia,serif;font-size:clamp(38px,5vw,50px);line-height:1">$' + p.price.toLocaleString('en-US') + '</span>' +
+            '<span style="font-size:14px;color:' + (dark ? '#C4CEE0' : '#55606E') + '">per property</span></div>' +
+          '<p style="font-size:14.5px;line-height:1.5;margin:0 0 16px;color:' + (dark ? '#C4CEE0' : '#55606E') + '">' + p.blurb + '</p>' +
+          '<div style="display:grid;gap:9px;margin-bottom:24px;font-size:14.5px;color:' + (dark ? '#C4CEE0' : '#101418') + '">' +
+            p.detail.map(function (d) { return '<div>' + d + '</div>'; }).join('') + '</div>' +
+          '<button type="button" data-buy="' + p.key + '" style="margin-top:auto;width:100%;font-size:15px;font-weight:500;padding:14px;border-radius:999px;cursor:pointer;border:1px solid ' +
+            (dark ? '#fff' : '#101418') + ';background:' + (dark ? '#fff' : 'transparent') + ';color:' + (dark ? '#101418' : '#101418') + '">Choose ' + p.name + '</button>' +
+        '</div>';
+      }).join('');
+
+      var note = document.getElementById('pay-note');
+      if (!data.payments || !data.payments.configured) {
+        /* Say it plainly rather than letting someone click into a dead end. */
+        if (note) note.textContent = 'CHECKOUT IS NOT SWITCHED ON YET — CHOOSE A PACKAGE AND SEND THE PROPERTY, WE WILL INVOICE YOU.';
+      }
+
+      Array.prototype.forEach.call(box.querySelectorAll('[data-buy]'), function (btn) {
+        btn.onclick = async function () {
+          var key = btn.getAttribute('data-buy');
+          btn.disabled = true; btn.textContent = 'One moment…';
+          try {
+            var res = await fetch('/api/public/checkout', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ package: key })
+            });
+            var out = await res.json();
+            if (res.ok && out.url) { window.location.href = out.url; return; }
+            // Payments off, or Stripe unhappy: send them to the form anyway
+            // rather than stranding them on a broken button.
+            window.location.href = '/request?package=' + encodeURIComponent(key);
+          } catch (e) {
+            window.location.href = '/request?package=' + encodeURIComponent(key);
+          }
+        };
+      });
+    }).catch(function () {
+      box.innerHTML = '<p style="font-size:15px;color:#55606E">Prices are loading slowly. ' +
+        '<a href="/request" style="color:#2B4FD7">Send us the property</a> and we will quote it.</p>';
+    });
+  })();
 </script>
 </body>
 </html>

@@ -117,6 +117,15 @@
           '<div class="row">' +
             '<div style="margin-right:auto"><h2>' + esc(r.address || 'No address') + '</h2>' +
               '<span class="mono">' + esc(r.firm || 'Unknown firm') + ' · ' + esc((r.wants || []).join(' + ')) + '</span></div>' +
+            (function () {
+              /* What was actually collected, from the verified record — not
+                 from what the buyer clicked. An unpaid job that looks paid is
+                 work given away by accident. */
+              var p = r.payment || {};
+              if (p.comped) return '<span class="pill" style="background:#E6F5EE;border-color:#B9E0CD;color:#0F7B4F">comped</span>';
+              if (p.paid) return '<span class="pill" style="background:#E6F5EE;border-color:#B9E0CD;color:#0F7B4F">paid $' + (p.amount || 0).toLocaleString('en-US') + '</span>';
+              return '<span class="pill" style="background:#FDF3E3;border-color:#EBD9B5;color:#7A5B15">unpaid</span>';
+            })() +
             '<span class="pill ' + cls + '">' + esc(r.status) + '</span>' +
           '</div>' +
           '<div class="facts">' +

@@ -62,6 +62,10 @@
 
   .done { text-align:center; padding:70px 0; }
   .done h2 { font-family:Georgia, serif; font-weight:400; font-size:36px; margin:0 0 12px; }
+  .paid { display:flex; align-items:center; gap:12px; background:#E6F5EE; border:1px solid #B9E0CD;
+          color:#0F5F3D; border-radius:14px; padding:14px 18px; margin:34px 0 -14px; font-size:15px; }
+  .paid b { font-weight:650; }
+  .pending { background:#FDF3E3; border-color:#EBD9B5; color:#7A5B15; }
 </style>
 </head>
 <body>
@@ -73,6 +77,7 @@
 </div></header>
 
 <div class="wrap" id="app">
+  <div id="paid-banner"></div>
   <h1>Send us the property.<br>We send back the video.</h1>
   <p class="lede">Drop in the photos you already have and the basics about the building.
   <b style="color:#101418">We email the finished video back in 24 hours or less</b> — ready to post on CoStar,
@@ -150,6 +155,39 @@
 <script>
 (function () {
   var files = [];
+  var params = new URLSearchParams(location.search);
+  var SESSION = params.get('session') || '';
+  var PACKAGE = params.get('package') || '';
+  var COMP = params.get('comp') || '';
+
+  /* Confirm the payment with the server before telling anyone it went through.
+     The session id arrives in the URL and proves nothing by itself. */
+  (function confirmPayment() {
+    var banner = document.getElementById('paid-banner');
+    if (!banner) return;
+    if (COMP) {
+      banner.innerHTML = '<div class="paid"><b>Complimentary listing.</b> No charge for this one.</div>';
+      return;
+    }
+    if (!SESSION) return;
+    banner.innerHTML = '<div class="paid pending">Checking your payment…</div>';
+    fetch('/api/public/checkout/' + encodeURIComponent(SESSION))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.paid) {
+          PACKAGE = d.packageKey || PACKAGE;
+          banner.innerHTML = '<div class="paid"><b>Payment received' +
+            (d.amount ? ' — $' + d.amount : '') + '.</b> ' +
+            (d.package ? d.package.name + '. ' : '') +
+            'Fill this in and your video is on the clock.</div>';
+        } else {
+          banner.innerHTML = '<div class="paid pending"><b>We could not confirm that payment yet.</b> ' +
+            'Send the property anyway — if anything is wrong with the charge we will sort it out by email.</div>';
+        }
+      })
+      .catch(function () { banner.innerHTML = ''; });
+  })();
+
   var $ = function (s) { return document.querySelector(s); };
   var MAX = 40;
 
@@ -225,6 +263,10 @@
     ['firm', 'name', 'email', 'phone', 'address', 'propertyType', 'deal', 'size', 'price', 'notes', 'website']
       .forEach(function (k) { if (form[k]) fd.append(k, form[k].value); });
     fd.append('wants', wants.join(','));
+    // The server re-verifies these; sending them is a hand-off, not a claim.
+    if (SESSION) fd.append('session', SESSION);
+    if (PACKAGE) fd.append('package', PACKAGE);
+    if (COMP) fd.append('comp', COMP);
     files.forEach(function (f) { fd.append('photos', f); });
 
     go.disabled = true;

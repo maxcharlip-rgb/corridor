@@ -5,6 +5,7 @@ import { config } from '../config.js';
 import { getDb, save, saveNow, id, now, listings as listingsRepo, shots as shotsRepo, photos as photosRepo } from '../store.js';
 import { sendMail, requestNotification, requestConfirmation, notifyAddress, mailConfigured } from '../mailer.js';
 import { rateLimit } from '../limits.js';
+import { createCheckout, verifyCheckout, PACKAGES, PACKAGE_BY_KEY, paymentsConfigured, paymentStatus } from '../payments.js';
 import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
 import { DISCLOSURES } from '../facts.js';
@@ -24,6 +25,48 @@ function findPublished(slug) {
 
 /** The payload the public viewer renders. Deliberately excludes prompts,
  *  render internals, credit costs and lead data — this is a prospect's view. */
+
+// --- checkout ----------------------------------------------------------------
+
+const checkoutLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, scope: 'checkout' });
+
+/** What is for sale, and whether this install can take money at all. */
+publicApi.get('/packages', (_req, res) => {
+  res.json({ packages: PACKAGES, payments: paymentStatus() });
+});
+
+publicApi.post('/checkout', checkoutLimiter, async (req, res) => {
+  const key = String(req.body?.package || '');
+  if (!PACKAGE_BY_KEY[key]) return res.status(400).json({ error: 'Pick a package first.' });
+  if (!paymentsConfigured()) {
+    return res.status(503).json({ error: 'Payments are not switched on yet. Set STRIPE_SECRET_KEY.' });
+  }
+  try {
+    const session = await createCheckout({ packageKey: key, email: String(req.body?.email || '').trim() || null });
+    res.json(session);
+  } catch (err) {
+    console.error('[checkout] could not create session:', err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+/**
+ * Is this session paid?
+ *
+ * The form asks before it renders. The answer comes from Stripe, never from the
+ * URL the browser was redirected with — an id in a query string proves nothing.
+ */
+publicApi.get('/checkout/:sessionId', async (req, res) => {
+  const result = await verifyCheckout(req.params.sessionId);
+  res.json({
+    paid: result.paid,
+    packageKey: result.packageKey,
+    package: result.packageKey ? PACKAGE_BY_KEY[result.packageKey] || null : null,
+    amount: result.amount,
+    email: result.email,
+    reason: result.paid ? null : result.reason,
+  });
+});
 
 // --- property intake ---------------------------------------------------------
 
@@ -67,7 +110,7 @@ const clean = (v, max = 300) => String(v ?? '').trim().slice(0, max);
  * request failed" to someone who has just uploaded forty photos — they would
  * not send them twice, and we would never know they tried.
  */
-publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), (req, res) => {
+publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), async (req, res) => {
   const body = req.body || {};
 
   // Bots fill in every field they find. A human never sees this one.
@@ -88,6 +131,38 @@ publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), (re
     });
   }
 
+  /* Payment, confirmed with Stripe rather than believed from the browser.
+   *
+   * The redirect hands the page a session id, which proves nothing on its own —
+   * anyone can put an id in a query string. So the id is exchanged for the real
+   * payment_status here, at the point the work is actually committed to.
+   *
+   * COMP_CODE exists because the first listings are deliberately free. A pilot
+   * that cannot be run through the real flow gets run some other way, and then
+   * the real flow is the one thing never tested. */
+  let payment = { paid: false, comped: false, amount: null, packageKey: null, sessionId: null };
+  const comp = clean(body.comp, 80);
+  const compCode = process.env.COMP_CODE || '';
+
+  if (compCode && comp && comp === compCode) {
+    payment = { paid: true, comped: true, amount: 0, packageKey: clean(body.package, 40) || null, sessionId: null };
+  } else if (paymentsConfigured()) {
+    const check = await verifyCheckout(clean(body.session, 200));
+    if (!check.paid) {
+      return res.status(402).json({
+        error: 'We could not confirm payment for this request. If you were charged, reply to your receipt and we will sort it out.',
+        reason: check.reason,
+      });
+    }
+    payment = {
+      paid: true, comped: false,
+      amount: check.amount, packageKey: check.packageKey, sessionId: check.sessionId,
+    };
+  }
+  // With payments unconfigured the form still works — that is the state this
+  // install ships in until STRIPE_SECRET_KEY is set, and a broker mid-pilot
+  // should not hit a wall because billing is not switched on yet.
+
   const wants = String(body.wants || 'video tour')
     .split(',').map((w) => w.trim().toLowerCase()).filter((w) => WANTS.includes(w));
 
@@ -107,6 +182,7 @@ publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), (re
     photos: files.map((f, i) => ({ file: f.filename, originalName: f.originalname, order: i })),
     rejected: req.rejectedFiles || [],
     status: 'new',
+    payment,
     createdAt: now(),
     source: clean(body.source, 80) || 'web',
   };
@@ -121,6 +197,7 @@ publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), (re
     ok: true,
     id: request.id,
     photos: files.length,
+    paid: payment.paid,
     rejected: request.rejected,
     // Tell the truth about delivery rather than implying an email is on its way.
     emailConfigured: mailConfigured(),
