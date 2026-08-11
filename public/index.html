@@ -160,13 +160,15 @@
         <div style="display: grid; gap: 10px;">
           <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
           <input type="password" autocomplete="current-password" placeholder="Password" id="auth-password" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
-          <div id="signup-extra" style="display: none;">
-            <input type="text" placeholder="Brokerage" id="auth-company" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
+          <div id="signup-extra" style="display: none; gap: 10px;">
+            <input type="password" autocomplete="new-password" placeholder="Confirm password" id="auth-password2" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
+            <input type="text" placeholder="Brokerage or company" id="auth-company" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
           </div>
           <div id="auth-error" style="display: none;">
             <p style="font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0;"></p>
           </div>
           <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #2B4FD7; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #1F3BB0;">Sign in</button>
+          <a href="/reset" id="auth-forgot" style="display: block; text-align: center; font-size: 13.5px; color: #55606E; text-decoration: none; padding: 10px 0 0;" data-hover="color: #2B4FD7;">Forgot password?</a>
           <button type="button" id="auth-toggle" style="width: 100%; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #55606E; background: transparent; border: 0; padding: 8px 0 2px; cursor: pointer;" data-hover="color: #2B4FD7;">Create an account</button>
         </div>
       </div>
@@ -202,6 +204,7 @@
   var errText = err.querySelector('p');
   var submit = document.getElementById('auth-submit');
   var toggle = document.getElementById('auth-toggle');
+  var forgot = document.getElementById('auth-forgot');
   var val = function (id) { var el = document.getElementById(id); return el ? el.value : ''; };
 
   function paintMode() {
@@ -210,7 +213,9 @@
     document.getElementById('auth-sub').textContent = signup
       ? 'Your first tour is free. No card, no call.'
       : 'Pick up your tours, share links and concept images.';
-    document.getElementById('signup-extra').style.display = signup ? 'block' : 'none';
+    document.getElementById('signup-extra').style.display = signup ? 'grid' : 'none';
+    // Recovering a password only means anything on the sign-in side.
+    forgot.style.display = signup ? 'none' : 'block';
     submit.textContent = signup ? 'Create account' : 'Sign in';
     toggle.textContent = signup ? 'I already have an account' : 'Create an account';
   }
@@ -240,7 +245,33 @@
      through /request and we produce the marketing for them; the studio is the
      internal tool that fulfils those requests, not a self-serve product. */
 
+  /* Deliberately the same shape the server enforces in createAccount(), so the
+     page and the API agree on what a valid credential is. The min-8 rule is
+     safe on the sign-in path too: the server has always required 8 at signup,
+     so no existing account can have a shorter one. */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function problemWith() {
+    var email = val('auth-email').trim();
+    if (!email) return 'Enter your email address.';
+    if (!EMAIL_RE.test(email)) return 'That email address does not look right.';
+    var password = val('auth-password');
+    if (!password) return 'Enter your password.';
+    if (password.length < 8) return 'Your password must be at least 8 characters.';
+    if (mode === 'signup' && password !== val('auth-password2')) return 'The two passwords do not match.';
+    return null;
+  }
+  function showError(message) {
+    errText.textContent = message;
+    err.style.display = 'block';
+  }
+
   function authenticate() {
+    /* Catch it here rather than spending a round trip to be told the same
+       thing. Nothing is sent until the credential is well-formed. */
+    var problem = problemWith();
+    if (problem) { showError(problem); return; }
+
     submit.disabled = true;
     submit.textContent = 'One moment…';
     err.style.display = 'none';
@@ -259,14 +290,13 @@
         location.href = '/studio';
       });
     }).catch(function (e) {
-      errText.textContent = e.message || 'Could not reach Corridor.';
-      err.style.display = 'block';
+      showError(e.message || 'Could not reach Corridor.');
       submit.disabled = false;
       paintMode();
     });
   }
   submit.addEventListener('click', authenticate);
-  ['auth-email', 'auth-password'].forEach(function (id) {
+  ['auth-email', 'auth-password', 'auth-password2'].forEach(function (id) {
     document.getElementById(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') authenticate(); });
   });
 

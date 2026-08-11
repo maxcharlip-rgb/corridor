@@ -4,6 +4,7 @@ import { config, higgsfieldConfigured } from './config.js';
 import { getDb, flush, listings as listingsRepo } from './store.js';
 import { api } from './routes/api.js';
 import { publicApi } from './routes/public.js';
+import { intakeApi } from './routes/intake.js';
 import { authApi } from './routes/auth.js';
 import { loadAccount, requireAuth, authEnabled } from './auth.js';
 import { migrateGlobalBranding } from './branding.js';
@@ -45,6 +46,9 @@ app.use(express.static(config.publicDir, { extensions: ['html'] }));
 // must never meet a login screen.
 app.use(loadAccount);
 app.use('/api/public', publicApi);
+// Before the authenticated '/api' router below, which would otherwise swallow
+// it: intake is by definition from someone who has no account yet.
+app.use('/api/intake', intakeApi);
 app.use('/api/auth', authApi);
 app.use('/api', requireAuth, api);
 
