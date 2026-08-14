@@ -36,7 +36,8 @@ const NOTIFY = 'hello@corridor.tours';
 
 /* Priced here as well as on the page. The page is a convenience; this is the
    rule. Keep in step with CONFIG.price in corridor-web-v5/public/index.html. */
-const BASE_CENTS = 20000;      // single listing: 4K and two revision rounds included
+const BASE_CENTS = 20000;      // photos-only listing
+const PHONE_WALK_CENTS = 15000; // two-minute phone walk → $350
 const EXTENDED_CENTS = 6000;   // large or multi-building
 
 /* Resend caps a message around 40 MB. The optional files are what the operator
@@ -189,7 +190,8 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
   account.marketing_opt_in = marketingOptIn;
 
   const extended = yes(body.extended);
-  const amountCents = BASE_CENTS + (extended ? EXTENDED_CENTS : 0);
+  const phoneWalk = yes(body.phoneWalk);
+  const amountCents = BASE_CENTS + (phoneWalk ? PHONE_WALK_CENTS : 0) + (extended ? EXTENDED_CENTS : 0);
   const claimed = Number(body.amountCents);
   if (Number.isFinite(claimed) && claimed !== amountCents) {
     console.warn(`[intake] page claimed ${claimed} but the price is ${amountCents}; using ${amountCents}.`);
@@ -200,6 +202,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     accountId: account.id,
     address,
     extended,
+    phoneWalk,
     amountCents,
     currency: 'usd',
     // Invoiced after delivery — no card is taken and none is implied.
@@ -233,7 +236,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     payment: {
       paid: false, comped: false,
       amount: amountCents / 100,
-      packageKey: extended ? 'extended' : 'listing',
+      packageKey: phoneWalk ? 'phone-walk' : (extended ? 'extended' : 'listing'),
       sessionId: null,
     },
     createdAt: now(),
@@ -255,7 +258,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     orderId: order.id,
     photos: photos.length,
     rejected: request.rejected,
-    order: { amountCents, extended },
+    order: { amountCents, extended, phoneWalk },
   });
 
   // After the response. The record is already safe; mail is a notification.

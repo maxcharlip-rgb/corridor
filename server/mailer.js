@@ -158,7 +158,7 @@ const priceLine = (cents) => `$${(cents / 100).toLocaleString('en-US')}`;
 /** What the broker gets back the moment an order lands. */
 export function orderConfirmation(request, magicUrl) {
   const o = request.order || {};
-  const extras = [o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
+  const extras = [o.phoneWalk ? 'Phone walk ($350)' : null, o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
 
   return {
     subject: `We've got it — ${request.address || 'your listing'}`,
@@ -190,7 +190,7 @@ export function orderConfirmation(request, magicUrl) {
  */
 export function orderNotification(request, { photoUrls = [], attachedCount = 0 } = {}) {
   const o = request.order || {};
-  const extras = [o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
+  const extras = [o.phoneWalk ? 'Phone walk ($350)' : null, o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
   const links = photoUrls
     .map((u, i) => `<a href="${esc(u)}" style="color:#1E5AA8">${i + 1}</a>`)
     .join(' · ');
