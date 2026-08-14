@@ -112,20 +112,35 @@ export const accountById = (accountId) => accounts().find((a) => a.id === accoun
 export const accountByEmail = (email) =>
   accounts().find((a) => a.email === String(email || '').toLowerCase().trim()) || null;
 
-export function createAccount({ email, password, name, company }) {
+/**
+ * @param {{email:string, password?:string, name?:string, company?:string, phone?:string}} input
+ *
+ * Passwordless by default. A broker's account is created by their first order
+ * and signs in with an emailed link, so there is nothing to choose and nothing
+ * to forget. `password` is optional and exists only for the operator's own
+ * studio login; an account without one simply cannot be signed into by
+ * password, which is the correct outcome rather than a hole.
+ */
+export function createAccount({ email, password, name, company, phone }) {
   const normalised = String(email || '').toLowerCase().trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalised)) throw badRequest('Enter a valid email address.');
-  if (!password || String(password).length < 8) throw badRequest('Password must be at least 8 characters.');
+  if (password != null && String(password).length < 8) throw badRequest('Password must be at least 8 characters.');
   if (accountByEmail(normalised)) throw badRequest('An account with that email already exists.');
 
   const db = getDb();
   const account = {
     id: id('acc'),
     email: normalised,
-    passwordHash: hashPassword(String(password)),
+    passwordHash: password != null ? hashPassword(String(password)) : null,
     name: name || '',
     company: company || '',
+    phone: phone || '',
+    marketing_opt_in: false,
+    /* Everyone signs up as an individual and pays per listing. A firm is put
+       on a plan deliberately — set brokerageId and plan:'brokerage' on its
+       accounts — so nobody can talk their way into free work by signing up. */
     plan: 'standard',
+    brokerageId: null,
     createdAt: now(),
   };
   accounts().push(account);
@@ -148,11 +163,57 @@ export function authenticate({ email, password }) {
     hashPassword(String(password || ''));
     throw unauthorized('Email or password is incorrect.');
   }
-  if (!verifyPassword(String(password || ''), account.passwordHash)) {
+  // A passwordless account has no hash to check against. Say the same thing a
+  // wrong password says rather than admitting the account exists.
+  if (!account.passwordHash || !verifyPassword(String(password || ''), account.passwordHash)) {
     throw unauthorized('Email or password is incorrect.');
   }
   return account;
 }
+
+// --- sign-in links -----------------------------------------------------------
+
+/* Single-use, short-lived, and stored as a HASH. The link that goes out is the
+   only copy of the secret: a leaked database hands an attacker a list of used
+   hashes, not a set of working sign-ins. */
+const LINK_MINUTES = 30;
+const hashToken = (raw) => crypto.createHash('sha256').update(String(raw)).digest('hex');
+
+export function issueLoginToken(accountId) {
+  const db = getDb();
+  db.loginTokens = db.loginTokens || [];
+  // Asking for a new link retires any old one, so a forwarded email goes stale.
+  for (const t of db.loginTokens) if (t.accountId === accountId && !t.usedAt) t.usedAt = now();
+
+  const raw = crypto.randomBytes(32).toString('base64url');
+  db.loginTokens.push({
+    token: hashToken(raw),
+    accountId,
+    createdAt: now(),
+    expiresAt: new Date(Date.now() + LINK_MINUTES * 60_000).toISOString(),
+    usedAt: null,
+  });
+  // Bounded: a link is worthless once spent or expired.
+  db.loginTokens = db.loginTokens.filter(
+    (t) => !t.usedAt && Date.parse(t.expiresAt) > Date.now() - 864e5
+  ).concat(db.loginTokens.filter((t) => t.usedAt && Date.parse(t.createdAt) > Date.now() - 864e5));
+  saveNow();
+  return raw;
+}
+
+/** @returns {object|null} the account, or null for a bad/used/expired token. */
+export function redeemLoginToken(raw) {
+  if (!raw) return null;
+  const db = getDb();
+  const rec = (db.loginTokens || []).find((t) => t.token === hashToken(raw));
+  if (!rec || rec.usedAt) return null;
+  if (Date.parse(rec.expiresAt) < Date.now()) return null;
+  rec.usedAt = now();
+  saveNow();
+  return accounts().find((a) => a.id === rec.accountId) || null;
+}
+
+export const LINK_EXPIRY_MINUTES = LINK_MINUTES;
 
 export { setSessionCookie };
 

@@ -60,6 +60,9 @@ async function req(pathname, options = {}) {
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'corridor-test-'));
 let child = null;
+let serverLog = '';
+const TINY_JPEG = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wAAAAgHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGP/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPwB//9k=', 'base64');
+
 
 function start(env = {}) {
   return new Promise((resolve, reject) => {
@@ -78,8 +81,8 @@ function start(env = {}) {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let out = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { out += d; });
+    child.stdout.on('data', (d) => { out += d; serverLog += d; });
+    child.stderr.on('data', (d) => { out += d; serverLog += d; });
     child.on('error', reject);
 
     const deadline = Date.now() + 15000;
@@ -138,25 +141,45 @@ async function main() {
 
   // 3. Account persistence ---------------------------------------------------
   section('3. Account creation is durable');
-  const signup = await req('/api/auth/signup', {
-    method: 'POST',
-    body: { email: 'ops@test.example', password: 'a-long-enough-password', name: 'Ops', company: 'Ops CRE' },
-  });
-  check('signup succeeds', signup.status === 201, `got ${signup.status}`);
-  const cookie = signup.headers.get('set-cookie')?.split(';')[0];
+  /* Accounts are created by the first order, not a signup form. */
+  const fd = new FormData();
+  fd.append('name', 'Ops');
+  fd.append('email', 'Ops@test.example');
+  fd.append('address', '1 Test St, Detroit, MI');
+  fd.append('size', '24000');
+  fd.append('firm', 'Ops CRE');
+  for (let i = 0; i < 12; i += 1) {
+    fd.append('photos', new Blob([TINY_JPEG], { type: 'image/jpeg' }), `p${i}.jpg`);
+  }
+  const intakeRes = await fetch(`${BASE}/api/intake`, { method: 'POST', body: fd });
+  const intakeJson = await intakeRes.json().catch(() => null);
+  check('first order creates the account', intakeRes.status === 201 && intakeJson?.success, `got ${intakeRes.status}`);
+
+  const link = await req('/api/auth/link', { method: 'POST', body: { email: 'ops@test.example' } });
+  check('sign-in link endpoint succeeds', link.status === 200 && link.json?.success === true);
+  const unknown = await req('/api/auth/link', { method: 'POST', body: { email: 'nobody@test.example' } });
+  check('unknown address gets the same response', JSON.stringify(link.json) === JSON.stringify(unknown.json));
+
+  await sleep(200);
+  const logged = serverLog.match(/sign-in link for ops@test\.example: (\S+)/);
+  check('sign-in URL is logged when mail is off', Boolean(logged), 'no URL in stdout');
+  const verify = await fetch(logged ? logged[1] : `${BASE}/api/auth/verify?token=missing`, { redirect: 'manual' });
+  check('verify redirects to studio', verify.status === 302 && verify.headers.get('location') === '/studio', `got ${verify.status}`);
+  const cookie = verify.headers.get('set-cookie')?.split(';')[0];
   check('session cookie issued', Boolean(cookie));
-  check('cookie is HttpOnly', /HttpOnly/i.test(signup.headers.get('set-cookie') || ''));
-  check('password hash not returned', !JSON.stringify(signup.json).includes('passwordHash'));
+  check('cookie is HttpOnly', /HttpOnly/i.test(verify.headers.get('set-cookie') || ''));
+  const again = await fetch(logged ? logged[1] : `${BASE}/api/auth/verify?token=missing`, { redirect: 'manual' });
+  check('sign-in link is single-use', again.status === 401, `got ${again.status}`);
 
   // The critical property: on disk BEFORE the response was acknowledged.
   const dbPath = path.join(dataDir, 'db.json');
-  check('db.json written synchronously on signup', fs.existsSync(dbPath),
+  check('db.json written synchronously on first order', fs.existsSync(dbPath),
     'account was acknowledged but not yet persisted');
   if (fs.existsSync(dbPath)) {
     const onDisk = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
     check('account present on disk immediately', (onDisk.accounts || []).length === 1);
-    check('password stored as scrypt hash, not plaintext',
-      !JSON.stringify(onDisk).includes('a-long-enough-password'));
+    check('first-order account has no password hash',
+      (onDisk.accounts || [])[0]?.passwordHash == null);
   }
 
   check('auth gates after first account', (await req('/api/bootstrap')).status === 401);
@@ -528,7 +551,7 @@ main().catch(async (err) => {
     spawns.every(({ arg }) => /binary|ffmpeg|config\.ffmpeg/i.test(arg)));
 
   // Generation reaches Higgsfield one way only.
-  const hf = sources.find(({ f }) => f.endsWith('higgsfield.js')).src;
+  const hf = sources.find(({ f }) => f.replaceAll('\\', '/').split('/').pop() === 'higgsfield.js').src;
   check('Higgsfield is called over HTTP', /await fetch\(url/.test(hf));
   check('auth uses the REST key header, not a bearer token or session',
     /`Key \$\{config\.higgsfield\.keyId\}:\$\{config\.higgsfield\.keySecret\}`/.test(hf));
@@ -702,17 +725,17 @@ main().catch(async (err) => {
 // --- the turnaround we promise ----------------------------------------------
 {
   const fsx = await import('node:fs');
-  const files = ['../public/index.html', '../public/request.html', '../server/mailer.js'];
+  const files = ['../public/index.html', '../server/mailer.js'];
   const stale = files.filter((f) =>
-    /two business days|2 business days/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
+    /two business days|2 business days|24 hours or less/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
   );
-  // A promise that differs between the landing page, the form and the email is
-  // one the customer will notice before we do.
+  // A promise that differs between the landing page and the email is one the
+  // customer will notice before we do. The live promise is 48 hours.
   check('no stale turnaround promise remains', stale.length === 0);
   const promised = files.filter((f) =>
-    /24 hours or less/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
+    /48 hours/i.test(fsx.readFileSync(new URL(f, import.meta.url), 'utf8'))
   );
-  check('24-hour turnaround stated on landing, form and confirmation email', promised.length === 3);
+  check('48-hour turnaround stated on landing and confirmation email', promised.length === 2);
 }
 
 // --- payment must be confirmed, never assumed --------------------------------

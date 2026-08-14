@@ -44,7 +44,7 @@ const esc = (s) =>
  * @returns {Promise<{ok: boolean, id?: string, error?: string, skipped?: boolean}>}
  *          Never throws. The caller decides what a failure means.
  */
-export async function sendMail({ to, subject, html, replyTo }) {
+export async function sendMail({ to, subject, html, replyTo, attachments }) {
   if (!mailConfigured()) {
     return { ok: false, skipped: true, error: mailStatus().reason };
   }
@@ -63,6 +63,7 @@ export async function sendMail({ to, subject, html, replyTo }) {
         subject,
         html,
         ...(replyTo ? { reply_to: replyTo } : {}),
+        ...(attachments && attachments.length ? { attachments } : {}),
       }),
       signal: AbortSignal.timeout(20_000),
     });
@@ -131,9 +132,92 @@ export function requestConfirmation(request) {
       <p style="margin:0 0 16px">We are cutting the ${esc(request.wants.join(' and ') || 'video tour')} for
       <b>${esc(request.address || 'your property')}</b> now. It comes back to this address, ready to post
       on CoStar, LinkedIn, or anywhere else your listing lives.</p>
-      <p style="margin:0 0 16px;color:#6b7280">Your video comes back in 24 hours or less. If we need
+      <p style="margin:0 0 16px;color:#6b7280">Your video comes back in 48 hours or less. If we need
       anything else — a better exterior shot, a floor plate — we will reply to this email.</p>
       <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
+    `),
+  };
+}
+
+/** The sign-in link. The whole of authentication, as far as a broker is concerned. */
+export function signInLink(account, url, minutes) {
+  return {
+    subject: 'Your Corridor sign-in link',
+    html: SHELL(`
+      <h2 style="margin:0 0 10px;font-size:20px">Here's your link.</h2>
+      <p style="margin:0 0 20px">It signs you straight in — no password to remember.</p>
+      <p style="margin:0 0 18px"><a href="${esc(url)}" style="background:#1E5AA8;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:500;font-size:15px">Sign in to Corridor</a></p>
+      <p style="margin:0;color:#6b7280;font-size:13px">The link works once and expires in ${minutes} minutes.
+      If you didn't ask for it, you can ignore this — nothing has changed on your account.</p>
+    `),
+  };
+}
+
+const priceLine = (cents) => `$${(cents / 100).toLocaleString('en-US')}`;
+
+/** What the broker gets back the moment an order lands. */
+export function orderConfirmation(request, magicUrl) {
+  const o = request.order || {};
+  const extras = [o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
+
+  return {
+    subject: `We've got it — ${request.address || 'your listing'}`,
+    html: SHELL(`
+      <h2 style="margin:0 0 10px;font-size:20px">We've got it.</h2>
+      <p style="margin:0 0 18px">We're cutting the tour for <b>${esc(request.address)}</b> now.
+      It comes back to this address <b>within 48 hours</b>. If we need a photo you didn't send, we'll just ask.</p>
+      <table style="border-collapse:collapse;font-size:14px;margin:0 0 20px">
+        ${row('Property', request.address)}
+        ${row('Size', request.size)}
+        ${row('Type', request.propertyType)}
+        ${row('Photos', String((request.photos || []).length))}
+        ${extras.length ? row('Options', extras.join(' · ')) : ''}
+        ${row('Price', `${priceLine(o.amountCents || 0)} — invoiced after delivery`)}
+      </table>
+      ${magicUrl ? `<p style="margin:0 0 16px"><a href="${esc(magicUrl)}" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">View your tours</a></p>
+      <p style="margin:0;color:#6b7280;font-size:13px">That link signs you in — no password needed. It works once and expires in 30 minutes; ask for another any time from the site.</p>` : ''}
+    `),
+  };
+}
+
+/**
+ * The full submission, to the operator. Everything needed to start cutting.
+ *
+ * The optional files — flyer, OM, floor plan, logo, headshot — ride along as
+ * real attachments, because those are what you open while you work. The photos
+ * are linked instead: forty of them will not fit in an inbox, and a bounced
+ * notification is worse than a click.
+ */
+export function orderNotification(request, { photoUrls = [], attachedCount = 0 } = {}) {
+  const o = request.order || {};
+  const extras = [o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
+  const links = photoUrls
+    .map((u, i) => `<a href="${esc(u)}" style="color:#1E5AA8">${i + 1}</a>`)
+    .join(' · ');
+
+  return {
+    subject: `New order — ${request.address || 'untitled'}`,
+    html: SHELL(`
+      <h2 style="margin:0 0 4px;font-size:20px">${esc(request.address || 'New order')}</h2>
+      <p style="margin:0 0 18px;color:#6b7280">${esc(request.name || '')}${request.firm ? ' · ' + esc(request.firm) : ''}</p>
+      <table style="border-collapse:collapse;font-size:14px">
+        ${row('Email', request.email)}
+        ${row('Phone', request.phone)}
+        ${row('Firm', request.firm)}
+        ${row('Size', request.size)}
+        ${row('Type', request.propertyType)}
+        ${row('Listing', request.listingUrl)}
+        ${row('Options', extras.join(' · ') || 'Standard')}
+        ${row('Price', priceLine(o.amountCents || 0))}
+        ${row('Photos', String((request.photos || []).length))}
+        ${attachedCount ? row('Attached', `${attachedCount} file(s) on this email`) : ''}
+        ${row('Account', request.accountId)}
+        ${row('Marketing', request.marketingOptIn ? 'opted in' : 'no')}
+      </table>
+      ${request.brandingContact ? `<p style="margin:18px 0 0"><b>End card</b><br>${esc(request.brandingContact)}</p>` : ''}
+      ${request.notes ? `<p style="margin:18px 0 0"><b>Notes</b><br>${esc(request.notes).replace(/\n/g, '<br>')}</p>` : ''}
+      ${links ? `<p style="margin:18px 0 0;font-size:13px"><b>Photos:</b> ${links}</p>` : ''}
+      <p style="margin:24px 0 0"><a href="${config.publicUrl}/requests" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Open the queue</a></p>
     `),
   };
 }

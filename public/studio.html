@@ -319,30 +319,17 @@ function renderAuth() {
     '<div class="grid" style="gap:10px">' +
       '<label class="field"><span>Email</span><input id="a-email" type="email" autocomplete="email" /></label>' +
       '<label class="field"><span>Password</span><input id="a-pass" type="password" autocomplete="current-password" /></label>' +
-      '<div id="a-extra" style="display:none" class="two">' +
-        '<label class="field"><span>Your name</span><input id="a-name" type="text" /></label>' +
-        '<label class="field"><span>Brokerage</span><input id="a-company" type="text" /></label>' +
-      '</div>' +
       '<p class="err" id="a-err" style="display:none"></p>' +
       '<button class="btn primary" id="a-go" style="width:100%">Sign in</button>' +
-      '<button class="btn link" id="a-toggle" style="text-align:center">Create an account</button>' +
+      '<p class="note">Operator password login. Brokers sign in from the landing page with an emailed link.</p>' +
     '</div></div>');
 
-  var mode = 'login';
   var err = $('#a-err');
-  $('#a-toggle').onclick = function () {
-    mode = mode === 'login' ? 'signup' : 'login';
-    $('#a-extra').style.display = mode === 'signup' ? 'grid' : 'none';
-    $('#a-go').textContent = mode === 'signup' ? 'Create account' : 'Sign in';
-    $('#a-toggle').textContent = mode === 'signup' ? 'I already have an account' : 'Create an account';
-    err.style.display = 'none';
-  };
   $('#a-go').onclick = async function () {
     $('#a-go').disabled = true; err.style.display = 'none';
     try {
-      await api('/auth/' + mode, { method: 'POST', body: {
-        email: $('#a-email').value, password: $('#a-pass').value,
-        name: $('#a-name') ? $('#a-name').value : '', company: $('#a-company') ? $('#a-company').value : ''
+      await api('/auth/login', { method: 'POST', body: {
+        email: $('#a-email').value, password: $('#a-pass').value
       }});
       location.reload();
     } catch (e) { err.textContent = e.message; err.style.display = 'block'; $('#a-go').disabled = false; }

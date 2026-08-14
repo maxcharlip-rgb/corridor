@@ -4,172 +4,409 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corridor — CRE marketing is boring. So we fixed it.</title>
-  <meta name="description" content="Corridor turns the listing photos you already have into a cinematic, narrated video tour in about two minutes — shareable by link and QR, refinable by chat." />
-  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='7' fill='%232B4FD7'/&gt;&lt;path d='M11 8v16l11-8z' fill='%23F5F3EE'/&gt;&lt;/svg&gt;" />
+  <meta name="description" content="Send the listing photos you already have. Corridor cuts a narrated, cinematic walkthrough by hand and sends it back within 48 hours. $200 a listing, or $150 in a five-listing block." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
 <style>
   html { scroll-behavior: smooth; }
-  html, body { margin: 0; padding: 0; background: #F5F3EE; -webkit-font-smoothing: antialiased; }
+  html, body { margin: 0; padding: 0; background: #F7FAFD; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  @media (max-width: 720px) { .nav-wide { display: none !important; } header a, header button { min-height: 44px; min-width: 44px; } }
   * { box-sizing: border-box; }
   a { color: #101418; text-decoration: none; }
-  a:hover { color: #2B4FD7; }
+  a:hover { color: #1E5AA8; }
   input, select, textarea, button { font-family: inherit; }
-  ::selection { background: #D9E1FB; }
+  ::selection { background: #D3E3F6; }
   @keyframes corridorPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
   @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes corridorNudge { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
 </style>
 </head>
 <body>
-<div style="min-height: 100vh; background: #F5F3EE; color: #101418; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-<header style="position: sticky; top: 0; z-index: 60; background: rgba(245,243,238,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #E4E0D6;">
+<div style="min-height: 100vh; background: transparent; color: #101418; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
+<canvas id="field" style="position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none;"></canvas>
+  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; background: rgba(247,250,253,.66);"></div>
+  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: overlay; background-size: 120px 120px; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.250'/%3E%3C/svg%3E&quot;);"></div>
+
+
+  <div style="position: relative; z-index: 1;">
+  <header style="position: sticky; top: 0; z-index: 60; background: rgba(247,250,253,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #E9F0F8;">
     <div style="max-width: 1160px; margin: 0 auto; padding: 13px 20px; display: flex; align-items: center; gap: 18px;">
       <button type="button" data-home="1" style="display: flex; align-items: center; gap: 9px; margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;">
-        <span style="width: 13px; height: 22px; background: #2B4FD7; border-radius: 7px 7px 2px 2px; display: block;"></span>
+        <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #1E5AA8;">
+          <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
+          <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
+        </svg>
         <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; color: #101418;">Corridor</span>
       </button>
-      <a href="#sample" style="font-size: 14px; color: #55606E;">Sample tour</a>
-      <a href="#pricing" style="font-size: 14px; color: #55606E;">Pricing</a>
-      <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #2B4FD7; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #1F3BB0;">Sign in</button>
+      <a class="nav-wide" href="#sample" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Sample tour</a>
+      <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Pricing</a>
+      <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">For brokers</a>
+      <a class="nav-wide" href="#developers" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">For developers</a>
+      <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #1E5AA8; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Sign in</button>
     </div>
   </header>
 
     <div data-screen-label="Landing">
-      <section style="max-width: 1160px; margin: 0 auto; padding: clamp(44px, 8vw, 96px) 20px clamp(32px, 5vw, 56px); text-align: center;">
-        <div style="display: inline-flex; align-items: center; gap: 9px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #2B4FD7; background: #E7ECFB; border-radius: 999px; padding: 8px 16px; margin-bottom: 26px;">
-          <span style="width: 7px; height: 7px; border-radius: 999px; background: #2B4FD7; display: block; animation: corridorPulse 1.8s ease-in-out infinite;"></span>
-          Photos in · tour out · about two minutes
+      <section>
+        <div style="max-width: 1160px; margin: 0 auto; padding: clamp(48px, 8vw, 108px) 20px clamp(28px, 4vw, 44px); text-align: center;">
+        <div style="display: inline-flex; align-items: center; gap: 9px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #1E5AA8; background: #E9F0F8; border-radius: 999px; padding: 8px 16px; margin-bottom: 26px;">
+          <span style="width: 7px; height: 7px; border-radius: 999px; background: #1E5AA8; display: block; animation: corridorPulse 1.8s ease-in-out infinite;"></span>
+          Photos in · finished tour back in 48 hours
         </div>
-        <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #2B4FD7;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
-        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #55606E; margin: 0 auto 34px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Send the photos in, get a cinematic walkthrough back in your inbox, post it everywhere.</p>
+        <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #1E5AA8;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
+        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #5B6672; margin: 0 auto 40px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Send us the folder tonight. We cut it by hand and send a finished tour back in 48 hours.</p>
 
-        <div style="max-width: 680px; margin: 0 auto;">
-          <a href="/request" style="display: block; text-decoration: none; color: inherit; border: 1px dashed #C9C5B8; background: #fff; border-radius: 22px; padding: clamp(28px, 5vw, 46px) 24px; cursor: pointer;" data-hover="border-color: #2B4FD7;">
-            <span style="display: block; font-size: 17px; font-weight: 500; margin-bottom: 8px;">Send us the photos already sitting in your Dropbox</span>
-            <span style="display: block; font-size: 14.5px; color: #55606E; margin-bottom: 22px;">12 to 40 of them. Crooked phone shots welcome. We cut it and email it back in 24 hours or less.</span>
-            <span style="display: inline-block; font-size: 15px; color: #fff; background: #2B4FD7; padding: 15px 28px; border-radius: 999px; font-weight: 500;">Send us a property</span>
-          </a>
-          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A8778;">
-            <span>No videographer</span>
-            <span>No “circling back”</span>
-            <span>First tour free</span>
-          </div>
+        <a href="#sample" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 17px 34px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">See a tour</a>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 26px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5B6672;">
+          <span>No videographer</span>
+          <span>No shoot day</span>
+          <span>$200 a listing</span>
+        </div>
         </div>
       </section>
 
-      <div style="overflow: hidden; border-top: 1px solid #E4E0D6; border-bottom: 1px solid #E4E0D6; background: #101E33; padding: 13px 0; margin-bottom: clamp(40px, 6vw, 76px);">
-        <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #8FA6D8;">
+      <section id="sample" style="scroll-margin-top: 80px; color: #101418; padding: clamp(64px, 10vw, 132px) 20px clamp(56px, 9vw, 116px);">
+        <div style="max-width: 1160px; margin: 0 auto;">
+          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672; margin-bottom: 18px;">Sample tour</div>
+          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 5vw, 58px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 20px; max-width: 20ch; color: #101418;">Same photos. One of these gets watched.</h2>
+          <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672; line-height: 1.7; margin: 0 0 clamp(26px, 3.5vw, 40px); max-width: 60ch;">6432 Woodward Ave · Detroit · 5,547 SF · Cut from the broker's own listing photos.</p>
+          <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #E9F0F8; border-radius: 4px; overflow: hidden;">
+            <span style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #C3D4E6;">6432-woodward-clips.mp4</span>
+            <video id="sample-video" src="6432-woodward-clips.mp4" poster="6432-woodward-poster.jpg" autoplay muted loop playsinline preload="metadata" style="position: relative; display: block; width: 100%; height: 100%; object-fit: cover; background: #E9F0F8; border: 0; outline: 0;"></video>
+            <div id="sample-fallback" style="display: none; position: absolute; inset: 0; background-image: url('6432-woodward-poster.jpg'); background-size: cover; background-position: center;">
+              <div style="position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 24px; background: linear-gradient(to top, rgba(10,16,24,.62), rgba(10,16,24,0) 58%);">
+                <a href="#sample" data-tour-link style="display: inline-block; font-size: 15px; color: #101418; background: #fff; padding: 13px 26px; border-radius: 999px; font-weight: 500; text-decoration: none;" data-hover="background: #E9F0F8;">View sample tour</a>
+              </div>
+            </div>
+          </div>
+          <p style="margin: 20px 0 0;"><a href="#sample" data-tour-link style="font-size: 16px; color: #1E5AA8; text-decoration: underline; text-underline-offset: 3px;" data-hover="color: #17457F;">See the full interactive tour →</a></p>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 22px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">
+            <span>Hand-cut</span><span>Back in 48 hours</span><span>Link + QR code</span><span>Yours to post anywhere</span>
+          </div>
+          <p style="font-size: 15.5px; line-height: 1.62; color: #5B6672; margin: clamp(40px, 6vw, 68px) 0 0; padding-top: clamp(26px, 4vw, 40px); border-top: 1px solid #D8E3F0; max-width: 52ch;">LoopNet sells video tours as a paid upgrade. We just think every listing should have one.</p>
+        </div>
+      </section>
+
+      <div style="overflow: hidden; border-top: 1px solid #E9F0F8; border-bottom: 1px solid #E9F0F8; padding: 13px 0; margin-top: clamp(52px, 8vw, 104px);">
+        <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">
           <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
             <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
           </div>
           <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
             <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
             <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-            <span style="color: #6FE3A6; flex: none;">·</span>
+            <span style="color: #1E5AA8; flex: none;">·</span>
           </div>
         </div>
       </div>
 
-      <section id="sample" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: 0 20px clamp(48px, 7vw, 88px);">
-        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(28px, 4vw, 46px); line-height: 1.04; letter-spacing: -.015em; margin: 0 0 clamp(24px, 3vw, 38px); max-width: 24ch;">Same photos. One of these gets watched.</h2>
-        <div style="display: flex; flex-wrap: wrap; gap: clamp(18px, 3vw, 32px); align-items: stretch;">
-          <div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8A8778;">What you send today</span>
+      <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
+        <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #1E5AA8; margin-bottom: clamp(28px, 4vw, 44px);">Pricing</div>
+        <div style="display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 20px); align-items: stretch;">
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: clamp(20px, 3vw, 30px);">Single listing</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(58px, 8vw, 88px); line-height: .9; letter-spacing: -.03em;">$200</div>
+            <div style="height: 1px; background: #101418; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
+            <div style="font-size: 14.5px; line-height: 1.5; color: #5B6672;">4K, everything included, two revision rounds. Invoiced after delivery.</div>
+          </div>
+          <!-- The offer we actually want taken, so it is the one that looks like the answer. -->
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #101418; background: #101E33; color: #fff; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px); position: relative;">
+            <div style="position: absolute; top: 0; right: clamp(20px, 2.5vw, 28px); transform: translateY(-50%); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #101418; background: #fff; border: 1px solid #101418; padding: 5px 11px; border-radius: 999px;">Most popular</div>
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #8FA6D8; margin-bottom: clamp(20px, 3vw, 30px);">5-listing block</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(58px, 8vw, 88px); line-height: .9; letter-spacing: -.03em;">$750</div>
+            <div style="height: 1px; background: #fff; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
+            <div style="font-size: 14.5px; line-height: 1.5; color: #C4CEE0;">$150 a listing, prepaid. Same 4K, same two revision rounds, same 48 hours — you just stop thinking about it.</div>
+          </div>
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: clamp(20px, 3vw, 30px);">Brokerage</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(44px, 5.6vw, 62px); line-height: .9; letter-spacing: -.02em;">Custom</div>
+            <div style="height: 1px; background: #101418; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
+            <div style="font-size: 14.5px; line-height: 1.5; color: #5B6672;">Based on monthly listing volume. <a href="mailto:max@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="color: #1E5AA8; text-decoration: underline; text-underline-offset: 2px;">Talk to us</a></div>
+          </div>
+        </div>
+
+        <!-- The objection this price meets is risk, not money. Say it early. -->
+        <div style="margin: clamp(26px, 3.5vw, 38px) 0 0; border: 1px solid #1E5AA8; background: rgba(30,90,168,.06); padding: clamp(18px, 2.4vw, 24px) clamp(18px, 2.5vw, 26px);">
+          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(22px, 2.8vw, 28px); line-height: 1.15; margin: 0 0 6px; color: #101418;">Don't like it, don't pay. Full refund, no questions.</p>
+          <p style="font-size: 14.5px; line-height: 1.55; color: #5B6672; margin: 0;">Every tour, including the blocks. You see the cut before you owe anything.</p>
+        </div>
+
+        <div style="margin: clamp(52px, 8vw, 88px) 0 0;">
+          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: 18px;">Details</div>
+          <p style="font-size: 16px; line-height: 1.6; color: #5B6672; margin: 0; max-width: 74ch;">Every tour is up to ten shots, about forty seconds. Send twelve to forty photos — more photos means a better selection, not a longer video.</p>
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-top: clamp(18px, 2.5vw, 24px); padding-top: clamp(16px, 2vw, 22px); border-top: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Larger properties</div>
+            <div style="flex: 0 0 auto; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; color: #101418;">+$60</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5B6672;">Up to twenty shots, about eighty seconds. For multi-building or multi-floor assets.</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-top: clamp(14px, 1.8vw, 18px); padding-top: clamp(14px, 1.8vw, 18px); border-top: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Extra revisions</div>
+            <div style="flex: 0 0 auto; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; color: #101418;">+$50</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5B6672;">Two rounds come with every tour. Each round after that is $50.</div>
+          </div>
+        </div>
+
+        <div style="max-width: 62ch; margin: clamp(52px, 8vw, 96px) 0 0;">
+          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 2.8vw, 31px); line-height: 1.12; letter-spacing: -.01em; margin: 0 0 20px;">What this replaces.</h2>
+          <div style="display: grid; gap: 12px; font-size: 16px; line-height: 1.62; color: #5B6672;">
+            <p style="margin: 0;">You still hire a photographer. This uses those photos; it doesn't replace them.</p>
+            <p style="margin: 0;">If you'd have commissioned a filmed walkthrough, this replaces a $1,200 shoot with a $200 one.</p>
+            <p style="margin: 0;">For every other listing, it's video where there was none — on the pitch, the flyer, and the sign rider.</p>
+          </div>
+          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(23px, 2.6vw, 30px); line-height: 1.24; letter-spacing: -.01em; color: #101418; margin: clamp(30px, 4vw, 44px) 0 0;">Cheap enough that every listing gets one. That's the whole point.</p>
+        </div>
+
+      </section>
+
+      <section id="brokerages" style="scroll-margin-top: 80px; border-top: 1px solid #D8E3F0; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
+        <div style="max-width: 1160px; margin: 0 auto;">
+          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #1E5AA8; letter-spacing: .18em; margin-bottom: clamp(24px, 3vw, 36px);">For brokerages</div>
+          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 5vw, 56px); line-height: 1.03; letter-spacing: -.02em; margin: 0 0 26px; max-width: 20ch;">Every listing, not just the big ones.</h2>
+          <div style="display: grid; gap: 16px; max-width: 62ch; margin-bottom: clamp(40px, 6vw, 72px);">
+            <p style="font-size: 17px; line-height: 1.62; color: #5B6672; margin: 0;">Firms are quoted monthly against listing volume rather than per listing. You tell us roughly what you take on in a year; we price the whole thing once and stop counting.</p>
+            <p style="font-size: 17px; line-height: 1.62; color: #5B6672; margin: 0;">The point is that video stops being something you reserve for the eight-figure asset. The 4,000 SF flex building gets the same treatment as the tower, because at that price there's no reason it shouldn't.</p>
+          </div>
+          <div style="border-top: 1px solid #D8E3F0; margin-bottom: clamp(36px, 5vw, 56px);">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Branding</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Your brand on every tour: firm colors, logo, and the listing broker's headshot and contact on the end card</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Shot list</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">A standing shot list agreed once — same ten shots, every property, every broker</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Consistency</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Consistent format across every broker in the firm</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">One place</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">One dashboard, all tours, shareable links and QR artwork</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Turnaround</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Priority turnaround on pitch deadlines</div>
+          </div>
+          </div>
+          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(23px, 2.6vw, 30px); line-height: 1.24; letter-spacing: -.01em; color: #101418; margin: 0 0 28px; max-width: 26ch;">Tell us how many listings you take a year and we'll price it.</p>
+          <a href="#intake" style="display: inline-block; font-size: 15px; color: #fff; background: #1E5AA8; padding: 16px 30px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Get a quote</a>
+        </div>
+      </section>
+
+      <section id="developers" style="scroll-margin-top: 80px; background: #0D1520; color: #E4EDF7; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
+        <div style="max-width: 1160px; margin: 0 auto;">
+          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #7FB2EA; margin-bottom: clamp(24px, 3vw, 36px);">For developers</div>
+          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 5vw, 56px); line-height: 1.03; letter-spacing: -.02em; margin: 0 0 26px; max-width: 22ch;">Marketing a building that doesn't exist yet.</h2>
+          <div style="display: grid; gap: 16px; max-width: 62ch; margin-bottom: clamp(40px, 6vw, 72px);">
+            <p style="font-size: 17px; line-height: 1.62; color: #A9BDD4; margin: 0;">Send the renderings your architect already produced and get back a 4K film and an <a href="#sample" data-tour-link style="color: #7FB2EA; text-decoration: underline; text-underline-offset: 2px;">interactive page</a> that walks a prospect through the finished building — for pre-leasing, LP decks, and zoning presentations, long before there's anything to tour.</p>
+            <p style="font-size: 17px; line-height: 1.62; color: #A9BDD4; margin: 0;">When the design changes during entitlement, the film is re-cut in a day rather than re-commissioned over three weeks.</p>
+          </div>
+          <div style="border-top: 1px solid #22314A; margin-bottom: clamp(40px, 6vw, 72px);">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Concept film</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #E4EDF7;">Cinematic concept film in native 4K, from your existing renderings</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Interactive page</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #E4EDF7;"><a href="#sample" data-tour-link style="color: #7FB2EA; text-decoration: underline; text-underline-offset: 2px;">Exterior, lobby, floor plates, and amenity spaces</a></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Design changes</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #E4EDF7;">Re-cut in 48 hours when the design changes — no re-quote</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">One shot per rendering</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #E4EDF7;">Exterior, lobby, floor plates, amenity spaces, cut into one film</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Delivery</div>
+            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #E4EDF7;">Delivered as 4K master and shareable link — for a deck, a lobby screen, or a hearing projector</div>
+          </div>
+          </div>
+          <div style="border-top: 1px solid #22314A;">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Concept film</div>
+            <div style="flex: 0 0 auto; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(26px, 3vw, 34px); line-height: 1; letter-spacing: -.015em; color: #E4EDF7;">$1,500</div>
+            <div style="flex: 1 1 300px; min-width: 0; font-size: 15px; line-height: 1.55; color: #A9BDD4;">One building, 45–60 seconds, from 5 or more renderings.</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Full package</div>
+            <div style="flex: 0 0 auto; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(26px, 3vw, 34px); line-height: 1; letter-spacing: -.015em; color: #E4EDF7;">$3,500</div>
+            <div style="flex: 1 1 300px; min-width: 0; font-size: 15px; line-height: 1.55; color: #A9BDD4;">Film and <a href="#sample" data-tour-link style="color: #7FB2EA; text-decoration: underline; text-underline-offset: 2px;">interactive page</a> together, 60–90 seconds.</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #22314A;">
+            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9BDD4;">Phased developments</div>
+            <div style="flex: 0 0 auto; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(26px, 3vw, 34px); line-height: 1; letter-spacing: -.015em; color: #E4EDF7;">from $6,000</div>
+            <div style="flex: 1 1 300px; min-width: 0; font-size: 15px; line-height: 1.55; color: #A9BDD4;">Multiple buildings, delivered by phase.</div>
+          </div>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; color: #A9BDD4; margin: clamp(18px, 2.5vw, 24px) 0 0; max-width: 62ch;">Developer projects run three to five business days. Re-cuts come back in twenty-four hours.</p>
+          <p style="font-size: 15px; line-height: 1.6; color: #A9BDD4; margin: 10px 0 0; max-width: 62ch;">4K included on every developer project. Studios charge $50–$200 per second for the same runtime.</p>
+
+          <div style="max-width: 62ch; margin: clamp(52px, 8vw, 96px) 0 0;">
+            <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 2.8vw, 31px); line-height: 1.12; letter-spacing: -.01em; margin: 0 0 20px;">What this replaces.</h3>
+            <div style="display: grid; gap: 12px; font-size: 16px; line-height: 1.62; color: #A9BDD4;">
+              <p style="margin: 0;">You still commission renderings. We animate the ones you have; we don't model from scratch.</p>
+              <p style="margin: 0;">If you'd have hired a studio for a flythrough, that's a $2,200–$5,000 line replaced by $1,500.</p>
+              <p style="margin: 0;">When the design changes, that studio quote comes again. Ours doesn't.</p>
+              <p style="margin: 0;">More renderings means more shots. Five gets you a film; one gets you a clip.</p>
             </div>
-            <div style="flex: 1; background: #EFEDE6; border: 1px solid #E4E0D6; border-radius: 20px; padding: 18px;">
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; opacity: .72;">
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-                <div style="aspect-ratio: 1; border-radius: 5px; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 5px, #EDEBE4 5px 10px);"></div>
-              </div>
-              <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 18px 0 0;">27 photos, a floor plan, and “let me know if you'd like to see it in person.” Nine seconds of attention, tops.</p>
-            </div>
+            <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(23px, 2.6vw, 30px); line-height: 1.24; letter-spacing: -.01em; color: #E4EDF7; margin: clamp(30px, 4vw, 44px) 0 0;">Every frame follows the architect's drawings. Nothing invented.</p>
           </div>
 
-          <div style="flex: 1.4 1 380px; min-width: 0; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #2B4FD7;">What Corridor sends back</span>
-            </div>
-            <div style="flex: 1; background: #fff; border: 1px solid #E4E0D6; border-radius: 20px; padding: 18px;">
-              <div style="position: relative; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background-image: repeating-linear-gradient(135deg, #DDD9CE 0 8px, #EAE7DE 8px 16px); display: flex; align-items: center; justify-content: center;">
-                <div style="width: 76px; height: 76px; border-radius: 999px; background: rgba(16,20,24,.78); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                  <span style="width: 0; height: 0; border-left: 18px solid #fff; border-top: 11px solid transparent; border-bottom: 11px solid transparent; margin-left: 5px;"></span>
+          <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .08em; line-height: 1.7; color: #A9BDD4; margin: clamp(40px, 5vw, 60px) 0 0; padding-top: clamp(18px, 2.5vw, 24px); border-top: 1px solid #22314A; max-width: 58ch;">RENDERINGS AND VIDEO ARE ARTIST'S CONCEPTION AND DO NOT REPRESENT FINAL CONSTRUCTION.</p>
+        </div>
+      </section>
+
+      <section style="max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(56px, 8vw, 104px);">
+        <div id="intake" style="scroll-margin-top: 84px; max-width: 620px; margin: 0 auto; text-align: center;">
+          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4.6vw, 50px); line-height: 1.04; letter-spacing: -.02em; margin: 0 0 14px;">Send us a listing.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #5B6672; margin: 0 auto clamp(30px, 4vw, 44px); max-width: 46ch;">The photos you already have, whatever shape they're in. A finished tour comes back in 48 hours.</p>
+          <div id="intake-form" data-endpoint="/api/intake">
+            <div style="display: grid; gap: 12px;">
+              <!-- Returning broker: the four identity fields collapse to one line.
+                   Second order is address, photos, submit. -->
+              <div id="intake-known" style="display: none; align-items: baseline; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); border-radius: 10px; padding: 13px 15px;">
+                <span style="font-size: 15px; color: #101418;">Ordering as <span id="intake-known-who"></span></span>
+                <button type="button" id="intake-notyou" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672; background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" data-hover="color: #1E5AA8;">not you?</button>
+              </div>
+              <div id="intake-identity" style="display: grid; gap: 12px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Your name</span><input type="text" name="name" autocomplete="name" placeholder="Max Charlip" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="name" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Email</span><input type="email" name="email" autocomplete="email" placeholder="you@brokerage.com" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="email" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
                 </div>
-                <span style="position: absolute; bottom: 14px; left: 16px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .1em; color: #6E6A5C;">PLACEHOLDER — DROP SAMPLE TOUR (16:9)</span>
-                <span style="position: absolute; top: 14px; right: 16px; background: rgba(16,30,51,.9); color: #fff; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .08em; padding: 5px 9px; border-radius: 999px;">2:14</span>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Phone</span><input type="tel" name="phone" autocomplete="tel" placeholder="(313) 555-0114" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Brokerage or company</span><input type="text" name="firm" autocomplete="organization" placeholder="Harrow &amp; Vance" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+                </div>
               </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Narrated</span>
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Six stops</span>
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">QR for the sign</span>
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">1080p + 4K</span>
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .06em; color: #55606E; background: #E7ECFB; border-radius: 999px; padding: 7px 12px;">Fixable by chat</span>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Property address</span><input type="text" name="address" placeholder="6432 Woodward Ave, Detroit, MI" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="address" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Square footage</span><input type="text" name="size" inputmode="numeric" placeholder="24,000" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="size" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+                <label style="display: grid; gap: 7px; text-align: left;">
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Property type</span>
+                  <select name="propertyType" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;">
+                    <option>Office</option><option>Industrial / Flex</option><option>Retail</option><option>Medical office</option><option>Multifamily</option><option>Mixed use</option><option>Land / development site</option>
+                  </select>
+                  <p data-err="propertyType" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
+                </label>
               </div>
-              <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 16px 0 0;">Cut from the exact same folder. Don't like the opening shot? Say so — only that shot re-renders, and the link you already posted updates itself.</p>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Listing link</span><input type="url" name="listingUrl" placeholder="LoopNet, Crexi, or your site" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+              <label style="display: grid; gap: 7px; text-align: left;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Photos · 12 to 40</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                  <input type="file" name="photos" multiple accept="image/jpeg,image/png,image/webp" id="intake-files" style="display: none;" />
+                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Choose photos</span>
+                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-file-label">12 to 40 · we cut the best ten · crooked phone shots welcome</span></span>
+                </span>
+                <p data-err="photos" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
+              </label>
+              <label style="display: grid; gap: 7px; text-align: left;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Attachments · optional</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                  <input type="file" name="attachments" multiple accept="application/pdf,image/jpeg,image/png,image/webp" id="intake-attachments" style="display: none;" />
+                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Choose files</span>
+                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-attach-label">The flyer, OM, floor plan, or rendering set</span></span>
+                </span>
+                <p data-err="attachments" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
+              </label>
+              <label style="display: grid; gap: 7px; text-align: left;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Branding · optional</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                  <input type="file" name="branding" multiple accept="image/jpeg,image/png,image/webp" id="intake-branding" style="display: none;" />
+                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Logo and headshot</span>
+                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-branding-label">Your logo and headshot for the end card</span></span>
+                </span>
+                <input type="text" name="brandingContact" placeholder="Name, phone and email for the end card" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" />
+              </label>
+              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #101418; cursor: pointer; margin-top: 2px;">
+                <input type="checkbox" name="extended" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
+                <span>This is a large or multi-building property — extended cut (+$60)</span>
+              </label>
+              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #101418; cursor: pointer;">
+                <input type="checkbox" name="marketing" checked style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
+                <span>Send me occasional updates from Corridor</span>
+              </label>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Notes</span><textarea name="notes" rows="3" placeholder="Anything we should know — the hero shot, what not to show, a deadline." style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none; resize: vertical; line-height: 1.55; font-family: inherit;" data-focus="border-color: #1E5AA8;"></textarea></label>
+              <div id="intake-price" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid #D8E3F0; padding-top: 13px; margin-top: 4px; text-align: left;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Total</span>
+                <span id="intake-price-value" style="font-size: 15px; color: #101418;"></span>
+              </div>
+              <p data-err="form" style="display: none; font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0; text-align: left;"></p>
+              <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5B6672; margin: 2px 0 0; text-align: left;">Upload trouble? Email the photos to <a href="mailto:max@corridor.tours" style="color: #1E5AA8;">max@corridor.tours</a> and we'll take it from there.</p>
+              <button type="button" id="intake-submit" style="width: 100%; font-size: 16px; color: #fff; background: #1E5AA8; border: 0; padding: 17px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 6px;" data-hover="background: #17457F;">Send us the listing</button>
+              <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: #D8E3F0; overflow: hidden;">
+                <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #1E5AA8;"></div>
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.5; color: #5B6672; margin: 2px 0 0; text-align: center;">We'll have your tour back within 48 hours.</p>
+              <!-- Second placement, right at the point of commitment. -->
+              <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: 19px; line-height: 1.3; color: #101418; margin: 10px 0 0; text-align: center;">Don't like it, don't pay. Full refund, no questions.</p>
+              <p style="font-size: 12px; line-height: 1.5; color: #8FA0B4; margin: 14px 0 0; text-align: left;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
+            </div>
+          </div>
+          <div id="intake-done" style="display: none;">
+            <div style="position: fixed; inset: 0; z-index: 210; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
+              <div style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #E9F0F8; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34); text-align: center;">
+                <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1; margin: 0 0 10px;">We've got it.</h2>
+                <p style="font-size: 15px; line-height: 1.55; color: #5B6672; margin: 0 0 22px;">A confirmation is on its way to your inbox. Your finished tour comes back within 48 hours. If we need a photo you didn't send, we'll just ask.</p>
+                <button type="button" id="intake-done-close" style="width: 100%; font-size: 15px; color: #fff; background: #1E5AA8; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Done</button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: 0 20px clamp(48px, 7vw, 88px);">
-        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4vw, 44px); letter-spacing: -.015em; margin: 0 0 10px;">Pick what the listing needs.</h2>
-        <p style="font-size: 16px; color: #55606E; margin: 0 0 30px; max-width: 54ch;">Pay once, per property. No subscription, no seats, nothing to cancel. You send the photos straight after checkout and the video comes back in 24 hours or less.</p>
-        <div id="pkgs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(16px, 2vw, 22px);">
-          <p style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8A8778;">LOADING PRICES…</p>
+      <div style="border-top: 1px solid #D8E3F0;">
+        <div style="max-width: 1160px; margin: 0 auto; padding: clamp(24px, 3vw, 34px) 20px clamp(40px, 5vw, 60px);">
+          <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #5B6672; margin: 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · MAX@CORRIDOR.TOURS</p>
+          <p style="font-size: 12px; line-height: 1.55; color: #8FA0B4; margin: 16px 0 0; max-width: 84ch;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
         </div>
-        <p id="pay-note" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #8A8778; margin: 20px 0 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · HELLO@CORRIDOR.TOURS</p>
-      </section>
+      </div>
     </div>
-<div id="auth-modal" style="display: none;">
+  </div>
+  <div id="auth-modal" style="display: none;">
     <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div data-modal-card="1" style="width: min(420px, 100%); background: #F5F3EE; border: 1px solid #E4E0D6; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
+      <div data-modal-card="1" style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #E9F0F8; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
           <div style="display: flex; align-items: center; gap: 9px;">
-            <span style="width: 12px; height: 20px; background: #2B4FD7; border-radius: 6px 6px 2px 2px; display: block;"></span>
+            <svg width="20" height="22" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #1E5AA8;">
+              <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
+              <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
+            </svg>
             <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
           </div>
-          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #55606E; background: transparent; border: 1px solid #E2DED5; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #101418; color: #101418;">×</button>
+          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #5B6672; background: transparent; border: 1px solid #D8E3F0; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #101418; color: #101418;">×</button>
         </div>
         <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.1; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
-        <p style="font-size: 14.5px; line-height: 1.55; color: #55606E; margin: 0 0 20px;"><span id="auth-sub">Pick up your tours, share links and concept images.</span></p>
-        <div style="display: grid; gap: 10px;">
-          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
-          <input type="password" autocomplete="current-password" placeholder="Password" id="auth-password" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
-          <div id="signup-extra" style="display: none; gap: 10px;">
-            <input type="password" autocomplete="new-password" placeholder="Confirm password" id="auth-password2" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
-            <input type="text" placeholder="Brokerage or company" id="auth-company" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2DED5; background: #fff; color: #101418; outline: none;" data-focus="border-color: #2B4FD7;" />
-          </div>
+        <p style="font-size: 14.5px; line-height: 1.55; color: #5B6672; margin: 0 0 20px;"><span id="auth-sub">Pick up where you left off — tours, share links and concept images.</span></p>
+        <div id="auth-ask" style="display: grid; gap: 10px;">
+          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" />
           <div id="auth-error" style="display: none;">
             <p style="font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0;"></p>
           </div>
-          <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #2B4FD7; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #1F3BB0;">Sign in</button>
-          <a href="/reset" id="auth-forgot" style="display: block; text-align: center; font-size: 13.5px; color: #55606E; text-decoration: none; padding: 10px 0 0;" data-hover="color: #2B4FD7;">Forgot password?</a>
-          <button type="button" id="auth-toggle" style="width: 100%; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #55606E; background: transparent; border: 0; padding: 8px 0 2px; cursor: pointer;" data-hover="color: #2B4FD7;">Create an account</button>
+          <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #1E5AA8; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #17457F;">Email me a link</button>
+        </div>
+        <div id="auth-sent" style="display: none;">
+          <p style="font-size: 15px; line-height: 1.55; color: #101418; margin: 0;">Check your inbox — we sent you a link.</p>
         </div>
       </div>
     </div>
@@ -178,190 +415,451 @@
 <script>
 (function () {
 
-  var applyState = function (attr, onEvt, offEvt) {
+  /* ------------------------------------------------------------------ *
+   * Where the order goes. Our own backend — broker details and listing
+   * photos never leave this server.
+   * ------------------------------------------------------------------ */
+  var INTAKE_ENDPOINT = '/api/intake';
+
+  /* The published sample tour. Points at the on-page sample until a real
+   * tour is live; swapping it is this one line. */
+  var TOUR_URL = '#sample';
+
+  var SUPPORT_EMAIL = 'max@corridor.tours';
+
+  /* Every URL that points outside this page, and the money, in one place.
+     Change a route or a price here and nowhere else. */
+  var CONFIG = {
+    endpoints: {
+      me:     '/api/auth/me',
+      link:   '/api/auth/link',     // ask for a sign-in link
+      verify: '/api/auth/verify',   // the link itself lands here
+      intake: INTAKE_ENDPOINT,      // the form's data-endpoint wins if set
+      studio: '/studio'
+    },
+    price: {
+      /* A single listing is $200 with 4K and two revision rounds included, so
+         there is no 4K upcharge to add — a paid 4K option on a page that says
+         4K is included is the kind of contradiction a buyer notices. */
+      baseCents:     20000,
+      extendedCents:  6000,   // large or multi-building: scope, not quality
+      revisionCents:  5000    // each round beyond the two included
+    },
+    photos: {
+      min: 12,
+      max: 40,
+      maxTotalBytes: 500 * 1024 * 1024
+    }
+  };
+
+  var applyState = function (attr, on, off) {
     document.querySelectorAll('[' + attr + ']').forEach(function (el) {
       var base = el.getAttribute('style') || '';
-      el.addEventListener(onEvt, function () { el.setAttribute('style', base + ';' + el.getAttribute(attr)); });
-      el.addEventListener(offEvt, function () { el.setAttribute('style', base); });
+      el.addEventListener(on, function () { el.setAttribute('style', base + ';' + el.getAttribute(attr)); });
+      el.addEventListener(off, function () { el.setAttribute('style', base); });
     });
   };
   applyState('data-hover', 'mouseenter', 'mouseleave');
   applyState('data-focus', 'focus', 'blur');
 
-  // cycling headline word
   var WORDS = ['boring', 'beige', 'a PDF', 'a Dropbox link', 'stuck in 2014'];
-  var word = document.getElementById('boring-word');
-  var wi = 0;
+  var word = document.getElementById('boring-word'), wi = 0;
   setInterval(function () { wi = (wi + 1) % WORDS.length; word.textContent = WORDS[wi]; }, 2200);
 
-  // --- session + auth dialog -------------------------------------------------
-  // Studio lives at /studio and keeps its own gate; this dialog just gets you
-  // there. Endpoints are the server's own (server/routes/auth.js).
+  /* ---- ribbon field: curved bands (wave 14), per-pixel — CSS can't do this ---- */
+  var STOPS = [
+    [0.0000, 247, 250, 253], [0.0432, 247, 250, 253], [0.3318, 247, 250, 253],
+    [0.3786, 227, 237, 248], [0.5814, 227, 237, 248],
+    [0.5886, 194, 216, 238], [0.7964, 194, 216, 238],
+    [0.8000, 155, 191, 226], [1.0000, 155, 191, 226]
+  ];
+  var N = 1024, lut = new Uint8ClampedArray(N * 3), seg = 0;
+  for (var i = 0; i < N; i++) {
+    var p = i / (N - 1);
+    while (seg < STOPS.length - 2 && p > STOPS[seg + 1][0]) seg++;
+    var s0 = STOPS[seg], s1 = STOPS[seg + 1], span = s1[0] - s0[0];
+    var t = span > 0 ? (p - s0[0]) / span : 0;
+    lut[i * 3] = s0[1] + (s1[1] - s0[1]) * t;
+    lut[i * 3 + 1] = s0[2] + (s1[2] - s0[2]) * t;
+    lut[i * 3 + 2] = s0[3] + (s1[3] - s0[3]) * t;
+  }
+
+  var canvas = document.getElementById('field'), ctx = canvas.getContext('2d');
+  var off = document.createElement('canvas'), octx = off.getContext('2d');
+  var img = null, ow = 0, oh = 0;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function size() {
+    var r = canvas.getBoundingClientRect();
+    var w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    var nw = 240, nh = Math.max(60, Math.min(220, Math.round(nw * h / w)));
+    if (nw !== ow || nh !== oh) { ow = nw; oh = nh; off.width = ow; off.height = oh; img = octx.createImageData(ow, oh); }
+  }
+
+  function frame(ph) {
+    size();
+    if (!img) return;
+    var amt = 0, spin = ph * 1;
+    var a = (32 + Math.sin(spin * 0.6) * 28 * amt) * Math.PI / 180;
+    var sa = Math.sin(a), ca = Math.cos(a), W = ow, H = oh;
+    var L = Math.abs(W * sa) + Math.abs(H * ca), Lc = Math.abs(W * ca) + Math.abs(H * sa);
+    var clock = 20.75 + ph * 1.2, k = (14 / 100) * 0.35, d = img.data, i = 0;
+    for (var y = 0; y < H; y++) {
+      var dy = y - H / 2;
+      for (var x = 0; x < W; x++) {
+        var dx = x - W / 2;
+        var cross = (dx * ca + dy * sa) / Lc + 0.5;
+        var along = (dx * sa - dy * ca) / L + 0.5;
+        along += k * Math.sin(cross * 2.4 * Math.PI * 2 + clock);
+        if (along < 0) along = 0; else if (along > 1) along = 1;
+        var idx = (along * 1023 | 0) * 3;
+        d[i] = lut[idx]; d[i + 1] = lut[idx + 1]; d[i + 2] = lut[idx + 2]; d[i + 3] = 255;
+        i += 4;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(off, 0, 0, ow, oh, 0, 0, canvas.width, canvas.height);
+  }
+
+  if (reduce) { frame(0); } else {
+    var t0 = performance.now();
+    (function loop(now) { frame((now - t0) / 1000); requestAnimationFrame(loop); })(t0);
+  }
+  window.addEventListener('resize', function () { if (reduce) frame(0); });
+
+  /* ---- sample tour ------------------------------------------------------
+     One constant drives all four tour links, so pointing them at a real tour
+     is a one-line change. And the panel under the hero is the sales pitch: it
+     must never render as an empty box, so if the video will not load the
+     poster frame and a link take its place. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tour-link]'), function (a) {
+    a.setAttribute('href', TOUR_URL);
+  });
+  (function () {
+    var video = document.getElementById('sample-video');
+    var fallback = document.getElementById('sample-fallback');
+    if (!video || !fallback) return;
+    var swap = function () {
+      if (fallback.style.display === 'block') return;
+      video.style.display = 'none';
+      fallback.style.display = 'block';
+    };
+    video.addEventListener('error', swap);
+    video.addEventListener('stalled', swap);
+    /* A missing file fires 'error', but a half-answered request can just sit
+       there instead. If nothing has arrived by now, treat it as gone. */
+    setTimeout(function () { if (video.readyState === 0) swap(); }, 6000);
+  }());
+
+  /* ---- account ----------------------------------------------------------
+     There is no password anywhere in this app. An account is created by the
+     first order and identified by its email; signing in later means asking for
+     a link. So there is no login wall in front of ordering, and nothing for a
+     broker to forget between their first listing and their tenth. */
   var account = null;
-  var mode = 'login';
+
+  /* ---- intake ----------------------------------------------------------- */
+  var intake = document.getElementById('intake-form');
+  var known = document.getElementById('intake-known');
+  var knownWho = document.getElementById('intake-known-who');
+  var identity = document.getElementById('intake-identity');
+  var photos = document.getElementById('intake-files');
+  var attachments = document.getElementById('intake-attachments');
+  var branding = document.getElementById('intake-branding');
+  var fileLabel = document.getElementById('intake-file-label');
+  var attachLabel = document.getElementById('intake-attach-label');
+  var brandingLabel = document.getElementById('intake-branding-label');
+  var intakeGo = document.getElementById('intake-submit');
+  var bar = document.getElementById('intake-progress');
+  var barFill = document.getElementById('intake-progress-fill');
+  var priceValue = document.getElementById('intake-price-value');
+  var doneModal = document.getElementById('intake-done');
+  var PHOTO_RESET = '12 to 40 · we cut the best ten · crooked phone shots welcome';
+  var ATTACH_RESET = 'The flyer, OM, floor plan, or rendering set';
+  var BRANDING_RESET = 'Your logo and headshot for the end card';
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  var money = function (cents) { return '$' + (cents / 100).toLocaleString('en-US'); };
+  var field = function (n) { return intake.querySelector('[name="' + n + '"]'); };
+  var value = function (n) { var el = field(n); return el ? String(el.value).trim() : ''; };
+  var ticked = function (n) { var el = field(n); return Boolean(el && el.checked); };
+
+  function setErr(key, message) {
+    var el = intake.querySelector('[data-err="' + key + '"]');
+    if (!el) return;
+    el.textContent = message || '';
+    el.style.display = message ? 'block' : 'none';
+  }
+  function clearErrs() {
+    Array.prototype.forEach.call(intake.querySelectorAll('[data-err]'), function (el) {
+      el.textContent = ''; el.style.display = 'none';
+    });
+  }
+
+  function bytesOf(input) {
+    var list = (input && input.files) || [], sum = 0;
+    for (var i = 0; i < list.length; i++) sum += list[i].size;
+    return sum;
+  }
+  function humanSize(bytes) {
+    if (bytes < 1048576) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+    var mb = bytes / 1048576;
+    return (mb >= 100 ? Math.round(mb) : mb.toFixed(1)) + ' MB';
+  }
+  function countLabel(input, noun, reset, target) {
+    var n = (input.files || []).length;
+    target.textContent = n
+      ? n + ' ' + noun + (n === 1 ? '' : 's') + ' · ' + humanSize(bytesOf(input))
+      : reset;
+  }
+
+  function amountCents() {
+    var total = CONFIG.price.baseCents;
+    if (ticked('extended')) total += CONFIG.price.extendedCents;
+    return total;
+  }
+  function paintPrice() {
+    priceValue.textContent = money(amountCents()) + ' for this listing — invoiced after delivery.';
+  }
+
+  /* The whole point of having accounts. A returning broker's second order is
+     address, photos, submit — the four identity fields fold into one line. */
+  function paintIdentity() {
+    if (!account) {
+      known.style.display = 'none';
+      identity.style.display = 'grid';
+      return;
+    }
+    if (field('name'))  field('name').value  = account.name || '';
+    if (field('email')) field('email').value = account.email || '';
+    if (field('phone')) field('phone').value = account.phone || '';
+    if (field('firm'))  field('firm').value  = account.company || '';
+    knownWho.textContent = (account.name ? account.name + ' · ' : '') + account.email;
+    known.style.display = 'flex';
+    identity.style.display = 'none';
+  }
+  document.getElementById('intake-notyou').addEventListener('click', function () {
+    // Expand them again, but keep what was prefilled — usually one field is wrong.
+    known.style.display = 'none';
+    identity.style.display = 'grid';
+    if (field('name')) field('name').focus();
+  });
+
+  photos.addEventListener('change', function () {
+    countLabel(photos, 'photo', PHOTO_RESET, fileLabel);
+    setErr('photos', photoProblem());
+  });
+  attachments.addEventListener('change', function () {
+    countLabel(attachments, 'file', ATTACH_RESET, attachLabel);
+    setErr('attachments', null);
+  });
+  branding.addEventListener('change', function () {
+    countLabel(branding, 'image', BRANDING_RESET, brandingLabel);
+  });
+  intake.addEventListener('change', function (e) {
+    if (e.target && e.target.name === 'extended') paintPrice();
+  });
+
+  function photoProblem() {
+    var n = (photos.files || []).length;
+    if (n < CONFIG.photos.min) {
+      return n === 0
+        ? 'Attach at least ' + CONFIG.photos.min + ' photos.'
+        : 'That is only ' + n + ' photo' + (n === 1 ? '' : 's') + '. We need ' + CONFIG.photos.min + ' to cut a tour.';
+    }
+    if (n > CONFIG.photos.max) {
+      return 'That is ' + n + ' photos. Send your best ' + CONFIG.photos.max + '.';
+    }
+    var list = photos.files || [];
+    for (var i = 0; i < list.length; i++) {
+      var t = String(list[i].type || "");
+      var nm = String(list[i].name || "");
+      if (!/^image\/(jpeg|png|webp)$/i.test(t)) {
+        return /heic|heif/i.test(t) || /\.heic$/i.test(nm)
+          ? "HEIC is not supported. On iPhone: Settings → Camera → Formats → \"Most Compatible\"."
+          : "Photos must be JPEG, PNG or WebP. " + (nm || "That file") + " cannot be used.";
+      }
+    }
+    var bytes = bytesOf(photos) + bytesOf(attachments) + bytesOf(branding);
+    if (bytes > CONFIG.photos.maxTotalBytes) {
+      return 'Those come to ' + humanSize(bytes) + ' — the limit is ' +
+        Math.round(CONFIG.photos.maxTotalBytes / 1048576) + ' MB. Send fewer, or smaller versions.';
+    }
+    return null;
+  }
+
+  function validIntake() {
+    clearErrs();
+    var bad = 0;
+    if (!value('name')) { setErr('name', 'Tell us who to send it back to.'); bad++; }
+    var email = value('email');
+    if (!email) { setErr('email', 'We need an email — this is your account.'); bad++; }
+    else if (!EMAIL_RE.test(email)) { setErr('email', 'That email address does not look right.'); bad++; }
+    if (!value('address')) { setErr('address', 'Which property is this?'); bad++; }
+    if (!value('size')) { setErr('size', 'Roughly how big is it?'); bad++; }
+    if (!value('propertyType')) { setErr('propertyType', 'Pick a property type.'); bad++; }
+    var problem = photoProblem();
+    if (problem) { setErr('photos', problem); bad++; }
+
+    /* An identity error is unreachable while the fields are folded away, so
+       open them back up rather than showing an error nobody can see. */
+    if (bad && known.style.display !== 'none') {
+      var hidden = ['name', 'email'].some(function (k) {
+        var el = intake.querySelector('[data-err="' + k + '"]');
+        return el && el.style.display === 'block';
+      });
+      if (hidden) { known.style.display = 'none'; identity.style.display = 'grid'; }
+    }
+    return bad === 0;
+  }
+
+  function fail(message) {
+    /* Never cleared, never hidden: everything they typed is still on screen to
+       retry with. Losing a filled-in form is how you lose the broker. */
+    bar.style.display = 'none';
+    intakeGo.disabled = false;
+    intakeGo.textContent = 'Send us the listing';
+    setErr('form', message);
+    // A route that does not depend on this form working at all.
+    document.getElementById('intake-fallback').style.display = 'block';
+  }
+
+  function sendIntake() {
+    if (!validIntake()) return;
+    setErr('form', null);
+
+    var fd = new FormData();
+    ['name', 'email', 'phone', 'firm', 'address', 'size', 'propertyType', 'listingUrl', 'brandingContact', 'notes']
+      .forEach(function (n) { fd.append(n, value(n)); });
+    fd.append('extended', ticked('extended') ? 'yes' : 'no');
+    fd.append('marketing', ticked('marketing') ? 'yes' : 'no');
+    fd.append('amountCents', String(amountCents()));
+    var add = function (input, name) {
+      var list = (input && input.files) || [];
+      for (var i = 0; i < list.length; i++) fd.append(name, list[i]);
+    };
+    add(photos, 'photos');
+    add(attachments, 'attachments');
+    add(branding, 'branding');
+
+    intakeGo.disabled = true;
+    intakeGo.textContent = 'Sending…';
+    bar.style.display = 'block';
+    barFill.style.width = '0%';
+
+    /* XHR, not fetch: fetch cannot report upload progress, and a broker pushing
+       300 MB with no feedback concludes it has hung. */
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', intake.getAttribute('data-endpoint') || CONFIG.endpoints.intake, true);
+    xhr.timeout = 10 * 60 * 1000;
+    xhr.withCredentials = true;
+
+    xhr.upload.addEventListener('progress', function (e) {
+      if (!e.lengthComputable) return;
+      var pct = Math.round((e.loaded / e.total) * 100);
+      barFill.style.width = pct + '%';
+      // At 100% the bytes are up but the server is still storing them.
+      intakeGo.textContent = pct < 100 ? 'Sending… ' + pct + '%' : 'Almost there…';
+    });
+
+    xhr.addEventListener('load', function () {
+      var data = null;
+      try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
+      if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
+        doneModal.style.display = 'block';
+        return;
+      }
+      fail((data && data.error) ||
+        'We could not take that listing (error ' + xhr.status + '). Try again, or email max@corridor.tours.');
+    });
+    xhr.addEventListener('error', function () {
+      fail('That did not reach us. Check your connection and try again — nothing you typed was lost.');
+    });
+    xhr.addEventListener('timeout', function () {
+      fail('The upload timed out. Try again, or send fewer photos.');
+    });
+
+    xhr.send(fd);
+  }
+
+  intakeGo.addEventListener('click', sendIntake);
+  document.getElementById('intake-done-close').addEventListener('click', function () {
+    doneModal.style.display = 'none';
+    intake.style.display = 'none';
+  });
+
+  /* ---- sign in: one field, one link -------------------------------------- */
   var modal = document.getElementById('auth-modal');
-  var err = document.getElementById('auth-error');
-  var errText = err.querySelector('p');
+  var err = document.getElementById('auth-error'), errText = err.querySelector('p');
   var submit = document.getElementById('auth-submit');
-  var toggle = document.getElementById('auth-toggle');
-  var forgot = document.getElementById('auth-forgot');
-  var val = function (id) { var el = document.getElementById(id); return el ? el.value : ''; };
+  var ask = document.getElementById('auth-ask'), sent = document.getElementById('auth-sent');
 
-  function paintMode() {
-    var signup = mode === 'signup';
-    document.getElementById('auth-title').textContent = signup ? 'Create your account' : 'Sign in';
-    document.getElementById('auth-sub').textContent = signup
-      ? 'Your first tour is free. No card, no call.'
-      : 'Pick up your tours, share links and concept images.';
-    document.getElementById('signup-extra').style.display = signup ? 'grid' : 'none';
-    // Recovering a password only means anything on the sign-in side.
-    forgot.style.display = signup ? 'none' : 'block';
-    submit.textContent = signup ? 'Create account' : 'Sign in';
-    toggle.textContent = signup ? 'I already have an account' : 'Create an account';
+  function closeAuth() {
+    modal.style.display = 'none';
+    err.style.display = 'none';
+    ask.style.display = 'grid'; sent.style.display = 'none';
+    submit.disabled = false; submit.textContent = 'Email me a link';
   }
-  function closeAuth() { modal.style.display = 'none'; err.style.display = 'none'; }
-  function openAuth(next) {
-    if (account) { location.href = '/studio'; return; }
-    mode = next; paintMode(); err.style.display = 'none';
-    modal.style.display = 'flex';
-    var email = document.getElementById('auth-email');
-    if (email) email.focus();
+  function openAuth() {
+    // Already signed in? There is nothing to ask for.
+    if (account) { location.href = CONFIG.endpoints.studio; return; }
+    closeAuth();
+    modal.style.display = 'block';
+    var e = document.getElementById('auth-email'); if (e) e.focus();
   }
-
   document.querySelectorAll('[data-open-auth]').forEach(function (el) {
-    el.addEventListener('click', function () { openAuth(el.getAttribute('data-open-auth')); });
+    el.addEventListener('click', function () { openAuth(); });
   });
   document.querySelectorAll('[data-close-auth]').forEach(function (el) {
-    el.addEventListener('click', function (e) { if (e.target === el) closeAuth(); });
+    el.addEventListener('click', function (e) { if (e.target === el || el.tagName === 'BUTTON') closeAuth(); });
   });
   document.querySelector('[data-modal-card]').addEventListener('click', function (e) { e.stopPropagation(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAuth(); });
-  toggle.addEventListener('click', function () { mode = mode === 'login' ? 'signup' : 'login'; paintMode(); err.style.display = 'none'; });
   document.querySelectorAll('[data-home]').forEach(function (el) {
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
 
-  /* The landing page no longer uploads anything. Brokers send a property
-     through /request and we produce the marketing for them; the studio is the
-     internal tool that fulfils those requests, not a self-serve product. */
+  function requestLink() {
+    var email = (document.getElementById('auth-email').value || '').trim();
+    // Checked here rather than spending a round trip to be told the same thing.
+    if (!email) { errText.textContent = 'Enter your email address.'; err.style.display = 'block'; return; }
+    if (!EMAIL_RE.test(email)) { errText.textContent = 'That email address does not look right.'; err.style.display = 'block'; return; }
 
-  /* Deliberately the same shape the server enforces in createAccount(), so the
-     page and the API agree on what a valid credential is. The min-8 rule is
-     safe on the sign-in path too: the server has always required 8 at signup,
-     so no existing account can have a shorter one. */
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  function problemWith() {
-    var email = val('auth-email').trim();
-    if (!email) return 'Enter your email address.';
-    if (!EMAIL_RE.test(email)) return 'That email address does not look right.';
-    var password = val('auth-password');
-    if (!password) return 'Enter your password.';
-    if (password.length < 8) return 'Your password must be at least 8 characters.';
-    if (mode === 'signup' && password !== val('auth-password2')) return 'The two passwords do not match.';
-    return null;
-  }
-  function showError(message) {
-    errText.textContent = message;
-    err.style.display = 'block';
-  }
-
-  function authenticate() {
-    /* Catch it here rather than spending a round trip to be told the same
-       thing. Nothing is sent until the credential is well-formed. */
-    var problem = problemWith();
-    if (problem) { showError(problem); return; }
-
-    submit.disabled = true;
-    submit.textContent = 'One moment…';
-    err.style.display = 'none';
-    var body = { email: val('auth-email'), password: val('auth-password') };
-    if (mode === 'signup') { body.company = val('auth-company'); }
-    fetch('/api/auth/' + mode, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+    submit.disabled = true; submit.textContent = 'One moment…'; err.style.display = 'none';
+    fetch(CONFIG.endpoints.link, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email })
     }).then(function (res) {
       return res.text().then(function (text) {
         var data = text ? JSON.parse(text) : null;
-        if (!res.ok) throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
-        account = (data && data.account) || account;
-        location.href = '/studio';
+        if (!res.ok || !(data && data.success)) {
+          throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+        }
+        /* Deliberately the same message whether or not the address is on file:
+           this endpoint must not become a way to find out who has an account. */
+        ask.style.display = 'none';
+        sent.style.display = 'block';
       });
     }).catch(function (e) {
-      showError(e.message || 'Could not reach Corridor.');
-      submit.disabled = false;
-      paintMode();
+      errText.textContent = e.message || 'Could not reach Corridor.';
+      err.style.display = 'block'; submit.disabled = false; submit.textContent = 'Email me a link';
     });
   }
-  submit.addEventListener('click', authenticate);
-  ['auth-email', 'auth-password', 'auth-password2'].forEach(function (id) {
-    document.getElementById(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') authenticate(); });
+  submit.addEventListener('click', requestLink);
+  document.getElementById('auth-email').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') requestLink();
   });
 
-  fetch('/api/auth/me', { credentials: 'same-origin' })
+  // Who is this? Decides whether the four identity fields are folded away.
+  fetch(CONFIG.endpoints.me, { credentials: 'same-origin' })
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) { if (data && data.account) account = data.account; })
-    .catch(function () {});
+    .catch(function () {})
+    .then(function () { paintIdentity(); paintPrice(); });
 }());
-
-  /* Pricing comes from the server so the number on the card and the number
-     Stripe charges are the same number. A price that drifts between the page
-     and the receipt is the fastest way to lose a first customer. */
-  (function () {
-    var box = document.getElementById('pkgs');
-    if (!box) return;
-
-    fetch('/api/public/packages').then(function (r) { return r.json(); }).then(function (data) {
-      var pkgs = data.packages || [];
-      box.innerHTML = pkgs.map(function (p, i) {
-        var dark = i === 1;
-        return '<div style="background:' + (dark ? '#101E33' : '#fff') + ';color:' + (dark ? '#fff' : '#101418') +
-          ';border:1px solid ' + (dark ? '#101E33' : '#E4E0D6') + ';border-radius:22px;padding:clamp(22px,3vw,30px);display:flex;flex-direction:column">' +
-          '<div style="font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:' +
-            (dark ? '#8FA6D8' : '#8A8778') + ';margin-bottom:16px">' + p.name + '</div>' +
-          '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">' +
-            '<span style="font-family:\'Instrument Serif\',Georgia,serif;font-size:clamp(38px,5vw,50px);line-height:1">$' + p.price.toLocaleString('en-US') + '</span>' +
-            '<span style="font-size:14px;color:' + (dark ? '#C4CEE0' : '#55606E') + '">per property</span></div>' +
-          '<p style="font-size:14.5px;line-height:1.5;margin:0 0 16px;color:' + (dark ? '#C4CEE0' : '#55606E') + '">' + p.blurb + '</p>' +
-          '<div style="display:grid;gap:9px;margin-bottom:24px;font-size:14.5px;color:' + (dark ? '#C4CEE0' : '#101418') + '">' +
-            p.detail.map(function (d) { return '<div>' + d + '</div>'; }).join('') + '</div>' +
-          '<button type="button" data-buy="' + p.key + '" style="margin-top:auto;width:100%;font-size:15px;font-weight:500;padding:14px;border-radius:999px;cursor:pointer;border:1px solid ' +
-            (dark ? '#fff' : '#101418') + ';background:' + (dark ? '#fff' : 'transparent') + ';color:' + (dark ? '#101418' : '#101418') + '">Choose ' + p.name + '</button>' +
-        '</div>';
-      }).join('');
-
-      var note = document.getElementById('pay-note');
-      if (!data.payments || !data.payments.configured) {
-        /* Say it plainly rather than letting someone click into a dead end. */
-        if (note) note.textContent = 'CHECKOUT IS NOT SWITCHED ON YET — CHOOSE A PACKAGE AND SEND THE PROPERTY, WE WILL INVOICE YOU.';
-      }
-
-      Array.prototype.forEach.call(box.querySelectorAll('[data-buy]'), function (btn) {
-        btn.onclick = async function () {
-          var key = btn.getAttribute('data-buy');
-          btn.disabled = true; btn.textContent = 'One moment…';
-          try {
-            var res = await fetch('/api/public/checkout', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ package: key })
-            });
-            var out = await res.json();
-            if (res.ok && out.url) { window.location.href = out.url; return; }
-            // Payments off, or Stripe unhappy: send them to the form anyway
-            // rather than stranding them on a broken button.
-            window.location.href = '/request?package=' + encodeURIComponent(key);
-          } catch (e) {
-            window.location.href = '/request?package=' + encodeURIComponent(key);
-          }
-        };
-      });
-    }).catch(function () {
-      box.innerHTML = '<p style="font-size:15px;color:#55606E">Prices are loading slowly. ' +
-        '<a href="/request" style="color:#2B4FD7">Send us the property</a> and we will quote it.</p>';
-    });
-  })();
 </script>
 </body>
 </html>
