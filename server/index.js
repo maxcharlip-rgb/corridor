@@ -55,7 +55,8 @@ app.use('/api', requireAuth, api);
 // Public tour viewer — one route, slug resolved client-side from the path.
 app.get('/t/:slug', (req, res) => {
   const listing = listingsRepo.bySlug(req.params.slug);
-  if (!listing || !listing.published) {
+  const ok = (listing && listing.published) || req.params.slug === 'demo';
+  if (!ok) {
     return res.status(404).sendFile(path.join(config.publicDir, '404.html'));
   }
   res.sendFile(path.join(config.publicDir, 'tour.html'));

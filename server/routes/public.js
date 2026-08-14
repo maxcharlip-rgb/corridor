@@ -10,6 +10,7 @@ import { SPACE_BY_KEY, MOTION_BY_KEY } from '../motions.js';
 import { normaliseSource } from '../signkit.js';
 import { DISCLOSURES } from '../facts.js';
 import { brandingForListing } from '../branding.js';
+import { DEMO_LISTING, DEMO_LISTING_ID, demoPayload, demoShotIds, isDemoSlug } from '../demo-tour.js';
 
 export const publicApi = express.Router();
 publicApi.use(express.json({ limit: '64kb' }));
@@ -18,6 +19,7 @@ const MAX_EVENTS = 50_000; // keep the JSON store bounded on a long-lived demo
 const VALID_EVENTS = new Set(['tour_open', 'shot_view', 'tour_complete', 'cta_click', 'reel_play']);
 
 function findPublished(slug) {
+  if (isDemoSlug(slug)) return DEMO_LISTING;
   const listing = listingsRepo.bySlug(slug);
   if (!listing || !listing.published) return null;
   return listing;
@@ -225,6 +227,7 @@ publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), asy
 publicApi.get('/tours/:slug', (req, res) => {
   const listing = findPublished(req.params.slug);
   if (!listing) return res.status(404).json({ error: 'Tour not found.' });
+  if (listing.id === DEMO_LISTING_ID) return res.json(demoPayload());
 
   const db = getDb();
   const stops = shotsRepo
@@ -287,7 +290,10 @@ publicApi.post('/tours/:slug/events', (req, res) => {
 
   // A shotId that isn't part of this listing would silently corrupt per-stop
   // attention numbers, so reject it rather than storing it.
-  if (shotId && !shotsRepo.forListing(listing.id).some((s) => s.id === shotId)) {
+  const knownShots = listing.id === DEMO_LISTING_ID
+    ? demoShotIds()
+    : new Set(shotsRepo.forListing(listing.id).map((s) => s.id));
+  if (shotId && !knownShots.has(shotId)) {
     return res.status(400).json({ error: 'Unknown shotId for this tour.' });
   }
 

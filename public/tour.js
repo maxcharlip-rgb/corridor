@@ -70,6 +70,10 @@ function paint() {
   document.title = `${listing.name} — video tour`;
 
   $('#app').innerHTML = `
+    ${tour.demo ? `<div style="margin:0 0 16px;padding:10px 14px;border:1px solid rgba(226,112,58,.45);border-radius:10px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(226,112,58,.08)">
+        <div style="font-size:13.5px;color:#f2f0ee">This is a Corridor sample. Walk it, then send your listing.</div>
+        <a href="/#intake" style="color:#e2703a;font-size:13px;font-weight:650">Send yours →</a>
+      </div>` : ''}
     <header class="top">
       <div>
         <h1>${esc(listing.name)}</h1>
