@@ -14,7 +14,6 @@
   html { scroll-behavior: smooth; }
   html, body { margin: 0; padding: 0; background: #F7FAFD; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   @media (max-width: 720px) { .nav-wide { display: none !important; } header a, header button { min-height: 44px; min-width: 44px; } }
-  @media (max-width: 800px) { #walk > div:last-child { grid-template-columns: 1fr !important; } }
   * { box-sizing: border-box; }
   a { color: #101418; text-decoration: none; }
   a:hover { color: #1E5AA8; }
@@ -23,8 +22,6 @@
   @keyframes corridorPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
   @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes corridorNudge { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
-  .walk-chip { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5B6672; background: #fff; border: 1px solid #D8E3F0; border-radius: 999px; padding: 9px 14px; cursor: pointer; }
-  .walk-chip.is-on { color: #fff; background: #1E5AA8; border-color: #1E5AA8; }
 </style>
 </head>
 <body>
@@ -44,7 +41,6 @@
         </svg>
         <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; color: #101418;">Corridor</span>
       </button>
-      <a class="nav-wide" href="/t/demo" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Walk a listing</a>
       <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Pricing</a>
       <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">For brokers</a>
       <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #1E5AA8; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Sign in</button>
@@ -61,10 +57,7 @@
         <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #1E5AA8;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
         <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #5B6672; margin: 0 auto 40px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Send us the folder tonight. We cut it by hand and send a finished tour back in 48 hours.</p>
 
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
-        <a href="/t/demo" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 17px 34px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Walk a listing</a>
-        <a href="#intake" style="display: inline-block; font-size: 16px; color: #1E5AA8; background: transparent; padding: 17px 34px; border-radius: 999px; font-weight: 500; border: 1px solid #1E5AA8;" data-hover="background: #E9F0F8; color: #1E5AA8;">Send a listing</a>
-        </div>
+        <a href="#intake" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 17px 34px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Send a listing</a>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 26px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5B6672;">
           <span>No videographer</span>
           <span>No shoot day</span>
@@ -103,40 +96,29 @@
       </div>
 
 
-      <section id="walk" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(48px, 7vw, 96px);">
-        <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #1E5AA8; margin-bottom: clamp(20px, 3vw, 32px);">Try it</div>
-        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(32px, 5vw, 56px); line-height: 1.03; letter-spacing: -.02em; margin: 0 0 14px; max-width: 16ch;">Walk a listing. Then send yours.</h2>
-        <p style="font-size: 17px; line-height: 1.6; color: #5B6672; margin: 0 0 clamp(28px, 4vw, 40px); max-width: 54ch;">Click the rooms. This is what a tenant opens. The inquiry comes back with the stops they watched. That is why someone pays $200.</p>
-
-        <div style="display: grid; grid-template-columns: 1.4fr .8fr; gap: clamp(16px, 2vw, 24px); align-items: start;">
-          <div>
-            <div style="position: relative; border: 1px solid #D8E3F0; background: #fff; overflow: hidden;">
-              <img id="walk-still" src="/demo/exterior.jpg" alt="1011 Commerce Center" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;" />
-              <div style="position: absolute; left: 16px; bottom: 16px; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.45);">
-                <div id="walk-name" style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; letter-spacing: -.02em;">Exterior</div>
-                <div id="walk-sub" style="font-size: 13.5px; opacity: .9;">1011 Commerce Center · Grand Rapids</div>
-              </div>
-            </div>
-            <div id="walk-chips" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;"></div>
-            <a href="/t/demo" style="display: inline-block; margin-top: 20px; font-size: 15px; color: #fff; background: #1E5AA8; padding: 15px 26px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Open the full tour</a>
+      <section id="product" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px 0;">
+        <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #1E5AA8; margin-bottom: clamp(20px, 3vw, 32px);">What you get</div>
+        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(32px, 5vw, 56px); line-height: 1.03; letter-spacing: -.02em; margin: 0 0 14px; max-width: 16ch;">A listing page that takes the lead.</h2>
+        <p style="font-size: 17px; line-height: 1.6; color: #5B6672; margin: 0 0 clamp(28px, 4vw, 40px); max-width: 54ch;">Not a video file. A page for the listing: the share link, a QR for the sign, and every inquiry with the rooms they watched.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 20px); align-items: stretch; margin-bottom: clamp(36px, 5vw, 56px);">
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: 14px;">The link</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 10px;">One URL</div>
+            <p style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5B6672;">For the pitch, the flyer, and the listing. They open a page, not a Dropbox.</p>
           </div>
-          <div>
-            <div id="walk-lead" style="border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); padding: 22px 22px 20px; margin-bottom: 14px;">
-              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #1E5AA8; margin-bottom: 10px;">If they inquire</div>
-              <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 26px; line-height: 1.1; letter-spacing: -.015em; margin-bottom: 8px;">You see the rooms they opened.</div>
-              <p style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5B6672;">Click a few stops. The lead updates.</p>
-            </div>
-            <div style="border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); padding: 22px 22px 20px; margin-bottom: 14px;">
-              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672; margin-bottom: 10px;">On the sign</div>
-              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #101418;">QR artwork comes with the tour. They scan it and walk the building.</p>
-            </div>
-            <div style="border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); padding: 22px 22px 20px;">
-              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672; margin-bottom: 10px;">The link</div>
-              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #101418;">One URL for the pitch, the flyer, and the listing page. Not a video file in an email.</p>
-            </div>
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: 14px;">The sign</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 10px;">QR on the rider</div>
+            <p style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5B6672;">Artwork comes with the tour. They scan it and walk the building.</p>
+          </div>
+          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: 14px;">The lead</div>
+            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 10px;">Who watched what</div>
+            <p style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5B6672;">Name, firm, and the rooms they opened. You know if they glanced or stayed.</p>
           </div>
         </div>
       </section>
+
 
       <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
         <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #1E5AA8; margin-bottom: clamp(28px, 4vw, 44px);">Pricing</div>
@@ -385,7 +367,7 @@
   var INTAKE_ENDPOINT = '/api/intake';
 
   /* Sample is down until we have a cut we would let a broker post. */
-  var TOUR_URL = '/t/demo';
+  var TOUR_URL = '#intake';
 
   var SUPPORT_EMAIL = 'max@corridor.tours';
 
@@ -787,45 +769,6 @@
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
 
-  (function () {
-    var stops = [
-      { file: 'exterior', name: 'Exterior', sub: 'From the curb' },
-      { file: 'lobby', name: 'Lobby', sub: 'How the building receives people' },
-      { file: 'corridor', name: 'Corridor', sub: 'The walk to the floor' },
-      { file: 'floor', name: 'Floor plate', sub: 'The space they would take' },
-      { file: 'breakroom', name: 'Break room', sub: 'Where the day actually happens' },
-      { file: 'rooftop', name: 'Rooftop', sub: 'Why this listing is not the one next door' }
-    ];
-    var seen = {};
-    var chips = document.getElementById('walk-chips');
-    var still = document.getElementById('walk-still');
-    var nameEl = document.getElementById('walk-name');
-    var subEl = document.getElementById('walk-sub');
-    var lead = document.getElementById('walk-lead');
-    if (!chips || !still) return;
-    function paint(i) {
-      seen[i] = true;
-      still.src = '/demo/' + stops[i].file + '.jpg';
-      nameEl.textContent = stops[i].name;
-      subEl.textContent = stops[i].sub + ' · 1011 Commerce Center';
-      chips.querySelectorAll('.walk-chip').forEach(function (el, n) {
-        el.classList.toggle('is-on', n === i);
-      });
-      var rooms = stops.filter(function (_, n) { return seen[n]; }).map(function (s) { return s.name; });
-      lead.innerHTML =
-        '<div style="font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#1E5AA8;margin-bottom:10px;">If they inquire</div>' +
-        '<div style="font-family:\'Instrument Serif\',Georgia,serif;font-size:26px;line-height:1.1;letter-spacing:-.015em;margin-bottom:8px;">Watched ' + rooms.length + ' of 6 stops.</div>' +
-        '<p style="margin:0;font-size:14.5px;line-height:1.55;color:#5B6672;">' + rooms.join(', ') + '.</p>';
-    }
-    chips.innerHTML = stops.map(function (s, i) {
-      return '<button type="button" class="walk-chip' + (i === 0 ? ' is-on' : '') + '" data-i="' + i + '">' + s.name + '</button>';
-    }).join('');
-    chips.addEventListener('click', function (e) {
-      var el = e.target.closest('[data-i]');
-      if (el) paint(+el.getAttribute('data-i'));
-    });
-    seen[0] = true;
-  })();
 
   function requestLink() {
     var email = (document.getElementById('auth-email').value || '').trim();
