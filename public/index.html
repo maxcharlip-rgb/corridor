@@ -3,352 +3,334 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — Walk the listing. Then send yours.</title>
-  <meta name="description" content="Send the listing photos you already have. Corridor cuts a tour they can walk, puts a QR on the sign, and sends you every lead with the rooms they watched. $200 a listing." />
-  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
-
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
-<style>
-  html { scroll-behavior: smooth; }
-  html, body { margin: 0; padding: 0; background: #F7FAFD; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-  @media (max-width: 720px) { .nav-wide { display: none !important; } header a, header button { min-height: 44px; min-width: 44px; } }
-  * { box-sizing: border-box; }
-  a { color: #101418; text-decoration: none; }
-  a:hover { color: #1E5AA8; }
-  input, select, textarea, button { font-family: inherit; }
-  ::selection { background: #D3E3F6; }
-  @keyframes corridorPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
-  @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @keyframes corridorNudge { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
-  .tour-stop { display: grid; grid-template-columns: 72px 1fr auto; gap: 10px; align-items: center; padding: 7px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
-  .tour-stop:hover { background: rgba(255,255,255,.05); }
-  .tour-stop.is-on { background: rgba(255,255,255,.06); border-color: rgba(226,112,58,.45); }
-  .tour-stop .th { aspect-ratio: 16/9; border-radius: 5px; background: #14161a center/cover no-repeat; }
-  .tour-stop .nm { font-size: 13px; font-weight: 560; letter-spacing: -.01em; color: #f2f0ee; }
-  .tour-stop.is-on .nm { color: #e2703a; }
-  .tour-stop .sub { color: #9aa0a8; font-size: 11.5px; margin-top: 1px; }
-  .tour-seg { flex: 1; height: 3px; background: rgba(255,255,255,.22); border-radius: 2px; overflow: hidden; cursor: pointer; }
-  .tour-seg i { display: block; height: 100%; width: 0; background: #e2703a; }
-  .tour-seg.is-done i { width: 100%; }
-  .tour-seg.is-on i { width: 55%; }
-  @media (max-width: 880px) { .tour-demo { grid-template-columns: 1fr !important; } }
-</style>
+  <title>Corridor — The listing, walked.</title>
+  <meta name="description" content="Send the photos you already have. Corridor cuts a tour tenants walk, puts a QR on the sign, and sends you every lead with the rooms they watched. $200 a listing." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%23e2703a' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%23e2703a'/&gt;&lt;/svg&gt;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0a0b0c;
+      --panel: #121316;
+      --line: rgba(255,255,255,.1);
+      --text: #f2f0ee;
+      --muted: #8a8580;
+      --accent: #e2703a;
+      --serif: "Instrument Serif", Georgia, serif;
+      --sans: "Archivo", system-ui, "Helvetica Neue", Arial, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    html { scroll-behavior: smooth; }
+    html, body { margin: 0; background: var(--ink); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: inherit; text-decoration: none; }
+    a:hover { color: var(--accent); }
+    button, input, select, textarea { font-family: inherit; }
+    ::selection { background: rgba(226,112,58,.35); }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 0 22px; }
+    .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 15px 26px; border-radius: 999px; font-size: 15px; font-weight: 550;
+      border: 1px solid transparent; cursor: pointer;
+    }
+    .btn-w { background: #fff; color: #170d07; }
+    .btn-w:hover { background: #f2f0ee; color: #170d07; }
+    .btn-g { background: transparent; color: #fff; border-color: rgba(255,255,255,.28); }
+    .btn-g:hover { border-color: #fff; color: #fff; }
+    nav.top {
+      position: sticky; top: 0; z-index: 60;
+      background: rgba(10,11,12,.72); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav.top .bar { display: flex; align-items: center; gap: 18px; padding: 14px 0; }
+    nav.top .brand { display: flex; align-items: center; gap: 9px; margin-right: auto; background: none; border: 0; color: inherit; cursor: pointer; padding: 0; }
+    nav.top .brand span { font-family: var(--serif); font-size: 24px; }
+    nav.top .links a { font-size: 13.5px; color: var(--muted); padding: 10px 8px; }
+    nav.top .links a:hover { color: var(--text); }
+    @media (max-width: 720px) { nav.top .links { display: none; } }
+    .hero { position: relative; min-height: 100svh; display: grid; place-items: end start; overflow: hidden; }
+    .hero video, .hero .veil { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .hero .veil { background: linear-gradient(180deg, rgba(10,11,12,.2) 0%, rgba(10,11,12,.55) 45%, rgba(10,11,12,.92) 100%); }
+    .hero .copy { position: relative; z-index: 1; padding: 0 22px 72px; max-width: 1240px; width: 100%; margin: 0 auto; }
+    .hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(52px, 9vw, 104px); line-height: .9; letter-spacing: -.03em; margin: 10px 0 18px; max-width: 12ch; }
+    .hero p { font-size: clamp(16px, 1.7vw, 20px); line-height: 1.5; color: rgba(242,240,238,.78); max-width: 38ch; margin: 0 0 32px; }
+    .hero .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 10px 22px 0; max-width: 1240px; margin: 0 auto; }
+    .strip a { display: block; aspect-ratio: 4/5; overflow: hidden; background: #111; }
+    .strip img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.9); transition: transform .5s ease, filter .5s ease; }
+    .strip a:hover img { transform: scale(1.04); filter: saturate(1.05); }
+    @media (max-width: 800px) { .strip { grid-template-columns: repeat(3, 1fr); } }
+    section.block { padding: clamp(72px, 12vw, 140px) 0; }
+    section.block h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(36px, 5.4vw, 64px); line-height: 1.02; letter-spacing: -.025em; margin: 12px 0 18px; max-width: 14ch; }
+    .lede { font-size: 18px; line-height: 1.6; color: var(--muted); max-width: 42ch; margin: 0 0 48px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .three h3 { font-family: var(--serif); font-size: 28px; font-weight: 400; margin: 0 0 10px; letter-spacing: -.02em; }
+    .three p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 15.5px; }
+    @media (max-width: 800px) { .three { grid-template-columns: 1fr; } }
+    .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .prices article { background: var(--ink); padding: 32px 28px 28px; }
+    .prices .amt { font-family: var(--serif); font-size: clamp(48px, 6vw, 72px); line-height: .9; letter-spacing: -.03em; margin: 18px 0 14px; }
+    .prices p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 14.5px; }
+    @media (max-width: 800px) { .prices { grid-template-columns: 1fr; } }
+    .guarantee { margin-top: 28px; font-family: var(--serif); font-size: clamp(26px, 3vw, 36px); letter-spacing: -.02em; }
+    .guarantee span { display: block; font-family: var(--sans); font-size: 14.5px; color: var(--muted); margin-top: 8px; letter-spacing: 0; }
+    .lines { border-top: 1px solid var(--line); }
+    .line { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; }
+    .line b { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 400; color: var(--muted); padding-top: 3px; }
+    @media (max-width: 640px) { .line { grid-template-columns: 1fr; gap: 6px; } }
+    footer.site { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    #intake { scroll-margin-top: 84px; max-width: 620px; margin: 0 auto; text-align: center; }
+    #intake input, #intake select, #intake textarea { color-scheme: dark; }
+  </style>
 </head>
 <body>
-<div style="min-height: 100vh; background: transparent; color: #101418; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
-<canvas id="field" style="position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none;"></canvas>
-  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; background: rgba(247,250,253,.66);"></div>
-  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: overlay; background-size: 120px 120px; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.250'/%3E%3C/svg%3E&quot;);"></div>
-
-
-  <div style="position: relative; z-index: 1;">
-  <header style="position: sticky; top: 0; z-index: 60; background: rgba(247,250,253,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #E9F0F8;">
-    <div style="max-width: 1160px; margin: 0 auto; padding: 13px 20px; display: flex; align-items: center; gap: 18px;">
-      <button type="button" data-home="1" style="display: flex; align-items: center; gap: 9px; margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;">
-        <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #1E5AA8;">
-          <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
-          <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
-        </svg>
-        <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; color: #101418;">Corridor</span>
+  <nav class="top">
+    <div class="wrap bar">
+      <button type="button" class="brand" data-home="1">
+        <svg width="20" height="22" viewBox="0 0 22 24" fill="none" aria-hidden="true"><path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="#e2703a" stroke-width="2.4" stroke-linecap="round"/><path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="#e2703a"/></svg>
+        <span>Corridor</span>
       </button>
-      <a class="nav-wide" href="/t/demo" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Walk a listing</a>
-      <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">Pricing</a>
-      <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #5B6672; padding: 12px 8px;">For brokers</a>
-      <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #1E5AA8; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Sign in</button>
+      <div class="links">
+        <a href="/t/demo">Walk a listing</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#brokerages">For firms</a>
+        <a href="#intake">Send a listing</a>
+      </div>
+      <button type="button" data-open-auth="login" class="btn btn-w" style="padding: 9px 16px; font-size: 13.5px;">Sign in</button>
     </div>
-  </header>
+  </nav>
 
-    <div data-screen-label="Landing">
-      <section>
-        <div style="max-width: 1160px; margin: 0 auto; padding: clamp(28px, 4vw, 48px) 20px 0;">
-          <div style="position: relative; border-radius: 18px; overflow: hidden; min-height: min(72vh, 720px); background: #0a0b0c;">
-            <img src="/demo/exterior.jpg" alt="1011 Commerce Center" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .72;" />
-            <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,11,12,.15) 20%, rgba(10,11,12,.82) 100%);"></div>
-            <div style="position: relative; z-index: 1; min-height: min(72vh, 720px); display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(24px, 4vw, 48px); color: #fff;">
-              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #E9F0F8; margin-bottom: 14px;">This is what a tenant opens</div>
-              <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(40px, 7vw, 78px); line-height: .95; letter-spacing: -.025em; margin: 0 0 12px; max-width: 16ch;">Walk the listing. Then send yours.</h1>
-              <p style="font-size: clamp(16px, 1.6vw, 19px); line-height: 1.5; color: rgba(255,255,255,.78); margin: 0 0 28px; max-width: 42ch;">Six stops. Request a showing. We see which rooms you watched. That is the $200.</p>
-              <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-                <a href="/t/demo" style="display: inline-block; font-size: 16px; color: #170d07; background: #fff; padding: 17px 34px; border-radius: 999px; font-weight: 600;">Walk 1011 Commerce Center</a>
-                <a href="#intake" style="display: inline-block; font-size: 16px; color: #fff; background: transparent; padding: 17px 28px; border-radius: 999px; font-weight: 500; border: 1px solid rgba(255,255,255,.35);">Send a listing</a>
-              </div>
-            </div>
-          </div>
+  <section class="hero">
+    <video autoplay muted loop playsinline poster="/demo/exterior.jpg">
+      <source src="/demo/exterior.mp4" type="video/mp4" />
+    </video>
+    <div class="veil"></div>
+    <div class="copy">
+      <div class="kicker">Detroit · commercial listings</div>
+      <h1>The listing, walked.</h1>
+      <p>A page tenants open. A QR on the sign. Every inquiry with the rooms they watched.</p>
+      <div class="row">
+        <a class="btn btn-w" href="/t/demo">Walk 1011 Commerce Center</a>
+        <a class="btn btn-g" href="#intake">Send a listing</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <a href="/t/demo"><img src="/demo/exterior.jpg" alt="" /></a>
+    <a href="/t/demo"><img src="/demo/lobby.jpg" alt="" /></a>
+    <a href="/t/demo"><img src="/demo/corridor.jpg" alt="" /></a>
+    <a href="/t/demo"><img src="/demo/floor.jpg" alt="" /></a>
+    <a href="/t/demo"><img src="/demo/breakroom.jpg" alt="" /></a>
+    <a href="/t/demo"><img src="/demo/rooftop.jpg" alt="" /></a>
+  </div>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="kicker">What you buy</div>
+      <h2>Not a file. A listing that talks back.</h2>
+      <p class="lede">$200 is the page. Share the link. Tape the code on the sign. See who asked, and what they actually watched.</p>
+      <div class="three">
+        <div>
+          <h3>The link</h3>
+          <p>A public tour with stops, not a Dropbox. They walk the building in the order you want it seen.</p>
         </div>
-      </section>
-
-      <div style="overflow: hidden; border-top: 1px solid #E9F0F8; border-bottom: 1px solid #E9F0F8; padding: 13px 0; margin-top: clamp(52px, 8vw, 104px);">
-        <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">
-          <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
-            <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-          </div>
-          <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
-            <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-            <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-            <span style="color: #1E5AA8; flex: none;">·</span>
-          </div>
+        <div>
+          <h3>The sign</h3>
+          <p>QR artwork comes with the cut. The rider stops being a phone number and starts being a door.</p>
+        </div>
+        <div>
+          <h3>The lead</h3>
+          <p>Name, firm, and the rooms they opened. You know if they glanced or stayed.</p>
         </div>
       </div>
+    </div>
+  </section>
 
-      <section id="pricing" style="scroll-margin-top: 80px; max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
-        <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #1E5AA8; margin-bottom: clamp(28px, 4vw, 44px);">Pricing</div>
-        <div style="display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 20px); align-items: stretch;">
-          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
-            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: clamp(20px, 3vw, 30px);">Single listing</div>
-            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(58px, 8vw, 88px); line-height: .9; letter-spacing: -.03em;">$200</div>
-            <div style="height: 1px; background: #101418; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
-            <div style="font-size: 14.5px; line-height: 1.5; color: #5B6672;">From the photos you already have. A shareable page, QR for the sign, and every lead with the rooms they watched.</div>
-          </div>
-          <!-- The offer we actually want taken, so it is the one that looks like the answer. -->
-          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #101418; background: #101E33; color: #fff; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px); position: relative;">
-            <div style="position: absolute; top: 0; right: clamp(20px, 2.5vw, 28px); transform: translateY(-50%); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #101418; background: #fff; border: 1px solid #101418; padding: 5px 11px; border-radius: 999px;">Most popular</div>
-            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #8FA6D8; margin-bottom: clamp(20px, 3vw, 30px);">5-listing block</div>
-            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(58px, 8vw, 88px); line-height: .9; letter-spacing: -.03em;">$750</div>
-            <div style="height: 1px; background: #fff; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
-            <div style="font-size: 14.5px; line-height: 1.5; color: #C4CEE0;">$150 a listing, prepaid. Photos. Same two revision rounds, same 48 hours. Phone walk is priced per listing.</div>
-          </div>
-          <div style="flex: 1 1 260px; min-width: 0; border: 1px solid #D8E3F0; padding: clamp(22px, 3vw, 32px) clamp(20px, 2.5vw, 28px);">
-            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: clamp(20px, 3vw, 30px);">Brokerage</div>
-            <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(44px, 5.6vw, 62px); line-height: .9; letter-spacing: -.02em;">Custom</div>
-            <div style="height: 1px; background: #101418; margin: clamp(16px, 2vw, 22px) 0 14px;"></div>
-            <div style="font-size: 14.5px; line-height: 1.5; color: #5B6672;">Based on monthly listing volume. <a href="mailto:max@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="color: #1E5AA8; text-decoration: underline; text-underline-offset: 2px;">Talk to us</a></div>
-          </div>
-        </div>
+  <section class="block" id="pricing" style="scroll-margin-top: 80px; border-top: 1px solid var(--line);">
+    <div class="wrap">
+      <div class="kicker">Pricing</div>
+      <h2>Cheap enough for every listing.</h2>
+      <div class="prices">
+        <article>
+          <div class="kicker">Single</div>
+          <div class="amt">$200</div>
+          <p>From the photos you already have. Shareable page, QR, leads. Two revisions. 48 hours.</p>
+        </article>
+        <article>
+          <div class="kicker">Five listings</div>
+          <div class="amt">$750</div>
+          <p>$150 each, prepaid. Same cut, same turnaround. Phone walk is priced per listing.</p>
+        </article>
+        <article>
+          <div class="kicker">Brokerage</div>
+          <div class="amt">Custom</div>
+          <p>Priced on yearly volume, once. <a href="mailto:max@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="color:#e2703a">Talk to us</a></p>
+        </article>
+      </div>
+      <p class="guarantee">Don't like it, don't pay.<span>Full refund. You see the cut before you owe anything.</span></p>
+      <div class="lines" style="margin-top: 56px;">
+        <div class="line"><b>The cut</b><div>Up to ten shots, about forty seconds. Send twelve to forty photos.</div></div>
+        <div class="line"><b>Phone walk</b><div>$350. Two minutes of real motion plus the photos. Not a videographer shoot.</div></div>
+        <div class="line"><b>Larger assets</b><div>+$60. Up to twenty shots for multi-building or multi-floor properties.</div></div>
+        <div class="line"><b>More revisions</b><div>+$50 a round after the two that come with every tour.</div></div>
+      </div>
+    </div>
+  </section>
 
-        <!-- The objection this price meets is risk, not money. Say it early. -->
-        <div style="margin: clamp(26px, 3.5vw, 38px) 0 0; border: 1px solid #1E5AA8; background: rgba(30,90,168,.06); padding: clamp(18px, 2.4vw, 24px) clamp(18px, 2.5vw, 26px);">
-          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(22px, 2.8vw, 28px); line-height: 1.15; margin: 0 0 6px; color: #101418;">Don't like it, don't pay. Full refund, no questions.</p>
-          <p style="font-size: 14.5px; line-height: 1.55; color: #5B6672; margin: 0;">Every tour, including the blocks. You see the cut before you owe anything.</p>
-        </div>
+  <section class="block" id="brokerages" style="scroll-margin-top: 80px; border-top: 1px solid var(--line);">
+    <div class="wrap">
+      <div class="kicker">For firms</div>
+      <h2>Every listing. Not just the trophy.</h2>
+      <p class="lede">Quoted monthly against volume. The 4,000 SF flex building gets the same treatment as the tower.</p>
+      <div class="lines">
+        <div class="line"><b>Brand</b><div>Your colors, logo, and the listing broker on the end card.</div></div>
+        <div class="line"><b>Shot list</b><div>Agreed once. Same ten shots, every property, every broker.</div></div>
+        <div class="line"><b>Leads</b><div>Who opened it, which stops they watched, who inquired.</div></div>
+        <div class="line"><b>One desk</b><div>Every tour, share link, and QR in one place.</div></div>
+      </div>
+    </div>
+  </section>
 
-        <div style="margin: clamp(52px, 8vw, 88px) 0 0;">
-          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5B6672; margin-bottom: 18px;">Details</div>
-          <p style="font-size: 16px; line-height: 1.6; color: #5B6672; margin: 0; max-width: 74ch;">Every tour is up to ten shots, about forty seconds. Send twelve to forty photos — more photos means a better selection, not a longer video.</p>
-          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-top: clamp(18px, 2.5vw, 24px); padding-top: clamp(16px, 2vw, 22px); border-top: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Larger properties</div>
-            <div style="flex: 0 0 auto; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; color: #101418;">+$60</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5B6672;">Up to twenty shots, about eighty seconds. For multi-building or multi-floor assets.</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-top: clamp(14px, 1.8vw, 18px); padding-top: clamp(14px, 1.8vw, 18px); border-top: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Extra revisions</div>
-            <div style="flex: 0 0 auto; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; color: #101418;">+$50</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5B6672;">Two rounds come with every tour. Each round after that is $50.</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-top: clamp(14px, 1.8vw, 18px); padding-top: clamp(14px, 1.8vw, 18px); border-top: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Phone walk</div>
-            <div style="flex: 0 0 auto; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; color: #101418;">$350</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5B6672;">Two-minute phone walk of the space plus the photos. Same tour, real motion. Not a videographer shoot.</div>
-          </div>
-        </div>
-
-        <div style="max-width: 62ch; margin: clamp(52px, 8vw, 96px) 0 0;">
-          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 2.8vw, 31px); line-height: 1.12; letter-spacing: -.01em; margin: 0 0 20px;">What this replaces.</h2>
-          <div style="display: grid; gap: 12px; font-size: 16px; line-height: 1.62; color: #5B6672;">
-            <p style="margin: 0;">You still hire a photographer. This uses those photos; it doesn't replace them.</p>
-            <p style="margin: 0;">A two-minute phone walk makes the tour better. It is not a live videographer shoot.</p>
-            <p style="margin: 0;">For every other listing, it's a page they can walk — on the pitch, the flyer, and the sign rider — and you see who asked.</p>
-          </div>
-          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(23px, 2.6vw, 30px); line-height: 1.24; letter-spacing: -.01em; color: #101418; margin: clamp(30px, 4vw, 44px) 0 0;">Cheap enough that every listing gets one. That's the whole point.</p>
-        </div>
-
-      </section>
-
-      <section id="brokerages" style="scroll-margin-top: 80px; border-top: 1px solid #D8E3F0; padding: clamp(72px, 11vw, 148px) 20px clamp(64px, 10vw, 128px);">
-        <div style="max-width: 1160px; margin: 0 auto;">
-          <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #1E5AA8; letter-spacing: .18em; margin-bottom: clamp(24px, 3vw, 36px);">For brokerages</div>
-          <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 5vw, 56px); line-height: 1.03; letter-spacing: -.02em; margin: 0 0 26px; max-width: 20ch;">Every listing, not just the big ones.</h2>
-          <div style="display: grid; gap: 16px; max-width: 62ch; margin-bottom: clamp(40px, 6vw, 72px);">
-            <p style="font-size: 17px; line-height: 1.62; color: #5B6672; margin: 0;">Firms are quoted monthly against listing volume rather than per listing. You tell us roughly what you take on in a year; we price the whole thing once and stop counting.</p>
-            <p style="font-size: 17px; line-height: 1.62; color: #5B6672; margin: 0;">The point is that video stops being something you reserve for the eight-figure asset. The 4,000 SF flex building gets the same treatment as the tower, because at that price there's no reason it shouldn't.</p>
-          </div>
-          <div style="border-top: 1px solid #D8E3F0; margin-bottom: clamp(36px, 5vw, 56px);">
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Branding</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Your brand on every tour: firm colors, logo, and the listing broker's headshot and contact on the end card</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Shot list</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">A standing shot list agreed once — same ten shots, every property, every broker</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Consistency</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Consistent format across every broker in the firm</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">One place</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">One dashboard, all tours, shareable links and QR artwork</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Leads</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Who opened the tour, which stops they watched, and who inquired — on the listing, not in a spreadsheet</div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px 32px; padding: clamp(16px, 2vw, 22px) 0; border-bottom: 1px solid #D8E3F0;">
-            <div style="flex: 0 0 190px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">Turnaround</div>
-            <div style="flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.55; color: #101418;">Priority turnaround on pitch deadlines</div>
-          </div>
-          </div>
-          <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(23px, 2.6vw, 30px); line-height: 1.24; letter-spacing: -.01em; color: #101418; margin: 0 0 28px; max-width: 26ch;">Tell us how many listings you take a year and we'll price it.</p>
-          <a href="#intake" style="display: inline-block; font-size: 15px; color: #fff; background: #1E5AA8; padding: 16px 30px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Get a quote</a>
-        </div>
-      </section>
-
-      <section style="max-width: 1160px; margin: 0 auto; padding: clamp(72px, 11vw, 148px) 20px clamp(56px, 8vw, 104px);">
+  <section class="block" style="border-top: 1px solid var(--line);">
+    <div class="wrap">
         <div id="intake" style="scroll-margin-top: 84px; max-width: 620px; margin: 0 auto; text-align: center;">
           <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4.6vw, 50px); line-height: 1.04; letter-spacing: -.02em; margin: 0 0 14px;">Send us a listing.</h2>
-          <p style="font-size: 16px; line-height: 1.6; color: #5B6672; margin: 0 auto clamp(30px, 4vw, 44px); max-width: 46ch;">The photos you already have, whatever shape they're in. A finished tour comes back in 48 hours.</p>
+          <p style="font-size: 16px; line-height: 1.6; color: #8a8580; margin: 0 auto clamp(30px, 4vw, 44px); max-width: 46ch;">The photos you already have, whatever shape they're in. A finished tour comes back in 48 hours.</p>
           <div id="intake-form" data-endpoint="/api/intake">
             <div style="display: grid; gap: 12px;">
               <!-- Returning broker: the four identity fields collapse to one line.
                    Second order is address, photos, submit. -->
-              <div id="intake-known" style="display: none; align-items: baseline; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); border-radius: 10px; padding: 13px 15px;">
-                <span style="font-size: 15px; color: #101418;">Ordering as <span id="intake-known-who"></span></span>
-                <button type="button" id="intake-notyou" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672; background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" data-hover="color: #1E5AA8;">not you?</button>
+              <div id="intake-known" style="display: none; align-items: baseline; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid rgba(255,255,255,.12); background: #121316; border-radius: 10px; padding: 13px 15px;">
+                <span style="font-size: 15px; color: #f2f0ee;">Ordering as <span id="intake-known-who"></span></span>
+                <button type="button" id="intake-notyou" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580; background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" data-hover="color: #e2703a;">not you?</button>
               </div>
               <div id="intake-identity" style="display: grid; gap: 12px;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Your name</span><input type="text" name="name" autocomplete="name" placeholder="Max Charlip" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="name" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
-                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Email</span><input type="email" name="email" autocomplete="email" placeholder="you@brokerage.com" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="email" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Your name</span><input type="text" name="name" autocomplete="name" placeholder="Max Charlip" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /><p data-err="name" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Email</span><input type="email" name="email" autocomplete="email" placeholder="you@brokerage.com" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /><p data-err="email" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Phone</span><input type="tel" name="phone" autocomplete="tel" placeholder="(313) 555-0114" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
-                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Brokerage or company</span><input type="text" name="firm" autocomplete="organization" placeholder="Harrow &amp; Vance" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Phone</span><input type="tel" name="phone" autocomplete="tel" placeholder="(313) 555-0114" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /></label>
+                  <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Brokerage or company</span><input type="text" name="firm" autocomplete="organization" placeholder="Harrow &amp; Vance" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /></label>
                 </div>
               </div>
-              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Property address</span><input type="text" name="address" placeholder="6432 Woodward Ave, Detroit, MI" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="address" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Property address</span><input type="text" name="address" placeholder="6432 Woodward Ave, Detroit, MI" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /><p data-err="address" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Square footage</span><input type="text" name="size" inputmode="numeric" placeholder="24,000" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="size" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
+                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Square footage</span><input type="text" name="size" inputmode="numeric" placeholder="24,000" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /><p data-err="size" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
                 <label style="display: grid; gap: 7px; text-align: left;">
-                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Property type</span>
-                  <select name="propertyType" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;">
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Property type</span>
+                  <select name="propertyType" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;">
                     <option>Office</option><option>Industrial / Flex</option><option>Retail</option><option>Medical office</option><option>Multifamily</option><option>Mixed use</option><option>Land / development site</option>
                   </select>
                   <p data-err="propertyType" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
                 </label>
               </div>
-              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Listing link</span><input type="url" name="listingUrl" placeholder="LoopNet, Crexi, or your site" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Listing link</span><input type="url" name="listingUrl" placeholder="LoopNet, Crexi, or your site" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" /></label>
               <label style="display: grid; gap: 7px; text-align: left;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Photos · 12 to 40</span>
-                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Photos · 12 to 40</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed rgba(255,255,255,.2); border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #121316;" data-hover="border-color: #e2703a;">
                   <input type="file" name="photos" multiple accept="image/jpeg,image/png,image/webp" id="intake-files" style="display: none;" />
-                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Choose photos</span>
-                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-file-label">12 to 40 · we cut the best ten · crooked phone shots welcome</span></span>
+                  <span style="font-size: 14px; color: #f2f0ee; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 8px 15px;">Choose photos</span>
+                  <span style="font-size: 14px; color: #8a8580;"><span id="intake-file-label">12 to 40 · we cut the best ten · crooked phone shots welcome</span></span>
                 </span>
                 <p data-err="photos" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
               </label>
               <label style="display: grid; gap: 7px; text-align: left;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Attachments · optional</span>
-                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Attachments · optional</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed rgba(255,255,255,.2); border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #121316;" data-hover="border-color: #e2703a;">
                   <input type="file" name="attachments" multiple accept="application/pdf,image/jpeg,image/png,image/webp" id="intake-attachments" style="display: none;" />
-                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Choose files</span>
-                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-attach-label">The flyer, OM, floor plan, or rendering set</span></span>
+                  <span style="font-size: 14px; color: #f2f0ee; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 8px 15px;">Choose files</span>
+                  <span style="font-size: 14px; color: #8a8580;"><span id="intake-attach-label">The flyer, OM, floor plan, or rendering set</span></span>
                 </span>
                 <p data-err="attachments" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
               </label>
               <label style="display: grid; gap: 7px; text-align: left;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Branding · optional</span>
-                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C3D4E6; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: rgba(255,255,255,.72);" data-hover="border-color: #1E5AA8;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Branding · optional</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed rgba(255,255,255,.2); border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #121316;" data-hover="border-color: #e2703a;">
                   <input type="file" name="branding" multiple accept="image/jpeg,image/png,image/webp" id="intake-branding" style="display: none;" />
-                  <span style="font-size: 14px; color: #101418; border: 1px solid #D8E3F0; border-radius: 999px; padding: 8px 15px;">Logo and headshot</span>
-                  <span style="font-size: 14px; color: #5B6672;"><span id="intake-branding-label">Your logo and headshot for the end card</span></span>
+                  <span style="font-size: 14px; color: #f2f0ee; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 8px 15px;">Logo and headshot</span>
+                  <span style="font-size: 14px; color: #8a8580;"><span id="intake-branding-label">Your logo and headshot for the end card</span></span>
                 </span>
-                <input type="text" name="brandingContact" placeholder="Name, phone and email for the end card" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" />
+                <input type="text" name="brandingContact" placeholder="Name, phone and email for the end card" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" />
               </label>
-              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #101418; cursor: pointer; margin-top: 2px;">
-                <input type="checkbox" name="phoneWalk" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
+              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #f2f0ee; cursor: pointer; margin-top: 2px;">
+                <input type="checkbox" name="phoneWalk" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #e2703a;" />
                 <span>I'll send a two-minute phone walk of the space ($350)</span>
               </label>
-              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #101418; cursor: pointer; margin-top: 2px;">
-                <input type="checkbox" name="extended" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
+              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #f2f0ee; cursor: pointer; margin-top: 2px;">
+                <input type="checkbox" name="extended" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #e2703a;" />
                 <span>This is a large or multi-building property — extended cut (+$60)</span>
               </label>
-              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #101418; cursor: pointer;">
-                <input type="checkbox" name="marketing" checked style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
+              <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #f2f0ee; cursor: pointer;">
+                <input type="checkbox" name="marketing" checked style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #e2703a;" />
                 <span>Send me occasional updates from Corridor</span>
               </label>
-              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Notes</span><textarea name="notes" rows="3" placeholder="Anything we should know — the hero shot, what not to show, a deadline." style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none; resize: vertical; line-height: 1.55; font-family: inherit;" data-focus="border-color: #1E5AA8;"></textarea></label>
-              <div id="intake-price" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid #D8E3F0; padding-top: 13px; margin-top: 4px; text-align: left;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5B6672;">Total</span>
-                <span id="intake-price-value" style="font-size: 15px; color: #101418;"></span>
+              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Notes</span><textarea name="notes" rows="3" placeholder="Anything we should know — the hero shot, what not to show, a deadline." style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none; resize: vertical; line-height: 1.55; font-family: inherit;" data-focus="border-color: #e2703a;"></textarea></label>
+              <div id="intake-price" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 13px; margin-top: 4px; text-align: left;">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a8580;">Total</span>
+                <span id="intake-price-value" style="font-size: 15px; color: #f2f0ee;"></span>
               </div>
               <p data-err="form" style="display: none; font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0; text-align: left;"></p>
-              <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5B6672; margin: 2px 0 0; text-align: left;">Upload trouble? Email the photos to <a href="mailto:max@corridor.tours" style="color: #1E5AA8;">max@corridor.tours</a> and we'll take it from there.</p>
-              <button type="button" id="intake-submit" style="width: 100%; font-size: 16px; color: #fff; background: #1E5AA8; border: 0; padding: 17px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 6px;" data-hover="background: #17457F;">Send us the listing</button>
-              <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: #D8E3F0; overflow: hidden;">
-                <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #1E5AA8;"></div>
+              <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #8a8580; margin: 2px 0 0; text-align: left;">Upload trouble? Email the photos to <a href="mailto:max@corridor.tours" style="color: #e2703a;">max@corridor.tours</a> and we'll take it from there.</p>
+              <button type="button" id="intake-submit" style="width: 100%; font-size: 16px; color: #fff; background: #e2703a; border: 0; padding: 17px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 6px;" data-hover="background: #c45a2a;">Send us the listing</button>
+              <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden;">
+                <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #e2703a;"></div>
               </div>
-              <p style="font-size: 13.5px; line-height: 1.5; color: #5B6672; margin: 2px 0 0; text-align: center;">We'll have your tour back within 48 hours.</p>
+              <p style="font-size: 13.5px; line-height: 1.5; color: #8a8580; margin: 2px 0 0; text-align: center;">We'll have your tour back within 48 hours.</p>
               <!-- Second placement, right at the point of commitment. -->
-              <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: 19px; line-height: 1.3; color: #101418; margin: 10px 0 0; text-align: center;">Don't like it, don't pay. Full refund, no questions.</p>
-              <p style="font-size: 12px; line-height: 1.5; color: #8FA0B4; margin: 14px 0 0; text-align: left;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
+              <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: 19px; line-height: 1.3; color: #f2f0ee; margin: 10px 0 0; text-align: center;">Don't like it, don't pay. Full refund, no questions.</p>
+              <p style="font-size: 12px; line-height: 1.5; color: #6e737b; margin: 14px 0 0; text-align: left;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
             </div>
           </div>
           <div id="intake-done" style="display: none;">
-            <div style="position: fixed; inset: 0; z-index: 210; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
-              <div style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #E9F0F8; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34); text-align: center;">
+            <div style="position: fixed; inset: 0; z-index: 210; background: rgba(4,5,6,.82); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
+              <div style="width: min(420px, 100%); background: #14161a; border: 1px solid rgba(255,255,255,.1); border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34); text-align: center;">
                 <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1; margin: 0 0 10px;">We've got it.</h2>
-                <p style="font-size: 15px; line-height: 1.55; color: #5B6672; margin: 0 0 22px;">A confirmation is on its way to your inbox. Your finished tour comes back within 48 hours. If we need a photo you didn't send, we'll just ask.</p>
-                <button type="button" id="intake-done-close" style="width: 100%; font-size: 15px; color: #fff; background: #1E5AA8; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Done</button>
+                <p style="font-size: 15px; line-height: 1.55; color: #8a8580; margin: 0 0 22px;">A confirmation is on its way to your inbox. Your finished tour comes back within 48 hours. If we need a photo you didn't send, we'll just ask.</p>
+                <button type="button" id="intake-done-close" style="width: 100%; font-size: 15px; color: #fff; background: #e2703a; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #c45a2a;">Done</button>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      <div style="border-top: 1px solid #D8E3F0;">
-        <div style="max-width: 1160px; margin: 0 auto; padding: clamp(24px, 3vw, 34px) 20px clamp(40px, 5vw, 60px);">
-          <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #5B6672; margin: 0;">BUILT BY TWO CRE INTERNS WHO GOT TIRED OF MAKING BAD FLYERS · MAX@CORRIDOR.TOURS</p>
-          <p style="font-size: 12px; line-height: 1.55; color: #8FA0B4; margin: 16px 0 0; max-width: 84ch;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
-        </div>
-      </div>
     </div>
-  </div>
+  </section>
+
+  <footer class="site wrap">
+    <div>Corridor · Detroit</div>
+    <div><a href="mailto:max@corridor.tours">max@corridor.tours</a></div>
+  </footer>
   <div id="auth-modal" style="display: none;">
-    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div data-modal-card="1" style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #E9F0F8; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
+    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(4,5,6,.82); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div data-modal-card="1" style="width: min(420px, 100%); background: #14161a; border: 1px solid rgba(255,255,255,.1); border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
           <div style="display: flex; align-items: center; gap: 9px;">
-            <svg width="20" height="22" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #1E5AA8;">
+            <svg width="20" height="22" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #e2703a;">
               <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
               <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
             </svg>
             <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
           </div>
-          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #5B6672; background: transparent; border: 1px solid #D8E3F0; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #101418; color: #101418;">×</button>
+          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #8a8580; background: transparent; border: 1px solid rgba(255,255,255,.12); width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #f2f0ee; color: #f2f0ee;">×</button>
         </div>
         <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.1; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
-        <p style="font-size: 14.5px; line-height: 1.55; color: #5B6672; margin: 0 0 20px;"><span id="auth-sub">Pick up where you left off — tours, share links and concept images.</span></p>
+        <p style="font-size: 14.5px; line-height: 1.55; color: #8a8580; margin: 0 0 20px;"><span id="auth-sub">Pick up where you left off — tours, share links and concept images.</span></p>
         <div id="auth-ask" style="display: grid; gap: 10px;">
-          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #D8E3F0; background: rgba(255,255,255,.72); color: #101418; outline: none;" data-focus="border-color: #1E5AA8;" />
+          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: #121316; color: #f2f0ee; outline: none;" data-focus="border-color: #e2703a;" />
           <div id="auth-error" style="display: none;">
             <p style="font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0;"></p>
           </div>
-          <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #1E5AA8; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #17457F;">Email me a link</button>
+          <button type="button" id="auth-submit" style="width: 100%; font-size: 15px; color: #fff; background: #e2703a; border: 0; padding: 15px; border-radius: 999px; font-weight: 500; cursor: pointer; margin-top: 4px;" data-hover="background: #c45a2a;">Email me a link</button>
         </div>
         <div id="auth-sent" style="display: none;">
-          <p style="font-size: 15px; line-height: 1.55; color: #101418; margin: 0;">Check your inbox — we sent you a link.</p>
+          <p style="font-size: 15px; line-height: 1.55; color: #f2f0ee; margin: 0;">Check your inbox — we sent you a link.</p>
         </div>
       </div>
     </div>
-</div>
-</div>
+  </div>
 <script>
 (function () {
 
@@ -359,7 +341,7 @@
   var INTAKE_ENDPOINT = '/api/intake';
 
   /* Sample is down until we have a cut we would let a broker post. */
-  var TOUR_URL = '#intake';
+  var TOUR_URL = '/t/demo';
 
   var SUPPORT_EMAIL = 'max@corridor.tours';
 
@@ -424,7 +406,9 @@
     lut[i * 3 + 2] = s0[3] + (s1[3] - s0[3]) * t;
   }
 
-  var canvas = document.getElementById('field'), ctx = canvas.getContext('2d');
+  var canvas = document.getElementById('field');
+  if (canvas) {
+  var ctx = canvas.getContext('2d');
   var off = document.createElement('canvas'), octx = off.getContext('2d');
   var img = null, ow = 0, oh = 0;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -469,6 +453,7 @@
     (function loop(now) { frame((now - t0) / 1000); requestAnimationFrame(loop); })(t0);
   }
   window.addEventListener('resize', function () { if (reduce) frame(0); });
+  }
 
   /* ---- sample tour ------------------------------------------------------
      One constant drives all four tour links, so pointing them at a real tour

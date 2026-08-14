@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Building tour</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23e2703a'/><path d='M11 8v16l11-8z' fill='%23170d07'/></svg>" />
   <style>
     /* The tour is a separate surface from the studio: fewer affordances, more
@@ -15,7 +18,8 @@
       --text: #f2f0ee;
       --muted: #9aa0a8;
       --accent: #e2703a;
-      --sans: ui-sans-serif, -apple-system, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
+      --sans: "Archivo", ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+      --serif: "Instrument Serif", Georgia, serif;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; background: var(--ink); color: var(--text); font-family: var(--sans); }
@@ -29,7 +33,7 @@
       display: flex; align-items: flex-start; justify-content: space-between;
       gap: 20px; flex-wrap: wrap; margin-bottom: 20px;
     }
-    header.top h1 { margin: 0; font-size: 26px; font-weight: 640; letter-spacing: -0.03em; }
+    header.top h1 { margin: 0; font-family: var(--serif); font-size: 32px; font-weight: 400; letter-spacing: -0.03em; }
     header.top .addr { color: var(--muted); font-size: 14px; margin-top: 3px; }
     header.top .headline {
       margin-top: 9px; font-size: 14.5px; color: var(--accent); font-weight: 560; letter-spacing: -0.01em;
