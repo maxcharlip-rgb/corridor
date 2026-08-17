@@ -28,48 +28,75 @@
   input, select, textarea, button { font-family: inherit; }
   ::selection { background: #D6E6F5; }
   @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  figure { margin: 0; }
-  .hero-art { margin: 0 auto; max-width: 1400px; padding: 0 16px; }
-  .hero-art img { width: 100%; height: auto; display: block; border-radius: 28px; border: 1px solid #D6E6F5; box-shadow: 0 18px 48px rgba(43, 43, 43, .06); }
-  .card-lite { background: #fff; border: 1px solid #D6E6F5; border-radius: 16px; }
-  @media (max-width: 720px) {
-    .hero-art { padding: 0 12px; }
-    .hero-art img { border-radius: 16px; }
+  .scene {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+  .scene img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 28%; display: block;
+  }
+  .scene::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(247,250,253,.16) 0%, rgba(247,250,253,.26) 40%, rgba(214,230,245,.38) 66%, rgba(247,250,253,.58) 100%),
+      repeating-linear-gradient(90deg, transparent 0 71px, rgba(43,43,43,.035) 71px 72px),
+      repeating-linear-gradient(0deg, transparent 0 47px, rgba(43,43,43,.028) 47px 48px);
+  }
+  .fold {
+    min-height: calc(100vh - 62px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(56px, 9vh, 110px) 24px clamp(40px, 8vh, 80px);
+  }
+  .card-lite {
+    background: rgba(247,250,253,.88);
+    border: 1px solid rgba(43,43,43,.1);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 32px rgba(43,43,43,.05);
+  }
+  .glass-strip {
+    background: rgba(247,250,253,.62);
+    border-color: rgba(43,43,43,.08);
+    backdrop-filter: blur(10px);
+  }
+  .kicker {
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: #1E5AA8; font-weight: 500;
   }
 </style>
 </head>
 <body>
-<div style="min-height: 100vh; background: #F7FAFD; color: #2B2B2B; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
+<div class="scene" aria-hidden="true">
+  <img src="/hero-detroit.jpg" width="1536" height="1024" alt="" fetchpriority="high" />
+</div>
+<div style="min-height: 100vh; background: transparent; color: #2B2B2B; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
   <div style="position: relative; z-index: 1;">
-  <header style="position: sticky; top: 0; z-index: 60; background: rgba(247,250,253,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #D6E6F5;">
-    <div style="max-width: 1160px; margin: 0 auto; padding: 13px 20px; display: flex; align-items: center; gap: 18px;">
+  <header style="position: sticky; top: 0; z-index: 60; background: rgba(247,250,253,.58); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(43,43,43,.08);">
+    <div style="max-width: 1160px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; gap: 22px;">
       <button type="button" data-home="1" style="display: flex; align-items: center; gap: 9px; margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;">
         <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #1E5AA8;">
           <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
           <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
         </svg>
-        <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; color: #2B2B2B;">Corridor</span>
+        <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; color: #2B2B2B;">Corridor</span>
       </button>
-      <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #5F5C57; padding: 12px 8px;">Pricing</a>
-      <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #5F5C57; padding: 12px 8px;">For brokers</a>
+      <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #2B2B2B; padding: 12px 8px;">Pricing</a>
+      <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #2B2B2B; padding: 12px 8px;">For brokers</a>
       <button type="button" data-open-auth="login" style="font-size: 14px; color: #fff; background: #1E5AA8; border: 0; padding: 10px 16px; border-radius: 999px; font-weight: 500; cursor: pointer;" data-hover="background: #17457F;">Sign in</button>
     </div>
   </header>
 
     <div data-screen-label="Landing">
-      <section>
-        <div style="max-width: 860px; margin: 0 auto; padding: clamp(64px, 10vw, 120px) 24px clamp(36px, 5vw, 56px); text-align: center;">
-        <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #1E5AA8; margin: 0 0 22px;">Metro Detroit · photos in, tour back in 48 hours</p>
+      <section class="fold">
+        <div style="max-width: 820px; margin: 0 auto; text-align: center;">
+        <p class="kicker" style="margin: 0 0 22px;">Metro Detroit · photos in, tour back in 48 hours</p>
         <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(46px, 8.4vw, 92px); line-height: .96; letter-spacing: -.03em; margin: 0 auto 20px; max-width: 16ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #C45A3A;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
-        <p style="font-size: clamp(17px, 1.7vw, 20px); line-height: 1.5; color: #5F5C57; margin: 0 auto 36px; max-width: 36ch; text-wrap: pretty;">Send the listing photos you already have. We cut the tour by hand and send the page back.</p>
+        <p style="font-size: clamp(17px, 1.7vw, 20px); line-height: 1.5; color: #2B2B2B; margin: 0 auto 36px; max-width: 36ch; text-wrap: pretty;">Send the listing photos you already have. We cut the tour by hand and send the page back.</p>
         <a href="#intake" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 16px 32px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Send a listing</a>
         </div>
-        <figure class="hero-art">
-          <img src="/hero-detroit.jpg" width="1536" height="1024" alt="Illustrated Detroit street with a for-lease brick loft" fetchpriority="high" />
-        </figure>
       </section>
 
-      <div style="overflow: hidden; border-top: 1px solid #D6E6F5; border-bottom: 1px solid #D6E6F5; padding: 13px 0; margin-top: clamp(40px, 6vw, 72px);">
+      <div class="glass-strip" style="overflow: hidden; border-top: 1px solid rgba(43,43,43,.08); border-bottom: 1px solid rgba(43,43,43,.08); padding: 14px 0;">
         <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #5F5C57;">
           <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
             <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
@@ -328,7 +355,7 @@
         </div>
       </section>
 
-      <div style="border-top: 1px solid #D6E6F5;">
+      <div class="glass-strip" style="border-top: 1px solid rgba(43,43,43,.08);">
         <div style="max-width: 1160px; margin: 0 auto; padding: clamp(24px, 3vw, 34px) 20px clamp(40px, 5vw, 60px);">
           <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #5F5C57; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.TOURS</p>
           <p style="font-size: 12px; line-height: 1.55; color: #8A857C; margin: 16px 0 0; max-width: 84ch;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
