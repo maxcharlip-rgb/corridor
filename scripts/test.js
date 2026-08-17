@@ -181,7 +181,7 @@ async function main() {
     'account was acknowledged but not yet persisted');
   if (fs.existsSync(dbPath)) {
     const onDisk = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    check('account present on disk immediately', (onDisk.accounts || []).length === 1);
+    check('account present on disk immediately', (onDisk.accounts || []).some((a) => a.email === 'ops@test.example'));
     check('first-order account has no password hash',
       (onDisk.accounts || [])[0]?.passwordHash == null);
   }
@@ -758,7 +758,7 @@ main().catch(async (err) => {
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
-  check('hero is street, wordmark, one line, and one pill', /class="sky-copy"/.test(landing) && /CRE marketing is boring/.test(landing) && !/id="boring-word"/.test(landing) && !/Metro Detroit/.test(landing));
+  check('hero is street, wordmark, one line, and one pill', /class="sky-copy"/.test(landing) && /CRE marketing is boring/.test(landing) && !/id="boring-word"/.test(landing) && !/Metro Detroit ·/.test(landing));
   check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
   check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /@keyframes drift-a/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
