@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — CRE marketing is boring. So we fixed it.</title>
-  <meta name="description" content="Send the listing photos you already have. Corridor cuts a narrated, cinematic walkthrough by hand and sends it back within 48 hours. $200 a listing, or $150 in a five-listing block." />
+  <title>Corridor — CRE marketing is boring. We fixed it.</title>
+  <meta name="description" content="Send the listing photos you already have. Corridor cuts a walkthrough by hand and sends the page back in 48 hours." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
-
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
 <style>
   :root {
     --paper: #F7FAFD;
@@ -24,15 +23,13 @@
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   html { scroll-behavior: smooth; }
-  html, body { margin: 0; padding: 0; background: #D6E6F5; color: #2B2B2B; font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  html, body { margin: 0; padding: 0; background: #F7FAFD; color: #2B2B2B; font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   * { box-sizing: border-box; }
   a { color: #2B2B2B; text-decoration: none; }
   a:hover { color: #1E5AA8; }
   input, select, textarea, button { font-family: inherit; }
   ::selection { background: #D6E6F5; }
-  @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-  /* First viewport is the painting. Type sits in the sky. Nothing covers the loft. */
   .street {
     position: relative;
     min-height: 100vh;
@@ -41,58 +38,42 @@
     overflow: hidden;
   }
   .street-art {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 68% 20%;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: 68% 20%;
     display: block;
   }
   .street-fade {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: min(16vh, 120px);
-    background: linear-gradient(180deg, rgba(214,230,245,0), #D6E6F5);
-    pointer-events: none;
-    z-index: 1;
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: min(14vh, 100px);
+    background: linear-gradient(180deg, rgba(247,250,253,0), #F7FAFD);
+    pointer-events: none; z-index: 1;
   }
   .sky-bar {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    padding: 20px clamp(20px, 4.5vw, 64px);
+    position: relative; z-index: 3;
+    display: flex; align-items: center; gap: 22px;
+    padding: 22px clamp(20px, 4.5vw, 64px);
     background: transparent;
   }
   .sky-bar .wordmark {
     display: flex; align-items: center; gap: 9px;
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
   }
-  .sky-bar .wordmark span {
-    font-family: var(--serif); font-size: 28px; color: #2B2B2B;
+  .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; }
+  .sky-bar .sign-in {
+    font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
+    padding: 12px 0; cursor: pointer;
   }
   .sky-copy {
-    position: relative;
-    z-index: 2;
+    position: relative; z-index: 2;
     width: min(34rem, 46%);
-    padding: clamp(28px, 7vh, 72px) 24px 88px clamp(20px, 4.5vw, 64px);
-  }
-  .kicker {
-    font-family: var(--sans);
-    font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
-    color: #2B2B2B; font-weight: 500; margin: 0 0 18px;
+    padding: clamp(40px, 10vh, 96px) 24px 96px clamp(20px, 4.5vw, 64px);
   }
   .sky-copy h1 {
     font-family: var(--serif); font-weight: 400;
-    font-size: clamp(40px, 5.6vw, 72px);
+    font-size: clamp(42px, 5.8vw, 76px);
     line-height: .96; letter-spacing: -.03em;
-    margin: 0 0 18px; text-wrap: pretty;
-  }
-  .sky-copy .lede {
-    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.45;
-    color: #2B2B2B; margin: 0 0 28px; max-width: 32ch; text-wrap: pretty;
+    margin: 0 0 28px; text-wrap: pretty;
   }
   .pill {
     display: inline-block; font-size: 15px; color: #fff; background: #1E5AA8;
@@ -100,72 +81,73 @@
   }
   .pill:hover { background: #17457F; color: #fff; }
 
-  .band { position: relative; }
-  .band-sky { background: #D6E6F5; }
   .band-paper { background: #F7FAFD; }
+  .band-sky { background: #D6E6F5; }
   .band-stone { background: #C8C2B4; }
-  .inner { max-width: 1100px; margin: 0 auto; padding: clamp(72px, 10vw, 128px) 24px; }
-  .inner h2 {
+  .inner { max-width: 1040px; margin: 0 auto; padding: clamp(56px, 8vw, 88px) 24px; }
+
+  .beats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  .beats h2 {
     font-family: var(--serif); font-weight: 400;
-    font-size: clamp(32px, 4.8vw, 52px); line-height: 1.04; letter-spacing: -.02em;
-    margin: 0 0 14px; max-width: 16ch;
+    font-size: clamp(28px, 3.4vw, 40px); line-height: 1.05; letter-spacing: -.02em;
+    margin: 0 0 8px;
   }
-  .inner .lede { font-size: 17px; line-height: 1.6; color: #5F5C57; margin: 0 0 clamp(32px, 4vw, 48px); max-width: 52ch; }
-  .mono {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #5F5C57;
+  .beats p { margin: 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
+
+  .prices {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 24px 32px;
+    border-top: 1px solid #C8C2B4; padding-top: 28px;
+  }
+  .prices h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(40px, 4.6vw, 56px); line-height: .9; letter-spacing: -.03em;
+    margin: 0 0 6px;
+  }
+  .prices p { margin: 0; font-size: 14px; line-height: 1.45; color: #5F5C57; }
+  .note {
+    font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
+    line-height: 1.2; margin: 28px 0 0;
   }
 
-  .marquee {
-    overflow: hidden;
-    border-top: 1px solid rgba(43,43,43,.12);
-    border-bottom: 1px solid rgba(43,43,43,.12);
-    padding: 16px 0;
+  .inquire { max-width: 520px; margin: 0 auto; }
+  .inquire h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(32px, 4.4vw, 48px); line-height: 1.04; letter-spacing: -.02em;
+    margin: 0 0 28px; text-align: center;
   }
-  .marquee-track {
-    display: flex; width: max-content; animation: corridorMarquee 26s linear infinite;
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #5F5C57;
+  .stack { display: grid; gap: 12px; }
+  .lbl {
+    display: grid; gap: 7px; text-align: left;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;
   }
-
-  .trio, .prices {
-    display: grid; gap: clamp(28px, 4vw, 40px);
-    border-top: 1px solid #C8C2B4; padding-top: clamp(28px, 4vw, 40px);
+  .field {
+    width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px;
+    border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;
   }
-  .trio { grid-template-columns: repeat(3, 1fr); }
-  .prices { grid-template-columns: repeat(4, 1fr); }
-  .trio h3, .price h3 {
-    font-family: var(--serif); font-weight: 400; margin: 8px 0 10px; letter-spacing: -.02em;
+  .field:focus { border-color: #1E5AA8; }
+  .drop {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    border: 1px dashed #C8C2B4; border-radius: 10px; padding: 13px 15px;
+    cursor: pointer; background: #F7FAFD; font-family: var(--sans);
+    font-size: 14px; letter-spacing: 0; text-transform: none; color: #5F5C57;
   }
-  .trio h3 { font-size: 28px; line-height: 1.1; }
-  .price h3 { font-size: clamp(44px, 5vw, 64px); line-height: .9; }
-  .trio p, .price p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #5F5C57; }
-  .price { padding-top: 4px; }
-  .price.featured { background: #F7FAFD; margin: -20px -16px; padding: 20px 16px; border-radius: 0; }
-  .price .tag {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
-    color: #C45A3A; margin-bottom: 10px;
+  .drop:hover { border-color: #1E5AA8; }
+  .more-btn {
+    background: none; border: 0; padding: 8px 0; cursor: pointer;
+    font-size: 14px; color: #5F5C57; text-align: left;
   }
-  .rows { margin-top: clamp(36px, 5vw, 56px); }
-  .row {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px;
-    padding: 16px 0; border-top: 1px solid rgba(43,43,43,.12);
-  }
-  .row:last-child { border-bottom: 1px solid rgba(43,43,43,.12); }
-  .row .k { flex: 0 0 190px; }
-  .row .v { flex: 1 1 320px; min-width: 0; font-size: 15px; line-height: 1.55; color: #5F5C57; }
-
-  .pull {
-    font-family: var(--serif); font-size: clamp(23px, 2.6vw, 30px);
-    line-height: 1.24; letter-spacing: -.01em; color: #2B2B2B;
-    margin: clamp(36px, 5vw, 56px) 0 0; max-width: 28ch;
-  }
+  .more-btn:hover { color: #1E5AA8; }
+  .check { display: flex; align-items: flex-start; gap: 11px; font-family: var(--sans); font-size: 14.5px; letter-spacing: 0; text-transform: none; color: #2B2B2B; cursor: pointer; }
+  .err { display: none; font-family: var(--sans); font-size: 12.5px; letter-spacing: 0; text-transform: none; color: #A93521; }
 
   @media (max-width: 860px) {
-    .nav-wide { display: none !important; }
-    header a, header button { min-height: 44px; min-width: 44px; }
     .street-art { object-position: 90% 8%; }
-    .sky-copy { width: min(22rem, 92%); padding: 20px 20px 64px; }
-    .trio, .prices { grid-template-columns: 1fr; }
-    .price.featured { margin: 0; padding: 0; }
+    .sky-copy { width: min(22rem, 92%); padding: 28px 20px 72px; }
+    .beats, .prices { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -181,231 +163,153 @@
         </svg>
         <span>Corridor</span>
       </button>
-      <a class="nav-wide" href="#pricing" style="font-size: 14px; color: #2B2B2B; padding: 12px 8px;">Pricing</a>
-      <a class="nav-wide" href="#brokerages" style="font-size: 14px; color: #2B2B2B; padding: 12px 8px;">For brokers</a>
-      <button type="button" class="pill" data-open-auth="login" style="font-size: 14px; padding: 10px 16px;" data-hover="background: #17457F;">Sign in</button>
+      <button type="button" class="sign-in" data-open-auth="login">Sign in</button>
     </header>
     <div class="sky-copy">
-      <p class="kicker">Metro Detroit · photos in, tour back in 48 hours</p>
-      <h1>CRE marketing is <em style="font-style: italic; color: #C45A3A;"><span id="boring-word">boring</span></em>. So we fixed it.</h1>
-      <p class="lede">Send the listing photos you already have. We cut the tour by hand and send the page back.</p>
-      <a class="pill" href="#intake" data-hover="background: #17457F; color: #fff;">Send a listing</a>
+      <h1>CRE marketing is boring. We fixed it.</h1>
+      <a class="pill" href="#intake">Send a listing</a>
     </div>
   </section>
 
-  <div class="band band-sky marquee">
-    <div class="marquee-track">
-      <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
-        <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-      </div>
-      <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
-        <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">“Please see attached”</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">A flyer designed in 2014</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">One blurry drone shot</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-        <span style="flex: none; white-space: nowrap;">A PDF nobody opens</span>
-        <span style="color: #C45A3A; flex: none;">·</span>
-      </div>
-    </div>
-  </div>
-
-  <section id="product" class="band band-paper" style="scroll-margin-top: 24px;">
+  <section id="product" class="band-paper">
     <div class="inner">
-      <p class="mono" style="margin: 0 0 20px;">What you get</p>
-      <h2>A listing page that takes the lead.</h2>
-      <p class="lede">Not a video file. A page for the listing: the share link, a QR for the sign, and every inquiry with the rooms they watched.</p>
-      <div class="trio">
+      <div class="beats">
         <article>
-          <p class="mono" style="margin: 0;">The link</p>
-          <h3>One URL</h3>
-          <p>For the pitch, the flyer, and the listing. They open a page, not a Dropbox.</p>
+          <h2>The page</h2>
+          <p>One URL for the pitch, the flyer, and the listing.</p>
         </article>
         <article>
-          <p class="mono" style="margin: 0;">The sign</p>
-          <h3>QR on the rider</h3>
-          <p>Artwork comes with the tour. They scan it and walk the building.</p>
+          <h2>The QR</h2>
+          <p>On the rider. They scan it and walk the building.</p>
         </article>
         <article>
-          <p class="mono" style="margin: 0;">The lead</p>
-          <h3>Who watched what</h3>
-          <p>Name, firm, and the rooms they opened. You know if they glanced or stayed.</p>
+          <h2>The leads</h2>
+          <p>Who inquired, and which rooms they watched.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <section id="pricing" class="band band-sky" style="scroll-margin-top: 24px;">
+  <section id="pricing" class="band-sky">
     <div class="inner">
-      <p class="mono" style="margin: 0 0 20px;">Pricing</p>
-      <h2>Every price includes the page.</h2>
-      <p class="lede">Share link, QR for the sign, and every lead with the rooms they watched. 48 hours. Two revision rounds. Invoiced after you see the cut.</p>
-
+      <p style="font-family: var(--serif); font-size: clamp(22px, 2.6vw, 30px); margin: 0 0 22px;">Every price includes the page.</p>
       <div class="prices">
-        <article class="price">
-          <p class="mono" style="margin: 0 0 16px;">Photos</p>
+        <article>
           <h3>$200</h3>
-          <p style="margin-top: 14px;">From the folder you already have. The listing page, the QR, and the leads.</p>
+          <p>Photos you already have.</p>
         </article>
-        <article class="price">
-          <p class="mono" style="margin: 0 0 16px;">Phone walk</p>
+        <article>
           <h3>$350</h3>
-          <p style="margin-top: 14px;">Two-minute phone walk plus the photos. Same page and leads. Real motion, not a videographer shoot.</p>
+          <p>Plus a two-minute phone walk.</p>
         </article>
-        <article class="price featured">
-          <p class="tag">Most popular</p>
-          <p class="mono" style="margin: 0 0 16px; color: #2B2B2B;">5 listings</p>
+        <article>
           <h3>$750</h3>
-          <p style="margin-top: 14px;">$150 a listing, prepaid. Photos. Same page, QR, and leads. Phone walk is $350 per listing on top.</p>
+          <p>Five listings. $150 each.</p>
         </article>
-        <article class="price">
-          <p class="mono" style="margin: 0 0 16px;">Brokerage</p>
-          <h3 style="font-size: clamp(36px, 4vw, 48px);">Custom</h3>
-          <p style="margin-top: 14px;">Priced on yearly volume, once. <a href="mailto:max@corridor.tours?subject=Corridor%20for%20our%20brokerage" style="color: #1E5AA8; text-decoration: underline; text-underline-offset: 2px;">Talk to us</a></p>
+        <article>
+          <h3>Custom</h3>
+          <p><a href="mailto:max@corridor.video?subject=Corridor%20for%20our%20brokerage" style="color: #1E5AA8; text-decoration: underline; text-underline-offset: 2px;">The brokerage</a>, priced once.</p>
         </article>
       </div>
-
-      <p class="pull" style="margin-top: 48px;">You see the cut before you owe anything.</p>
-      <p style="font-size: 15px; line-height: 1.55; color: #5F5C57; margin: 8px 0 0; max-width: 46ch;">Invoiced after delivery. If the cut is not right, we revise or we don't bill.</p>
-
-      <div class="rows">
-        <p class="mono" style="margin: 0 0 8px;">Included every time</p>
-        <div class="row"><div class="k mono">The page</div><div class="v">Shareable tour link for the pitch, the flyer, and the listing.</div></div>
-        <div class="row"><div class="k mono">The sign</div><div class="v">QR artwork for the rider. They scan it and open the tour.</div></div>
-        <div class="row"><div class="k mono">The leads</div><div class="v">Who inquired, and which rooms they watched.</div></div>
-        <div class="row"><div class="k mono">The cut</div><div class="v">Up to ten shots, about forty seconds. Send twelve to forty photos.</div></div>
-        <div class="row"><div class="k mono">Add-ons</div><div class="v">Larger or multi-building properties +$60. Extra revision rounds +$50 each.</div></div>
-      </div>
-
-      <p class="pull">Cheap enough that every listing gets one. That's the whole point.</p>
-      <a class="pill" href="#intake" style="margin-top: 24px;" data-hover="background: #17457F; color: #fff;">Send a listing</a>
+      <p class="note">You see the cut before you owe.</p>
     </div>
   </section>
 
-  <section id="brokerages" class="band band-paper" style="scroll-margin-top: 24px;">
-    <div class="inner">
-      <p class="mono" style="margin: 0 0 20px;">For brokerages</p>
-      <h2>Every listing, not just the big ones.</h2>
-      <p class="lede">Firms are quoted monthly against listing volume rather than per listing. You tell us roughly what you take on in a year; we price the whole thing once and stop counting.</p>
-      <p class="lede">The point is that video stops being something you reserve for the eight-figure asset. The 4,000 SF flex building gets the same treatment as the tower, because at that price there's no reason it shouldn't.</p>
-      <div class="rows" style="margin-top: 8px;">
-        <div class="row"><div class="k mono">Branding</div><div class="v" style="color: #2B2B2B;">Your brand on every tour: firm colors, logo, and the listing broker's headshot and contact on the end card</div></div>
-        <div class="row"><div class="k mono">Shot list</div><div class="v" style="color: #2B2B2B;">A standing shot list agreed once — same ten shots, every property, every broker</div></div>
-        <div class="row"><div class="k mono">Consistency</div><div class="v" style="color: #2B2B2B;">Consistent format across every broker in the firm</div></div>
-        <div class="row"><div class="k mono">One place</div><div class="v" style="color: #2B2B2B;">One dashboard, all tours, shareable links and QR artwork</div></div>
-        <div class="row"><div class="k mono">Turnaround</div><div class="v" style="color: #2B2B2B;">Priority turnaround on pitch deadlines</div></div>
-      </div>
-      <p class="pull">Tell us how many listings you take a year and we'll price it.</p>
-      <a class="pill" href="#intake" style="margin-top: 24px;" data-hover="background: #17457F; color: #fff;">Get a quote</a>
-    </div>
-  </section>
-
-  <section class="band band-sky">
-    <div class="inner" style="padding-top: clamp(72px, 10vw, 120px); padding-bottom: clamp(56px, 8vw, 96px);">
-      <div id="intake" style="scroll-margin-top: 32px; max-width: 620px; margin: 0 auto;">
-        <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4.6vw, 50px); line-height: 1.04; letter-spacing: -.02em; margin: 0 0 14px; text-align: center; max-width: none;">Send us a listing.</h2>
-        <p style="font-size: 16px; line-height: 1.6; color: #5F5C57; margin: 0 auto clamp(30px, 4vw, 44px); max-width: 46ch; text-align: center;">The photos you already have, whatever shape they're in. A finished tour comes back in 48 hours.</p>
+  <section class="band-paper">
+    <div class="inner" style="padding-top: clamp(48px, 7vw, 72px);">
+      <div class="inquire" id="intake" style="scroll-margin-top: 32px;">
+        <h2>Send a listing.</h2>
         <div id="intake-form" data-endpoint="/api/intake">
-          <div style="display: grid; gap: 12px;">
-            <div id="intake-known" style="display: none; align-items: baseline; justify-content: space-between; gap: 12px; text-align: left; border-bottom: 1px solid #C8C2B4; background: transparent; padding: 13px 0;">
-              <span style="font-size: 15px; color: #2B2B2B;">Ordering as <span id="intake-known-who"></span></span>
-              <button type="button" id="intake-notyou" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57; background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" data-hover="color: #1E5AA8;">not you?</button>
+          <div class="stack">
+            <div id="intake-known" style="display: none; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 1px solid #C8C2B4; padding: 4px 0 12px;">
+              <span style="font-size: 15px;">Ordering as <span id="intake-known-who"></span></span>
+              <button type="button" id="intake-notyou" class="more-btn" style="padding: 0;">not you?</button>
             </div>
-            <div id="intake-identity" style="display: grid; gap: 12px;">
+            <div id="intake-identity" class="stack">
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Your name</span><input type="text" name="name" autocomplete="name" placeholder="Max Charlip" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="name" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
-                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Email</span><input type="email" name="email" autocomplete="email" placeholder="you@brokerage.com" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="email" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Phone</span><input type="tel" name="phone" autocomplete="tel" placeholder="(313) 555-0114" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
-                <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Brokerage or company</span><input type="text" name="firm" autocomplete="organization" placeholder="Harrow &amp; Vance" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
+                <label class="lbl">Your name
+                  <input class="field" type="text" name="name" autocomplete="name" placeholder="Max Charlip" />
+                  <p class="err" data-err="name"></p>
+                </label>
+                <label class="lbl">Email
+                  <input class="field" type="email" name="email" autocomplete="email" placeholder="you@brokerage.com" />
+                  <p class="err" data-err="email"></p>
+                </label>
               </div>
             </div>
-            <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Property address</span><input type="text" name="address" placeholder="6432 Woodward Ave, Detroit, MI" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="address" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-              <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Square footage</span><input type="text" name="size" inputmode="numeric" placeholder="24,000" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /><p data-err="size" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p></label>
-              <label style="display: grid; gap: 7px; text-align: left;">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Property type</span>
-                <select name="propertyType" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;">
-                  <option>Office</option><option>Industrial / Flex</option><option>Retail</option><option>Medical office</option><option>Multifamily</option><option>Mixed use</option><option>Land / development site</option>
-                </select>
-                <p data-err="propertyType" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
-              </label>
-            </div>
-            <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Listing link</span><input type="url" name="listingUrl" placeholder="LoopNet, Crexi, or your site" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" /></label>
-            <label style="display: grid; gap: 7px; text-align: left;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Photos · 12 to 40</span>
-              <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C8C2B4; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #F7FAFD;" data-hover="border-color: #1E5AA8;">
+            <label class="lbl">Property address
+              <input class="field" type="text" name="address" placeholder="6432 Woodward Ave, Detroit, MI" />
+              <p class="err" data-err="address"></p>
+            </label>
+            <label class="lbl">Photos · 12 to 40
+              <span class="drop">
                 <input type="file" name="photos" multiple accept="image/jpeg,image/png,image/webp" id="intake-files" style="display: none;" />
-                <span style="font-size: 14px; color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Choose photos</span>
-                <span style="font-size: 14px; color: #5F5C57;"><span id="intake-file-label">12 to 40 · we cut the best ten · crooked phone shots welcome</span></span>
+                <span style="color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Choose photos</span>
+                <span id="intake-file-label">12 to 40 · crooked phone shots welcome</span>
               </span>
-              <p data-err="photos" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
+              <p class="err" data-err="photos"></p>
             </label>
-            <label style="display: grid; gap: 7px; text-align: left;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Attachments · optional</span>
-              <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C8C2B4; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #F7FAFD;" data-hover="border-color: #1E5AA8;">
-                <input type="file" name="attachments" multiple accept="application/pdf,image/jpeg,image/png,image/webp" id="intake-attachments" style="display: none;" />
-                <span style="font-size: 14px; color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Choose files</span>
-                <span style="font-size: 14px; color: #5F5C57;"><span id="intake-attach-label">The flyer, OM, floor plan, or rendering set</span></span>
-              </span>
-              <p data-err="attachments" style="display: none; font-size: 12.5px; line-height: 1.4; color: #A93521; margin: -1px 0 0;"></p>
-            </label>
-            <label style="display: grid; gap: 7px; text-align: left;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Branding · optional</span>
-              <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px dashed #C8C2B4; border-radius: 10px; padding: 13px 15px; cursor: pointer; background: #F7FAFD;" data-hover="border-color: #1E5AA8;">
-                <input type="file" name="branding" multiple accept="image/jpeg,image/png,image/webp" id="intake-branding" style="display: none;" />
-                <span style="font-size: 14px; color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Logo and headshot</span>
-                <span style="font-size: 14px; color: #5F5C57;"><span id="intake-branding-label">Your logo and headshot for the end card</span></span>
-              </span>
-              <input type="text" name="brandingContact" placeholder="Name, phone and email for the end card" style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" />
-            </label>
-            <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #2B2B2B; cursor: pointer; margin-top: 2px;">
-              <input type="checkbox" name="phoneWalk" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
-              <span>I'll send a two-minute phone walk of the space ($350)</span>
-            </label>
-            <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #2B2B2B; cursor: pointer; margin-top: 2px;">
-              <input type="checkbox" name="extended" style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
-              <span>This is a large or multi-building property — extended cut (+$60)</span>
-            </label>
-            <label style="display: flex; align-items: flex-start; gap: 11px; text-align: left; font-size: 14.5px; line-height: 1.5; color: #2B2B2B; cursor: pointer;">
-              <input type="checkbox" name="marketing" checked style="flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1E5AA8;" />
-              <span>Send me occasional updates from Corridor</span>
-            </label>
-            <label style="display: grid; gap: 7px; text-align: left;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Notes</span><textarea name="notes" rows="3" placeholder="Anything we should know — the hero shot, what not to show, a deadline." style="width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px; border: 1px solid #C8C2B4; background: #F7FAFD; color: #2B2B2B; outline: none; resize: vertical; line-height: 1.55; font-family: inherit;" data-focus="border-color: #1E5AA8;"></textarea></label>
-            <div id="intake-price" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid #C8C2B4; padding-top: 13px; margin-top: 4px; text-align: left;">
-              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #5F5C57;">Total</span>
-              <span id="intake-price-value" style="font-size: 15px; color: #2B2B2B;"></span>
-            </div>
-            <p data-err="form" style="display: none; font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0; text-align: left;"></p>
-            <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5F5C57; margin: 2px 0 0; text-align: left;">Upload trouble? Email the photos to <a href="mailto:max@corridor.tours" style="color: #1E5AA8;">max@corridor.tours</a> and we'll take it from there.</p>
-            <button type="button" id="intake-submit" class="pill" style="width: 100%; font-size: 16px; padding: 17px; margin-top: 6px;" data-hover="background: #17457F;">Send us the listing</button>
+            <p class="err" data-err="form"></p>
+            <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5F5C57; font-family: var(--sans); letter-spacing: 0; text-transform: none;">Upload trouble? Email the photos to <a href="mailto:max@corridor.video" style="color: #1E5AA8;">max@corridor.video</a>.</p>
+            <button type="button" id="intake-submit" class="pill" style="width: 100%; padding: 17px; margin-top: 4px;">Send a listing</button>
             <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: #C8C2B4; overflow: hidden;">
               <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #1E5AA8;"></div>
             </div>
-            <p style="font-size: 13.5px; line-height: 1.5; color: #5F5C57; margin: 2px 0 0; text-align: center;">We'll have your tour back within 48 hours.</p>
-            <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: 19px; line-height: 1.3; color: #2B2B2B; margin: 10px 0 0; text-align: center;">You see the cut before you owe anything.</p>
-            <p style="font-size: 12px; line-height: 1.5; color: #8A857C; margin: 14px 0 0; text-align: left;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
+            <button type="button" class="more-btn" id="intake-more-toggle" aria-expanded="false" aria-controls="intake-more">I’ll send more</button>
+            <div id="intake-more" hidden>
+              <div class="stack">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                  <label class="lbl">Phone<input class="field" type="tel" name="phone" autocomplete="tel" placeholder="(313) 555-0114" /></label>
+                  <label class="lbl">Brokerage<input class="field" type="text" name="firm" autocomplete="organization" placeholder="Harrow &amp; Vance" /></label>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                  <label class="lbl">Square footage
+                    <input class="field" type="text" name="size" inputmode="numeric" placeholder="24,000" />
+                    <p class="err" data-err="size"></p>
+                  </label>
+                  <label class="lbl">Property type
+                    <select class="field" name="propertyType">
+                      <option value="">Optional</option>
+                      <option>Office</option><option>Industrial / Flex</option><option>Retail</option><option>Medical office</option><option>Multifamily</option><option>Mixed use</option><option>Land / development site</option>
+                    </select>
+                    <p class="err" data-err="propertyType"></p>
+                  </label>
+                </div>
+                <label class="lbl">Listing link<input class="field" type="url" name="listingUrl" placeholder="LoopNet, Crexi, or your site" /></label>
+                <label class="lbl">Attachments · optional
+                  <span class="drop">
+                    <input type="file" name="attachments" multiple accept="application/pdf,image/jpeg,image/png,image/webp" id="intake-attachments" style="display: none;" />
+                    <span style="color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Choose files</span>
+                    <span id="intake-attach-label">Flyer, OM, floor plan</span>
+                  </span>
+                  <p class="err" data-err="attachments"></p>
+                </label>
+                <label class="lbl">Branding · optional
+                  <span class="drop">
+                    <input type="file" name="branding" multiple accept="image/jpeg,image/png,image/webp" id="intake-branding" style="display: none;" />
+                    <span style="color: #2B2B2B; border: 1px solid #C8C2B4; border-radius: 999px; padding: 8px 15px;">Logo and headshot</span>
+                    <span id="intake-branding-label">For the end card</span>
+                  </span>
+                  <input class="field" type="text" name="brandingContact" placeholder="Name, phone and email for the end card" />
+                </label>
+                <label class="check"><input type="checkbox" name="phoneWalk" style="margin-top: 2px; accent-color: #1E5AA8;" /> I’ll send a two-minute phone walk ($350)</label>
+                <label class="check"><input type="checkbox" name="extended" style="margin-top: 2px; accent-color: #1E5AA8;" /> Large or multi-building — extended cut (+$60)</label>
+                <label class="check"><input type="checkbox" name="marketing" checked style="margin-top: 2px; accent-color: #1E5AA8;" /> Occasional updates from Corridor</label>
+                <label class="lbl">Notes<textarea class="field" name="notes" rows="3" placeholder="The hero shot, what not to show, a deadline." style="resize: vertical; line-height: 1.55;"></textarea></label>
+                <div id="intake-price" style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid #C8C2B4; padding-top: 13px;">
+                  <span>Total</span>
+                  <span id="intake-price-value" style="font-family: var(--sans); font-size: 15px; letter-spacing: 0; text-transform: none; color: #2B2B2B;"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div id="intake-done" style="display: none;">
-          <div style="position: fixed; inset: 0; z-index: 210; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <div style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #D6E6F5; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34); text-align: center;">
-              <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1; margin: 0 0 10px;">We've got it.</h2>
-              <p style="font-size: 15px; line-height: 1.55; color: #5F5C57; margin: 0 0 22px;">A confirmation is on its way to your inbox. Your finished tour comes back within 48 hours. If we need a photo you didn't send, we'll just ask.</p>
-              <button type="button" id="intake-done-close" class="pill" style="width: 100%; font-size: 15px; padding: 15px;" data-hover="background: #17457F;">Done</button>
+          <div style="position: fixed; inset: 0; z-index: 210; background: rgba(10,16,24,.5); display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #D6E6F5; border-radius: 24px; padding: 32px; text-align: center;">
+              <h2 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 30px; margin: 0 0 10px;">We’ve got it.</h2>
+              <p style="font-size: 15px; line-height: 1.55; color: #5F5C57; margin: 0 0 22px;">A confirmation is on its way. The tour comes back within 48 hours.</p>
+              <button type="button" id="intake-done-close" class="pill" style="width: 100%;">Done</button>
             </div>
           </div>
         </div>
@@ -413,127 +317,56 @@
     </div>
   </section>
 
-  <footer class="band band-stone">
-    <div style="max-width: 1100px; margin: 0 auto; padding: clamp(28px, 4vw, 40px) 24px clamp(40px, 5vw, 56px);">
-      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: #2B2B2B; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.TOURS</p>
-      <p style="font-size: 12px; line-height: 1.55; color: #5F5C57; margin: 16px 0 0; max-width: 84ch;">Client represents that it holds all necessary rights to any materials submitted and grants Corridor a license to use them in producing the deliverable.</p>
+  <footer class="band-stone">
+    <div style="max-width: 1040px; margin: 0 auto; padding: 28px 24px 40px;">
+      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
 
   <div id="auth-modal" style="display: none;">
-    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div data-modal-card="1" style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #D6E6F5; border-radius: 24px; padding: clamp(24px, 4vw, 32px); box-shadow: 0 34px 90px rgba(7,16,28,.34);">
+    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div data-modal-card="1" style="width: min(420px, 100%); background: #F7FAFD; border: 1px solid #D6E6F5; border-radius: 24px; padding: 32px;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
-          <div style="display: flex; align-items: center; gap: 9px;">
-            <svg width="20" height="22" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #2B2B2B;">
-              <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
-              <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
-            </svg>
-            <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
-          </div>
-          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; line-height: 1; color: #5F5C57; background: transparent; border: 1px solid #D6E6F5; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;" data-hover="border-color: #2B2B2B; color: #2B2B2B;">×</button>
+          <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
+          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; color: #5F5C57; background: transparent; border: 1px solid #D6E6F5; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;">×</button>
         </div>
-        <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.1; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
-        <p style="font-size: 14.5px; line-height: 1.55; color: #5F5C57; margin: 0 0 20px;"><span id="auth-sub">Pick up where you left off — tours, share links and concept images.</span></p>
+        <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
+        <p style="font-size: 14.5px; line-height: 1.55; color: #5F5C57; margin: 0 0 20px;"><span id="auth-sub">We’ll email you a link.</span></p>
         <div id="auth-ask" style="display: grid; gap: 10px;">
-          <input type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid #D6E6F5; background: #fff; color: #2B2B2B; outline: none;" data-focus="border-color: #1E5AA8;" />
-          <div id="auth-error" style="display: none;">
-            <p style="font-size: 13.5px; line-height: 1.5; color: #A93521; margin: 2px 0 0;"></p>
-          </div>
-          <button type="button" id="auth-submit" class="pill" style="width: 100%; font-size: 15px; padding: 15px; margin-top: 4px;" data-hover="background: #17457F;">Email me a link</button>
+          <input class="field" type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" />
+          <div id="auth-error" style="display: none;"><p style="font-size: 13.5px; color: #A93521; margin: 0;"></p></div>
+          <button type="button" id="auth-submit" class="pill" style="width: 100%;">Email me a link</button>
         </div>
         <div id="auth-sent" style="display: none;">
-          <p style="font-size: 15px; line-height: 1.55; color: #2B2B2B; margin: 0;">Check your inbox — we sent you a link.</p>
+          <p style="font-size: 15px; margin: 0;">Check your inbox — we sent you a link.</p>
         </div>
       </div>
     </div>
   </div>
 <script>
 (function () {
-
-  /* ------------------------------------------------------------------ *
-   * Where the order goes. Our own backend — broker details and listing
-   * photos never leave this server.
-   * ------------------------------------------------------------------ */
   var INTAKE_ENDPOINT = '/api/intake';
-
-  /* Sample is down until we have a cut we would let a broker post. */
   var TOUR_URL = '#intake';
+  var SUPPORT_EMAIL = 'max@corridor.video';
 
-  var SUPPORT_EMAIL = 'max@corridor.tours';
-
-  /* Every URL that points outside this page, and the money, in one place.
-     Change a route or a price here and nowhere else. */
   var CONFIG = {
     endpoints: {
       me:     '/api/auth/me',
-      link:   '/api/auth/link',     // ask for a sign-in link
-      verify: '/api/auth/verify',   // the link itself lands here
-      intake: INTAKE_ENDPOINT,      // the form's data-endpoint wins if set
+      link:   '/api/auth/link',
+      verify: '/api/auth/verify',
+      intake: INTAKE_ENDPOINT,
       studio: '/studio'
     },
     price: {
-      /* A single listing is $200 with 4K and two revision rounds included, so
-         there is no 4K upcharge to add — a paid 4K option on a page that says
-         4K is included is the kind of contradiction a buyer notices. */
-      baseCents:     20000,
-      phoneWalkCents: 15000,  // photos + two-minute phone walk = $350
-      extendedCents:  6000,   // large or multi-building: scope, not quality
-      revisionCents:  5000    // each round beyond the two included
+      baseCents:      20000,
+      phoneWalkCents: 15000,
+      extendedCents:  6000,
+      revisionCents:  5000
     },
-    photos: {
-      min: 12,
-      max: 40,
-      maxTotalBytes: 500 * 1024 * 1024
-    }
+    photos: { min: 12, max: 40, maxTotalBytes: 500 * 1024 * 1024 }
   };
 
-  var applyState = function (attr, on, off) {
-    document.querySelectorAll('[' + attr + ']').forEach(function (el) {
-      var base = el.getAttribute('style') || '';
-      el.addEventListener(on, function () { el.setAttribute('style', base + ';' + el.getAttribute(attr)); });
-      el.addEventListener(off, function () { el.setAttribute('style', base); });
-    });
-  };
-  applyState('data-hover', 'mouseenter', 'mouseleave');
-  applyState('data-focus', 'focus', 'blur');
-
-  var WORDS = ['boring', 'beige', 'a PDF', 'a Dropbox link', 'stuck in 2014'];
-  var word = document.getElementById('boring-word'), wi = 0;
-  if (word) setInterval(function () { wi = (wi + 1) % WORDS.length; word.textContent = WORDS[wi]; }, 2200);
-
-  /* ---- sample tour ------------------------------------------------------
-     One constant drives all four tour links, so pointing them at a real tour
-     is a one-line change. And the panel under the hero is the sales pitch: it
-     must never render as an empty box, so if the video will not load the
-     poster frame and a link take its place. */
-  Array.prototype.forEach.call(document.querySelectorAll('[data-tour-link]'), function (a) {
-    a.setAttribute('href', TOUR_URL);
-  });
-  (function () {
-    var video = document.getElementById('sample-video');
-    var fallback = document.getElementById('sample-fallback');
-    if (!video || !fallback) return;
-    var swap = function () {
-      if (fallback.style.display === 'block') return;
-      video.style.display = 'none';
-      fallback.style.display = 'block';
-    };
-    video.addEventListener('error', swap);
-    video.addEventListener('stalled', swap);
-    /* A missing file fires 'error', but a half-answered request can just sit
-       there instead. If nothing has arrived by now, treat it as gone. */
-    setTimeout(function () { if (video.readyState === 0) swap(); }, 6000);
-  }());
-
-  /* ---- account ----------------------------------------------------------
-     There is no password anywhere in this app. An account is created by the
-     first order and identified by its email; signing in later means asking for
-     a link. So there is no login wall in front of ordering, and nothing for a
-     broker to forget between their first listing and their tenth. */
   var account = null;
-
-  /* ---- intake ----------------------------------------------------------- */
   var intake = document.getElementById('intake-form');
   var known = document.getElementById('intake-known');
   var knownWho = document.getElementById('intake-known-who');
@@ -549,9 +382,11 @@
   var barFill = document.getElementById('intake-progress-fill');
   var priceValue = document.getElementById('intake-price-value');
   var doneModal = document.getElementById('intake-done');
-  var PHOTO_RESET = '12 to 40 · we cut the best ten · crooked phone shots welcome';
-  var ATTACH_RESET = 'The flyer, OM, floor plan, or rendering set';
-  var BRANDING_RESET = 'Your logo and headshot for the end card';
+  var more = document.getElementById('intake-more');
+  var moreBtn = document.getElementById('intake-more-toggle');
+  var PHOTO_RESET = '12 to 40 · crooked phone shots welcome';
+  var ATTACH_RESET = 'Flyer, OM, floor plan';
+  var BRANDING_RESET = 'For the end card';
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   var money = function (cents) { return '$' + (cents / 100).toLocaleString('en-US'); };
@@ -570,7 +405,6 @@
       el.textContent = ''; el.style.display = 'none';
     });
   }
-
   function bytesOf(input) {
     var list = (input && input.files) || [], sum = 0;
     for (var i = 0; i < list.length; i++) sum += list[i].size;
@@ -582,12 +416,12 @@
     return (mb >= 100 ? Math.round(mb) : mb.toFixed(1)) + ' MB';
   }
   function countLabel(input, noun, reset, target) {
+    if (!target) return;
     var n = (input.files || []).length;
     target.textContent = n
       ? n + ' ' + noun + (n === 1 ? '' : 's') + ' · ' + humanSize(bytesOf(input))
       : reset;
   }
-
   function amountCents() {
     var total = CONFIG.price.baseCents;
     if (ticked('phoneWalk')) total += CONFIG.price.phoneWalkCents;
@@ -595,11 +429,16 @@
     return total;
   }
   function paintPrice() {
-    priceValue.textContent = money(amountCents()) + ' for this listing — invoiced after delivery.';
+    if (priceValue) priceValue.textContent = money(amountCents()) + ' — invoiced after delivery.';
   }
 
-  /* The whole point of having accounts. A returning broker's second order is
-     address, photos, submit — the four identity fields fold into one line. */
+  moreBtn.addEventListener('click', function () {
+    var open = more.hidden;
+    more.hidden = !open;
+    moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    moreBtn.textContent = open ? 'Less' : 'I’ll send more';
+  });
+
   function paintIdentity() {
     if (!account) {
       known.style.display = 'none';
@@ -615,7 +454,6 @@
     identity.style.display = 'none';
   }
   document.getElementById('intake-notyou').addEventListener('click', function () {
-    // Expand them again, but keep what was prefilled — usually one field is wrong.
     known.style.display = 'none';
     identity.style.display = 'grid';
     if (field('name')) field('name').focus();
@@ -643,17 +481,15 @@
         ? 'Attach at least ' + CONFIG.photos.min + ' photos.'
         : 'That is only ' + n + ' photo' + (n === 1 ? '' : 's') + '. We need ' + CONFIG.photos.min + ' to cut a tour.';
     }
-    if (n > CONFIG.photos.max) {
-      return 'That is ' + n + ' photos. Send your best ' + CONFIG.photos.max + '.';
-    }
+    if (n > CONFIG.photos.max) return 'That is ' + n + ' photos. Send your best ' + CONFIG.photos.max + '.';
     var list = photos.files || [];
     for (var i = 0; i < list.length; i++) {
-      var t = String(list[i].type || "");
-      var nm = String(list[i].name || "");
+      var t = String(list[i].type || '');
+      var nm = String(list[i].name || '');
       if (!/^image\/(jpeg|png|webp)$/i.test(t)) {
         return /heic|heif/i.test(t) || /\.heic$/i.test(nm)
-          ? "HEIC is not supported. On iPhone: Settings → Camera → Formats → \"Most Compatible\"."
-          : "Photos must be JPEG, PNG or WebP. " + (nm || "That file") + " cannot be used.";
+          ? 'HEIC is not supported. On iPhone: Settings → Camera → Formats → "Most Compatible".'
+          : 'Photos must be JPEG, PNG or WebP. ' + (nm || 'That file') + ' cannot be used.';
       }
     }
     var bytes = bytesOf(photos) + bytesOf(attachments) + bytesOf(branding);
@@ -672,13 +508,8 @@
     if (!email) { setErr('email', 'We need an email — this is your account.'); bad++; }
     else if (!EMAIL_RE.test(email)) { setErr('email', 'That email address does not look right.'); bad++; }
     if (!value('address')) { setErr('address', 'Which property is this?'); bad++; }
-    if (!value('size')) { setErr('size', 'Roughly how big is it?'); bad++; }
-    if (!value('propertyType')) { setErr('propertyType', 'Pick a property type.'); bad++; }
     var problem = photoProblem();
     if (problem) { setErr('photos', problem); bad++; }
-
-    /* An identity error is unreachable while the fields are folded away, so
-       open them back up rather than showing an error nobody can see. */
     if (bad && known.style.display !== 'none') {
       var hidden = ['name', 'email'].some(function (k) {
         var el = intake.querySelector('[data-err="' + k + '"]');
@@ -690,13 +521,10 @@
   }
 
   function fail(message) {
-    /* Never cleared, never hidden: everything they typed is still on screen to
-       retry with. Losing a filled-in form is how you lose the broker. */
     bar.style.display = 'none';
     intakeGo.disabled = false;
-    intakeGo.textContent = 'Send us the listing';
+    intakeGo.textContent = 'Send a listing';
     setErr('form', message);
-    // A route that does not depend on this form working at all.
     document.getElementById('intake-fallback').style.display = 'block';
   }
 
@@ -705,8 +533,9 @@
     setErr('form', null);
 
     var fd = new FormData();
-    ['name', 'email', 'phone', 'firm', 'address', 'size', 'propertyType', 'listingUrl', 'brandingContact', 'notes']
+    ['name', 'email', 'phone', 'firm', 'address', 'propertyType', 'listingUrl', 'brandingContact', 'notes']
       .forEach(function (n) { fd.append(n, value(n)); });
+    fd.append('size', value('size') || 'to follow');
     fd.append('phoneWalk', ticked('phoneWalk') ? 'yes' : 'no');
     fd.append('extended', ticked('extended') ? 'yes' : 'no');
     fd.append('marketing', ticked('marketing') ? 'yes' : 'no');
@@ -724,21 +553,16 @@
     bar.style.display = 'block';
     barFill.style.width = '0%';
 
-    /* XHR, not fetch: fetch cannot report upload progress, and a broker pushing
-       300 MB with no feedback concludes it has hung. */
     var xhr = new XMLHttpRequest();
     xhr.open('POST', intake.getAttribute('data-endpoint') || CONFIG.endpoints.intake, true);
     xhr.timeout = 10 * 60 * 1000;
     xhr.withCredentials = true;
-
     xhr.upload.addEventListener('progress', function (e) {
       if (!e.lengthComputable) return;
       var pct = Math.round((e.loaded / e.total) * 100);
       barFill.style.width = pct + '%';
-      // At 100% the bytes are up but the server is still storing them.
       intakeGo.textContent = pct < 100 ? 'Sending… ' + pct + '%' : 'Almost there…';
     });
-
     xhr.addEventListener('load', function () {
       var data = null;
       try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
@@ -747,7 +571,7 @@
         return;
       }
       fail((data && data.error) ||
-        'We could not take that listing (error ' + xhr.status + '). Try again, or email max@corridor.tours.');
+        'We could not take that listing (error ' + xhr.status + '). Try again, or email ' + SUPPORT_EMAIL + '.');
     });
     xhr.addEventListener('error', function () {
       fail('That did not reach us. Check your connection and try again — nothing you typed was lost.');
@@ -755,7 +579,6 @@
     xhr.addEventListener('timeout', function () {
       fail('The upload timed out. Try again, or send fewer photos.');
     });
-
     xhr.send(fd);
   }
 
@@ -765,7 +588,6 @@
     intake.style.display = 'none';
   });
 
-  /* ---- sign in: one field, one link -------------------------------------- */
   var modal = document.getElementById('auth-modal');
   var err = document.getElementById('auth-error'), errText = err.querySelector('p');
   var submit = document.getElementById('auth-submit');
@@ -778,7 +600,6 @@
     submit.disabled = false; submit.textContent = 'Email me a link';
   }
   function openAuth() {
-    // Already signed in? There is nothing to ask for.
     if (account) { location.href = CONFIG.endpoints.studio; return; }
     closeAuth();
     modal.style.display = 'block';
@@ -796,13 +617,10 @@
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
 
-
   function requestLink() {
     var email = (document.getElementById('auth-email').value || '').trim();
-    // Checked here rather than spending a round trip to be told the same thing.
     if (!email) { errText.textContent = 'Enter your email address.'; err.style.display = 'block'; return; }
     if (!EMAIL_RE.test(email)) { errText.textContent = 'That email address does not look right.'; err.style.display = 'block'; return; }
-
     submit.disabled = true; submit.textContent = 'One moment…'; err.style.display = 'none';
     fetch(CONFIG.endpoints.link, {
       method: 'POST', credentials: 'same-origin',
@@ -813,8 +631,6 @@
         if (!res.ok || !(data && data.success)) {
           throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
         }
-        /* Deliberately the same message whether or not the address is on file:
-           this endpoint must not become a way to find out who has an account. */
         ask.style.display = 'none';
         sent.style.display = 'block';
       });
@@ -828,7 +644,6 @@
     if (e.key === 'Enter') requestLink();
   });
 
-  // Who is this? Decides whether the four identity fields are folded away.
   fetch(CONFIG.endpoints.me, { credentials: 'same-origin' })
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) { if (data && data.account) account = data.account; })

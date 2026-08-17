@@ -748,19 +748,25 @@ main().catch(async (err) => {
   check('first viewport is the full-bleed street, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('painting is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
   check('type sits in the open sky, not over the brick loft', /class="sky-copy"/.test(landing) && /width:\s*min\(34rem,\s*46%\)/.test(landing));
-  check('pricing and intake live on sampled color bands after the street', /class="band band-sky"/.test(landing) && /class="band band-paper"/.test(landing) && /class="band band-stone"/.test(landing));
+  check('pricing and intake live on sampled color bands after the street', /band-sky/.test(landing) && /band-paper/.test(landing) && /band-stone/.test(landing));
   check('no glass cards or dim overlay on the painting', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
   check('homepage stays on the light sampled palette', /background:\s*#F7FAFD/.test(landing) && /background:\s*#D6E6F5/.test(landing));
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
+  check('hero is street, wordmark, one line, and one pill', /class="sky-copy"/.test(landing) && /CRE marketing is boring/.test(landing) && !/id="boring-word"/.test(landing) && !/Metro Detroit/.test(landing));
+  check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
+  check('three beats then prices then inquire', /The page/.test(landing) && /The QR/.test(landing) && /The leads/.test(landing));
   check('pricing still lists $200, $350, and $750', /\$200/.test(landing) && /\$350/.test(landing) && /\$750/.test(landing));
   check('every price still includes the page', /Every price includes the page/.test(landing));
   check('invoice-after-cut language is intact', /You see the cut before you owe/.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
+  check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
+  check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('primary hero CTA is Send a listing', /Send a listing/.test(landing));
   check('footer still tells the intern story', /STARTED BY ONE CRE INTERN/.test(landing));
+  check('footer email is max@corridor.video', /MAX@CORRIDOR\.VIDEO/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
 }
 
 // --- listing/tour page stays the existing /t/:slug template, now light ------
