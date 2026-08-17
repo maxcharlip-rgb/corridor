@@ -2,6 +2,7 @@ import express from 'express';
 import {
   authenticate,
   accountByEmail,
+  createAccount,
   issueLoginToken,
   redeemLoginToken,
   LINK_EXPIRY_MINUTES,
@@ -45,20 +46,28 @@ authApi.get('/me', (req, res) => {
 });
 
 /**
- * Ask for a sign-in link.
+ * Ask for a sign-in link. Same endpoint for Sign in and Create account.
  *
- * There is no signup route: a broker's account is created by their first order.
- * So this either mails a link to an address we know, or does nothing — and it
- * says exactly the same thing either way. A different answer for a known
- * address would turn this into a way to test who has an account.
+ * If the email is new, a passwordless account is created and the link is the
+ * whole signup. The JSON is the same either way so this cannot be used to
+ * test who already has an account.
  */
 authApi.post('/link', credentialLimiter, async (req, res) => {
   const email = String((req.body || {}).email || '').toLowerCase().trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
   }
+  const name = String((req.body || {}).name || '').trim().slice(0, 120);
 
-  const account = accountByEmail(email);
+  let account = accountByEmail(email);
+  if (!account) {
+    try {
+      account = createAccount({ email, name });
+    } catch {
+      account = accountByEmail(email);
+    }
+  }
+
   if (account) {
     const token = issueLoginToken(account.id);
     const url = `${config.publicUrl}/api/auth/verify?token=${encodeURIComponent(token)}`;
