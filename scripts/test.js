@@ -756,6 +756,20 @@ main().catch(async (err) => {
   check('footer still tells the intern story', /STARTED BY ONE CRE INTERN/.test(landing));
 }
 
+// --- listing/tour page stays the existing /t/:slug template, now light ------
+{
+  const fsx = await import('node:fs');
+  const tourPage = fsx.readFileSync(new URL('../public/tour.html', import.meta.url), 'utf8');
+  const tourJs = fsx.readFileSync(new URL('../public/tour.js', import.meta.url), 'utf8');
+  const server = fsx.readFileSync(new URL('../server/index.js', import.meta.url), 'utf8');
+  check('tour template is still the existing public/tour.html', /tour\.html/.test(server) && /\/t\/:slug/.test(server));
+  check('no parallel listing landing was added', !/\/t\/v2|\/listing2|\/tour2/.test(server + tourPage));
+  check('tour page stays on the light paper background', /#F7FAFD/.test(tourPage) && !/--ink:\s*#0a0b0c/.test(tourPage));
+  check('tour page uses the same primary blue', /#1E5AA8/.test(tourPage));
+  check('tour still plays stops and captures leads', /shot_view/.test(tourJs) && /\/leads/.test(tourJs) && /cta-top/.test(tourJs));
+  check('tour still explains the page, QR, and rooms watched', /QR/.test(tourJs) && /rooms they watched/i.test(tourJs));
+}
+
 // --- payment must be confirmed, never assumed --------------------------------
 {
   const fsx = await import('node:fs');

@@ -52,13 +52,13 @@ async function load() {
   const res = await fetch(`/api/public/tours/${encodeURIComponent(slug)}`);
   if (!res.ok) {
     $('#app').innerHTML =
-      '<div style="padding:60px 0;text-align:center"><h1 style="font-size:22px;margin:0 0 8px">Tour not available</h1>' +
-      '<p style="color:#9aa0a8">This tour is not published, or the link is wrong.</p></div>';
+      '<div style="padding:60px 0;text-align:center"><h1 style="font-family:Instrument Serif,Georgia,serif;font-size:32px;font-weight:400;margin:0 0 8px">Tour not available</h1>' +
+      '<p style="color:#5B6672">This tour is not published, or the link is wrong.</p></div>';
     return;
   }
   tour = await res.json();
   if (!tour.stops.length) {
-    $('#app').innerHTML = '<div style="padding:60px 0;color:#9aa0a8">This tour has no stops yet.</div>';
+    $('#app').innerHTML = '<div style="padding:60px 0;color:#5B6672">This tour has no stops yet.</div>';
     return;
   }
   paint();
@@ -67,21 +67,22 @@ async function load() {
 
 function paint() {
   const { listing, broker, stops } = tour;
-  document.title = `${listing.name} — video tour`;
+  document.title = `${listing.name} — Corridor`;
+  const barListing = $('#bar-listing');
+  if (barListing) barListing.textContent = listing.name;
 
   $('#app').innerHTML = `
-    ${tour.demo ? `<div style="margin:0 0 16px;padding:10px 14px;border:1px solid rgba(226,112,58,.45);border-radius:10px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(226,112,58,.08)">
-        <div style="font-size:13.5px;color:#f2f0ee">This is a Corridor sample. Walk it, then send your listing.</div>
-        <a href="/#intake" style="color:#e2703a;font-size:13px;font-weight:650">Send yours →</a>
+    ${tour.demo ? `<div class="note">
+        <p>This is the listing page a broker shares. The QR on the sign opens it. Every room they watch is a lead.</p>
+        <a href="/#intake">Send a listing</a>
       </div>` : ''}
     <header class="top">
-      <div>
-        <h1>${esc(listing.name)}</h1>
-        ${listing.address ? `<div class="addr">${esc(listing.address)}</div>` : ''}
-        ${listing.headline ? `<div class="headline">${esc(listing.headline)}</div>` : ''}
-      </div>
+      <p class="kicker">${tour.demo ? 'Sample listing tour' : 'Listing tour'}</p>
+      <h1>${esc(listing.name)}</h1>
+      ${listing.address ? `<div class="addr">${esc(listing.address)}</div>` : ''}
+      ${listing.headline ? `<div class="headline">${esc(listing.headline)}</div>` : ''}
       ${listing.cta?.enabled !== false
-        ? `<button class="btn primary" id="cta-top">${esc(listing.cta?.label || 'Request a showing')}</button>`
+        ? `<button class="btn primary" id="cta-top" style="margin-top:18px">${esc(listing.cta?.label || 'Request a showing')}</button>`
         : ''}
     </header>
 
@@ -105,11 +106,15 @@ function paint() {
       <button class="big-play" id="big-play"><span>▶</span></button>
     </div>
 
+    ${tour.demo ? `<div class="proof">
+        <article><h3>The tour</h3><p>A cinematic walk from the photos the broker already had. Open a room. Stay as long as you want.</p></article>
+        <article><h3>The page + QR</h3><p>One share link for the pitch and the flyer. The same URL behind the QR on the sign.</p></article>
+        <article><h3>The lead</h3><p>Name, firm, and the rooms they watched. The broker knows if they glanced or stayed.</p></article>
+      </div>` : ''}
+
     <div class="below">
       <div>
-        <h3 style="font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#9aa0a8;margin:0 0 10px;font-weight:650">
-          ${stops.length} stops on this tour
-        </h3>
+        <h3 class="rooms-label">${stops.length} rooms on this tour</h3>
         <div class="stops" id="stops">
           ${stops.map((stop, i) => `
             <div class="stop" data-stop="${i}">
@@ -151,7 +156,8 @@ function paint() {
 
     ${(tour.disclosures || [])
       .map((d) => `<p class="disclosure">${esc(d)}</p>`)
-      .join('')}`;
+      .join('')}
+    <p class="colophon">TOUR BY CORRIDOR · THE PAGE, THE QR, THE ROOMS THEY WATCHED</p>`;
 
   wire();
   show(0, false);
