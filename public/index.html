@@ -43,6 +43,39 @@
     object-fit: cover; object-position: 68% 20%;
     display: block;
   }
+  /* Sky only. The loft stays still. */
+  .sky-drift {
+    position: absolute; top: 0; left: 0;
+    width: min(56%, 740px); height: 50%;
+    overflow: hidden; pointer-events: none; z-index: 1;
+    -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent 100%),
+                        linear-gradient(180deg, #000 68%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, #000 58%, transparent 100%),
+                linear-gradient(180deg, #000 68%, transparent 100%);
+    mask-composite: intersect;
+  }
+  .cloud {
+    position: absolute;
+    border-radius: 60% 40% 55% 45%;
+    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.46), rgba(214,230,245,.1) 58%, transparent 74%);
+    filter: blur(14px);
+    will-change: transform;
+  }
+  .cloud-a { top: 6%; left: 2%; width: 46%; height: 42%; animation: drift-a 36s linear infinite alternate; }
+  .cloud-b { top: 16%; left: 26%; width: 50%; height: 36%; animation: drift-b 42s linear infinite alternate; }
+  .cloud-c { top: 2%; left: 14%; width: 34%; height: 28%; animation: drift-a 28s linear infinite alternate-reverse; }
+  @keyframes drift-a {
+    from { transform: translate3d(-6%, 0, 0); }
+    to { transform: translate3d(12%, 3%, 0); }
+  }
+  @keyframes drift-b {
+    from { transform: translate3d(8%, 2%, 0); }
+    to { transform: translate3d(-10%, 0, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cloud { animation: none; }
+  }
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
     height: min(14vh, 100px);
@@ -60,9 +93,9 @@
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
   }
   .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; }
-  .sky-bar .sign-in {
+  .sky-bar .nav-wide, .sky-bar .sign-in {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
-    padding: 12px 0; cursor: pointer;
+    padding: 12px 4px; cursor: pointer;
   }
   .sky-copy {
     position: relative; z-index: 2;
@@ -144,7 +177,27 @@
   .check { display: flex; align-items: flex-start; gap: 11px; font-family: var(--sans); font-size: 14.5px; letter-spacing: 0; text-transform: none; color: #2B2B2B; cursor: pointer; }
   .err { display: none; font-family: var(--sans); font-size: 12.5px; letter-spacing: 0; text-transform: none; color: #A93521; }
 
+  .faq { max-width: 640px; }
+  .faq h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 20px;
+  }
+  .faq details { border-top: 1px solid #C8C2B4; padding: 15px 0; }
+  .faq details:last-child { border-bottom: 1px solid #C8C2B4; }
+  .faq summary { cursor: pointer; font-size: 16px; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
+
+  .auth-tabs { display: flex; gap: 16px; margin: 0 0 16px; }
+  .auth-tabs button {
+    background: none; border: 0; padding: 0 0 6px; cursor: pointer;
+    font-size: 14px; color: #5F5C57; border-bottom: 1px solid transparent;
+  }
+  .auth-tabs button.on { color: #2B2B2B; border-bottom-color: #2B2B2B; }
+
   @media (max-width: 860px) {
+    .nav-wide { display: none !important; }
+    header a, header button { min-height: 44px; }
     .street-art { object-position: 90% 8%; }
     .sky-copy { width: min(22rem, 92%); padding: 28px 20px 72px; }
     .beats, .prices { grid-template-columns: 1fr; }
@@ -154,6 +207,11 @@
 <body>
   <section class="street" data-screen-label="Landing">
     <img class="street-art" src="/hero-detroit.jpg" width="1536" height="1024" alt="Painted Detroit street. A five-story brick loft for lease stands on the right." fetchpriority="high" />
+    <div class="sky-drift" aria-hidden="true">
+      <div class="cloud cloud-a"></div>
+      <div class="cloud cloud-b"></div>
+      <div class="cloud cloud-c"></div>
+    </div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
       <button type="button" class="wordmark" data-home="1">
@@ -163,15 +221,19 @@
         </svg>
         <span>Corridor</span>
       </button>
+      <a class="nav-wide" href="#product">What we do</a>
+      <a class="nav-wide" href="#pricing">Pricing</a>
+      <a class="nav-wide" href="#faq">FAQ</a>
+      <button type="button" class="sign-in" data-open-auth="create">Create account</button>
       <button type="button" class="sign-in" data-open-auth="login">Sign in</button>
     </header>
     <div class="sky-copy">
       <h1>CRE marketing is boring. We fixed it.</h1>
-      <a class="pill" href="#intake">Send a listing</a>
+      <a class="pill" href="#product">What we do</a>
     </div>
   </section>
 
-  <section id="product" class="band-paper">
+  <section id="product" class="band-paper" style="scroll-margin-top: 24px;">
     <div class="inner">
       <div class="beats">
         <article>
@@ -190,7 +252,7 @@
     </div>
   </section>
 
-  <section id="pricing" class="band-sky">
+  <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
     <div class="inner">
       <p style="font-family: var(--serif); font-size: clamp(22px, 2.6vw, 30px); margin: 0 0 22px;">Every price includes the page.</p>
       <div class="prices">
@@ -215,7 +277,39 @@
     </div>
   </section>
 
-  <section class="band-paper">
+  <section id="faq" class="band-paper" style="scroll-margin-top: 24px;">
+    <div class="inner" style="padding-bottom: clamp(40px, 6vw, 56px);">
+      <div class="faq">
+        <h2>Questions</h2>
+        <details>
+          <summary>What do I send?</summary>
+          <p>The listing photos you already have. Twelve to forty. Crooked phone shots are fine — we cut the best ten.</p>
+        </details>
+        <details>
+          <summary>How fast is it back?</summary>
+          <p>48 hours. Two revision rounds are included. If we need a photo you didn’t send, we just ask.</p>
+        </details>
+        <details>
+          <summary>What’s the difference between $200 and $350?</summary>
+          <p>$200 is from the folder. $350 adds a two-minute phone walk of the space. Same page, QR, and leads either way.</p>
+        </details>
+        <details>
+          <summary>When do I pay?</summary>
+          <p>After you see the cut. If it isn’t right, we revise or we don’t bill.</p>
+        </details>
+        <details>
+          <summary>Who owns the tour?</summary>
+          <p>You do. The page, the QR, and the cut are yours to share on the listing, the flyer, and the sign.</p>
+        </details>
+        <details>
+          <summary>Do you only work Metro Detroit?</summary>
+          <p>That’s home. Send a listing anywhere we can cut from your photos — we’ll tell you if we can’t.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band-sky">
     <div class="inner" style="padding-top: clamp(48px, 7vw, 72px);">
       <div class="inquire" id="intake" style="scroll-margin-top: 32px;">
         <h2>Send a listing.</h2>
@@ -330,9 +424,14 @@
           <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
           <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; color: #5F5C57; background: transparent; border: 1px solid #D6E6F5; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;">×</button>
         </div>
+        <div class="auth-tabs">
+          <button type="button" id="auth-tab-login" class="on" data-auth-mode="login">Sign in</button>
+          <button type="button" id="auth-tab-create" data-auth-mode="create">Create account</button>
+        </div>
         <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
-        <p style="font-size: 14.5px; line-height: 1.55; color: #5F5C57; margin: 0 0 20px;"><span id="auth-sub">We’ll email you a link.</span></p>
+        <p style="font-size: 14.5px; line-height: 1.55; color: #5F5C57; margin: 0 0 20px;"><span id="auth-sub">We’ll email you a link. New here? That creates your account.</span></p>
         <div id="auth-ask" style="display: grid; gap: 10px;">
+          <input class="field" type="text" autocomplete="name" placeholder="Your name" id="auth-name" style="display: none;" />
           <input class="field" type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" />
           <div id="auth-error" style="display: none;"><p style="font-size: 13.5px; color: #A93521; margin: 0;"></p></div>
           <button type="button" id="auth-submit" class="pill" style="width: 100%;">Email me a link</button>
@@ -593,21 +692,42 @@
   var submit = document.getElementById('auth-submit');
   var ask = document.getElementById('auth-ask'), sent = document.getElementById('auth-sent');
 
+  var authMode = 'login';
+  var authName = document.getElementById('auth-name');
+  var tabLogin = document.getElementById('auth-tab-login');
+  var tabCreate = document.getElementById('auth-tab-create');
+  var authTitle = document.getElementById('auth-title');
+  var authSub = document.getElementById('auth-sub');
+
+  function setAuthMode(mode) {
+    authMode = mode === 'create' ? 'create' : 'login';
+    tabLogin.className = authMode === 'login' ? 'on' : '';
+    tabCreate.className = authMode === 'create' ? 'on' : '';
+    authTitle.textContent = authMode === 'create' ? 'Create account' : 'Sign in';
+    authSub.textContent = authMode === 'create'
+      ? 'We’ll email you a link. That’s the whole signup — no password.'
+      : 'We’ll email you a link. New here? That creates your account.';
+    authName.style.display = authMode === 'create' ? 'block' : 'none';
+  }
   function closeAuth() {
     modal.style.display = 'none';
     err.style.display = 'none';
     ask.style.display = 'grid'; sent.style.display = 'none';
     submit.disabled = false; submit.textContent = 'Email me a link';
   }
-  function openAuth() {
+  function openAuth(mode) {
     if (account) { location.href = CONFIG.endpoints.studio; return; }
     closeAuth();
+    setAuthMode(mode);
     modal.style.display = 'block';
-    var e = document.getElementById('auth-email'); if (e) e.focus();
+    var e = authMode === 'create' ? authName : document.getElementById('auth-email');
+    if (e) e.focus();
   }
   document.querySelectorAll('[data-open-auth]').forEach(function (el) {
-    el.addEventListener('click', function () { openAuth(); });
+    el.addEventListener('click', function () { openAuth(el.getAttribute('data-open-auth')); });
   });
+  tabLogin.addEventListener('click', function () { setAuthMode('login'); });
+  tabCreate.addEventListener('click', function () { setAuthMode('create'); });
   document.querySelectorAll('[data-close-auth]').forEach(function (el) {
     el.addEventListener('click', function (e) { if (e.target === el || el.tagName === 'BUTTON') closeAuth(); });
   });
@@ -624,7 +744,8 @@
     submit.disabled = true; submit.textContent = 'One moment…'; err.style.display = 'none';
     fetch(CONFIG.endpoints.link, {
       method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, name: (authName.value || '').trim() })
     }).then(function (res) {
       return res.text().then(function (text) {
         var data = text ? JSON.parse(text) : null;

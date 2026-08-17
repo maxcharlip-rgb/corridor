@@ -159,9 +159,13 @@ async function main() {
   check('sign-in link endpoint succeeds', link.status === 200 && link.json?.success === true);
   const unknown = await req('/api/auth/link', { method: 'POST', body: { email: 'nobody@test.example' } });
   check('unknown address gets the same response', JSON.stringify(link.json) === JSON.stringify(unknown.json));
+  const created = await req('/api/auth/link', { method: 'POST', body: { email: 'newbie@test.example', name: 'New Broker' } });
+  check('new email can request a create-account link', created.status === 200 && created.json?.success === true);
 
   await sleep(200);
   const logged = serverLog.match(/sign-in link for ops@test\.example: (\S+)/);
+  const newbieLog = serverLog.match(/sign-in link for newbie@test\.example: (\S+)/);
+  check('magic link creates an account for a new email', Boolean(newbieLog), 'no URL in stdout for newbie');
   check('sign-in URL is logged when mail is off', Boolean(logged), 'no URL in stdout');
   const verify = await fetch(logged ? logged[1] : `${BASE}/api/auth/verify?token=missing`, { redirect: 'manual' });
   check('verify redirects to studio', verify.status === 302 && verify.headers.get('location') === '/studio', `got ${verify.status}`);
@@ -755,7 +759,10 @@ main().catch(async (err) => {
   check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   check('hero is street, wordmark, one line, and one pill', /class="sky-copy"/.test(landing) && /CRE marketing is boring/.test(landing) && !/id="boring-word"/.test(landing) && !/Metro Detroit/.test(landing));
+  check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
+  check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /@keyframes drift-a/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
+  check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Who owns the tour/.test(landing) && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
   check('three beats then prices then inquire', /The page/.test(landing) && /The QR/.test(landing) && /The leads/.test(landing));
   check('pricing still lists $200, $350, and $750', /\$200/.test(landing) && /\$350/.test(landing) && /\$750/.test(landing));
   check('every price still includes the page', /Every price includes the page/.test(landing));
@@ -764,7 +771,7 @@ main().catch(async (err) => {
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
   check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
-  check('primary hero CTA is Send a listing', /Send a listing/.test(landing));
+  check('hero CTA is What we do, inquire stays on the form', /href="#product"/.test(landing) && /What we do/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer still tells the intern story', /STARTED BY ONE CRE INTERN/.test(landing));
   check('footer email is max@corridor.video', /MAX@CORRIDOR\.VIDEO/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
 }
