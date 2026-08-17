@@ -746,9 +746,10 @@ main().catch(async (err) => {
 {
   const fsx = await import('node:fs');
   const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  const heroPath = new URL('../public/hero-detroit.jpg', import.meta.url);
-  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 50_000);
-  check('homepage uses the Detroit hero illustration', /hero-detroit\.jpg/.test(landing));
+  const heroPath = new URL('../public/hero-detroit.png', import.meta.url);
+  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 500_000);
+  check('homepage uses the full-resolution Detroit PNG', /hero-detroit\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing));
+  check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('first viewport is the full-bleed street, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('painting is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
   check('type sits in the open sky, not over the brick loft', /class="sky-copy"/.test(landing) && /width:\s*min\(22rem,\s*40%\)/.test(landing));
@@ -789,7 +790,7 @@ main().catch(async (err) => {
   check('tour page stays on the light paper background', /#F7FAFD/.test(tourPage) && !/--ink:\s*#0a0b0c/.test(tourPage));
   check('tour page uses the same primary blue', /#1E5AA8/.test(tourPage));
   check('tour page uses the moodboard palette', /#D6E6F5/.test(tourPage) && /#C45A3A/.test(tourPage) && /#2B2B2B/.test(tourPage));
-  check('tour page uses a quieter sky crop of the same street art', /hero-detroit\.jpg/.test(tourPage) && /class="sky-wash"/.test(tourPage) && !/class="scene"/.test(tourPage));
+  check('tour page uses a quieter sky crop of the same street art', /hero-detroit\.png/.test(tourPage) && /class="sky-wash"/.test(tourPage) && /background-size:\s*cover/.test(tourPage) && !/class="scene"/.test(tourPage));
   check('tour still plays stops and captures leads', /shot_view/.test(tourJs) && /\/leads/.test(tourJs) && /cta-top/.test(tourJs));
   check('tour still explains the page, QR, and rooms watched', /QR/.test(tourJs) && /rooms they watched/i.test(tourJs));
 }
