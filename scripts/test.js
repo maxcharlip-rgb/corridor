@@ -745,6 +745,8 @@ main().catch(async (err) => {
   const heroPath = new URL('../public/hero-detroit.jpg', import.meta.url);
   check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 50_000);
   check('homepage uses the Detroit hero illustration', /hero-detroit\.jpg/.test(landing));
+  check('Detroit painting is a full-bleed backdrop, not a boxed hero', /class="scene"/.test(landing) && /position:\s*fixed/.test(landing) && !/<figure class="hero-art">/.test(landing));
+  check('chrome uses paper cards and thin charcoal rules', /rgba\(247,250,253/.test(landing) && /rgba\(43,43,43/.test(landing));
   check('homepage stays on the light paper background', /background:\s*#F7FAFD/.test(landing));
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
@@ -769,6 +771,7 @@ main().catch(async (err) => {
   check('tour page stays on the light paper background', /#F7FAFD/.test(tourPage) && !/--ink:\s*#0a0b0c/.test(tourPage));
   check('tour page uses the same primary blue', /#1E5AA8/.test(tourPage));
   check('tour page uses the moodboard palette', /#D6E6F5/.test(tourPage) && /#C45A3A/.test(tourPage) && /#2B2B2B/.test(tourPage));
+  check('tour page uses a quieter wash of the same street art', /hero-detroit\.jpg/.test(tourPage) && /class="scene"/.test(tourPage));
   check('tour still plays stops and captures leads', /shot_view/.test(tourJs) && /\/leads/.test(tourJs) && /cta-top/.test(tourJs));
   check('tour still explains the page, QR, and rooms watched', /QR/.test(tourJs) && /rooms they watched/i.test(tourJs));
 }
