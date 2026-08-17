@@ -747,9 +747,10 @@ main().catch(async (err) => {
   const fsx = await import('node:fs');
   const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   const heroPath = new URL('../public/hero-detroit.png', import.meta.url);
-  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 500_000);
+  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 3_100_000);
   check('homepage uses the full-resolution Detroit PNG', /hero-detroit\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing));
-  check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
+  check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && /background-size:\s*175%\s*auto/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
+  check('hero crops the lower-left billboard via position and size, not a painted patch', /background-position:\s*100%\s*42%/.test(landing) && /background-size:\s*175%\s*auto/.test(landing) && !/street-patch/.test(landing));
   check('first viewport is the full-bleed street, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('painting is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
   check('type sits in the open sky, not over the brick loft', /class="sky-copy"/.test(landing) && /width:\s*min\(22rem,\s*40%\)/.test(landing));
