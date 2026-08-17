@@ -41,8 +41,8 @@
     position: absolute; inset: 0;
     background-color: #D6E6F5;
     background-image: url("/hero-detroit.png");
-    background-size: cover;
-    background-position: 70% 42%;
+    background-size: 175% auto;
+    background-position: 100% 42%;
     background-repeat: no-repeat;
     image-rendering: auto;
   }
@@ -196,10 +196,19 @@
   }
   .auth-tabs button.on { color: #2B2B2B; border-bottom-color: #2B2B2B; }
 
+  @media (max-width: 1200px) {
+    .street-art {
+      background-size: 165% auto;
+      background-position: 100% 44%;
+    }
+  }
   @media (max-width: 860px) {
     .nav-wide { display: none !important; }
     header a, header button { min-height: 44px; }
-    .street-art { background-position: 88% 48%; }
+    .street-art {
+      background-size: cover;
+      background-position: 90% 28%;
+    }
     .sky-copy { width: min(20rem, 90%); padding: 4px 20px 0; }
     .beats, .prices { grid-template-columns: 1fr; }
   }
