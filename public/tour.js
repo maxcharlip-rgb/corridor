@@ -53,12 +53,12 @@ async function load() {
   if (!res.ok) {
     $('#app').innerHTML =
       '<div style="padding:60px 0;text-align:center"><h1 style="font-family:Instrument Serif,Georgia,serif;font-size:32px;font-weight:400;margin:0 0 8px">Tour not available</h1>' +
-      '<p style="color:#5B6672">This tour is not published, or the link is wrong.</p></div>';
+      '<p style="color:#5F5C57">This tour is not published, or the link is wrong.</p></div>';
     return;
   }
   tour = await res.json();
   if (!tour.stops.length) {
-    $('#app').innerHTML = '<div style="padding:60px 0;color:#5B6672">This tour has no stops yet.</div>';
+    $('#app').innerHTML = '<div style="padding:60px 0;color:#5F5C57">This tour has no stops yet.</div>';
     return;
   }
   paint();

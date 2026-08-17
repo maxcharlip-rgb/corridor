@@ -747,6 +747,8 @@ main().catch(async (err) => {
   check('homepage uses the Detroit hero illustration', /hero-detroit\.jpg/.test(landing));
   check('homepage stays on the light paper background', /background:\s*#F7FAFD/.test(landing));
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
+  check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
+  check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   check('pricing still lists $200, $350, and $750', /\$200/.test(landing) && /\$350/.test(landing) && /\$750/.test(landing));
   check('every price still includes the page', /Every price includes the page/.test(landing));
   check('invoice-after-cut language is intact', /You see the cut before you owe/.test(landing));
@@ -766,6 +768,7 @@ main().catch(async (err) => {
   check('no parallel listing landing was added', !/\/t\/v2|\/listing2|\/tour2/.test(server + tourPage));
   check('tour page stays on the light paper background', /#F7FAFD/.test(tourPage) && !/--ink:\s*#0a0b0c/.test(tourPage));
   check('tour page uses the same primary blue', /#1E5AA8/.test(tourPage));
+  check('tour page uses the moodboard palette', /#D6E6F5/.test(tourPage) && /#C45A3A/.test(tourPage) && /#2B2B2B/.test(tourPage));
   check('tour still plays stops and captures leads', /shot_view/.test(tourJs) && /\/leads/.test(tourJs) && /cta-top/.test(tourJs));
   check('tour still explains the page, QR, and rooms watched', /QR/.test(tourJs) && /rooms they watched/i.test(tourJs));
 }
