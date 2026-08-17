@@ -39,9 +39,12 @@
   }
   .street-art {
     position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover; object-position: 70% 42%;
-    display: block;
+    background-color: #D6E6F5;
+    background-image: url("/hero-detroit.png");
+    background-size: cover;
+    background-position: 70% 42%;
+    background-repeat: no-repeat;
+    image-rendering: auto;
   }
   /* Sky only. The loft stays still. */
   .sky-drift {
@@ -196,7 +199,7 @@
   @media (max-width: 860px) {
     .nav-wide { display: none !important; }
     header a, header button { min-height: 44px; }
-    .street-art { object-position: 88% 48%; }
+    .street-art { background-position: 88% 48%; }
     .sky-copy { width: min(20rem, 90%); padding: 4px 20px 0; }
     .beats, .prices { grid-template-columns: 1fr; }
   }
@@ -204,7 +207,7 @@
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <img class="street-art" src="/hero-detroit.jpg" width="1536" height="1024" alt="Painted Detroit street. A five-story brick loft for lease stands on the right." fetchpriority="high" />
+    <div class="street-art" role="img" aria-label="Painted Detroit street. A five-story brick loft for lease stands on the right."></div>
     <div class="sky-drift" aria-hidden="true">
       <div class="cloud cloud-a"></div>
       <div class="cloud cloud-b"></div>
