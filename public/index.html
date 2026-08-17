@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — CRE marketing is boring. We fixed it.</title>
-  <meta name="description" content="Send the listing photos you already have. Corridor cuts a walkthrough by hand and sends the page back in 48 hours." />
+  <title>Corridor — cinematic listing tours from the photos you already have</title>
+  <meta name="description" content="Corridor cuts cinematic listing tours from the photos Metro Detroit CRE brokers already have. Show clients, win listings, land leases. Back in 48 hours." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -40,7 +40,7 @@
   .street-art {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover; object-position: 68% 20%;
+    object-fit: cover; object-position: 70% 42%;
     display: block;
   }
   /* Sky only. The loft stays still. */
@@ -73,8 +73,41 @@
     from { transform: translate3d(8%, 2%, 0); }
     to { transform: translate3d(-10%, 0, 0); }
   }
+  .sidewalk {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 20%; min-height: 100px;
+    overflow: hidden; pointer-events: none; z-index: 2;
+  }
+  .walker {
+    position: absolute; bottom: 18%;
+    height: 78px; width: auto;
+    transform-origin: bottom center;
+    will-change: transform;
+  }
+  .walker svg { display: block; height: 100%; width: auto; overflow: visible; }
+  .walker .leg { transform-box: fill-box; transform-origin: 50% 0%; }
+  .walker .leg-a { animation: stride 0.55s ease-in-out infinite; }
+  .walker .leg-b { animation: stride 0.55s ease-in-out infinite reverse; }
+  .w1 { height: 76px; animation: stroll-right 34s linear infinite; }
+  .w2 { height: 70px; animation: stroll-right 42s linear infinite; animation-delay: -18s; }
+  .w3 { height: 74px; animation: stroll-left 38s linear infinite; animation-delay: -8s; }
+  @keyframes stroll-right {
+    from { transform: translateX(-12vw); }
+    to { transform: translateX(108vw); }
+  }
+  @keyframes stroll-left {
+    from { transform: translateX(108vw) scaleX(-1); }
+    to { transform: translateX(-12vw) scaleX(-1); }
+  }
+  @keyframes stride {
+    from { transform: rotate(-16deg); }
+    to { transform: rotate(16deg); }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .cloud { animation: none; }
+    .cloud, .walker, .walker .leg-a, .walker .leg-b { animation: none; }
+    .w1 { left: 12%; }
+    .w2 { left: 28%; }
+    .w3 { left: 48%; transform: scaleX(-1); }
   }
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
@@ -98,16 +131,15 @@
     padding: 12px 4px; cursor: pointer;
   }
   .sky-copy {
-    position: relative; z-index: 2;
-    width: min(34rem, 46%);
-    padding: clamp(40px, 10vh, 96px) 24px 96px clamp(20px, 4.5vw, 64px);
+    position: relative; z-index: 3;
+    width: min(22rem, 40%);
+    padding: 8px 24px 0 clamp(20px, 4.5vw, 64px);
   }
-  .sky-copy h1 {
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(42px, 5.8vw, 76px);
-    line-height: .96; letter-spacing: -.03em;
-    margin: 0 0 28px; text-wrap: pretty;
+  .sky-copy p {
+    font-size: 15px; line-height: 1.4; letter-spacing: -.01em;
+    margin: 0 0 14px; max-width: 28ch; color: #2B2B2B;
   }
+  .sky-copy .pill { padding: 10px 18px; font-size: 14px; }
   .pill {
     display: inline-block; font-size: 15px; color: #fff; background: #1E5AA8;
     padding: 14px 26px; border-radius: 999px; font-weight: 500; border: 0; cursor: pointer;
@@ -116,7 +148,6 @@
 
   .band-paper { background: #F7FAFD; }
   .band-sky { background: #D6E6F5; }
-  .band-stone { background: #C8C2B4; }
   .inner { max-width: 1040px; margin: 0 auto; padding: clamp(56px, 8vw, 88px) 24px; }
 
   .beats {
@@ -198,8 +229,8 @@
   @media (max-width: 860px) {
     .nav-wide { display: none !important; }
     header a, header button { min-height: 44px; }
-    .street-art { object-position: 90% 8%; }
-    .sky-copy { width: min(22rem, 92%); padding: 28px 20px 72px; }
+    .street-art { object-position: 88% 48%; }
+    .sky-copy { width: min(20rem, 90%); padding: 4px 20px 0; }
     .beats, .prices { grid-template-columns: 1fr; }
   }
 </style>
@@ -213,6 +244,44 @@
       <div class="cloud cloud-c"></div>
     </div>
     <div class="street-fade" aria-hidden="true"></div>
+    <div class="sidewalk" aria-hidden="true">
+      <div class="walker w1">
+        <svg viewBox="0 0 36 78" fill="none">
+          <circle cx="18" cy="9" r="6.2" fill="#C4A882"/>
+          <path d="M12 7.2c1.4-3 8.4-3.2 10.2.4-2.2.2-6.6.4-10.2-.4Z" fill="#2B2B2B"/>
+          <path d="M11 20.5c0-3.2 3.2-5.2 7-5.2s7 2 7 5.2v16.2c0 2.2-2.4 3.6-7 3.6s-7-1.4-7-3.6V20.5Z" fill="#3A5A8A"/>
+          <path class="leg leg-a" d="M13.2 40.2h5.2v22.4c0 1.4-1.2 2.4-2.6 2.4h-.2c-1.4 0-2.4-1-2.4-2.4V40.2Z" fill="#2B2B2B"/>
+          <path class="leg leg-b" d="M17.8 40.2h5.2v22.4c0 1.4-1 2.4-2.4 2.4h-.2c-1.4 0-2.6-1-2.6-2.4V40.2Z" fill="#1a1a1a"/>
+          <path d="M9.4 22.2c-.6 4.2-1 8.4.2 11.6 1.4-2.2 2.2-6.4 2.2-11.2L9.4 22.2Z" fill="#2B2B2B"/>
+          <path d="M26.6 22.2c.6 4.2 1 8.4-.2 11.6-1.4-2.2-2.2-6.4-2.2-11.2l2.4-.4Z" fill="#2B2B2B"/>
+        </svg>
+      </div>
+      <div class="walker w2">
+        <svg viewBox="0 0 58 74" fill="none">
+          <circle cx="18" cy="10" r="5.4" fill="#D2B48C"/>
+          <path d="M13.2 8.2c1.6-2.6 8-2.4 9.2.8-2 .2-6.2.2-9.2-.8Z" fill="#5A4636"/>
+          <path d="M12.4 20c0-2.6 2.6-4.4 5.8-4.4s5.8 1.8 5.8 4.4v14c0 1.8-2 3-5.8 3s-5.8-1.2-5.8-3V20Z" fill="#C45A3A"/>
+          <path class="leg leg-a" d="M14 37.6h4.4v20c0 1.2-1 2.2-2.2 2.2h-.2c-1.2 0-2-1-2-2.2v-20Z" fill="#2B2B2B"/>
+          <path class="leg leg-b" d="M17.8 37.6h4.4v20c0 1.2-.8 2.2-2 2.2h-.2c-1.2 0-2.2-1-2.2-2.2v-20Z" fill="#3a3a3a"/>
+          <circle cx="38" cy="11" r="5.2" fill="#C4A882"/>
+          <path d="M33.4 8.6c1.8-2.8 8.4-2.6 9.4 1-2.2 0-6.4.2-9.4-1Z" fill="#2B2B2B"/>
+          <path d="M32.6 21c0-2.6 2.6-4.6 5.6-4.6s5.6 2 5.6 4.6v14.4c0 1.8-2 3.2-5.6 3.2s-5.6-1.4-5.6-3.2V21Z" fill="#D6E6F5"/>
+          <path class="leg leg-b" d="M34 38.4h4.2v19.2c0 1.2-.8 2-2 2h-.2c-1.2 0-2-.8-2-2V38.4Z" fill="#2B2B2B"/>
+          <path class="leg leg-a" d="M37.6 38.4h4.2v19.2c0 1.2-.8 2-2 2h-.2c-1.2 0-2-.8-2-2V38.4Z" fill="#1a1a1a"/>
+        </svg>
+      </div>
+      <div class="walker w3">
+        <svg viewBox="0 0 34 76" fill="none">
+          <circle cx="17" cy="9.2" r="6" fill="#C8B49A"/>
+          <path d="M11.4 7.4c1.8-3.2 9.2-3 10.6.8-2.4.2-7 .4-10.6-.8Z" fill="#3d3a36"/>
+          <path d="M10.8 20.2c0-3 3-5 6.4-5s6.4 2 6.4 5v15.6c0 2-2.2 3.4-6.4 3.4s-6.4-1.4-6.4-3.4V20.2Z" fill="#5F5C57"/>
+          <path class="leg leg-a" d="M12.4 39.4h4.8v21.2c0 1.3-1 2.2-2.3 2.2h-.2c-1.3 0-2.3-.9-2.3-2.2V39.4Z" fill="#2B2B2B"/>
+          <path class="leg leg-b" d="M16.8 39.4h4.8v21.2c0 1.3-1 2.2-2.3 2.2h-.2c-1.3 0-2.3-.9-2.3-2.2V39.4Z" fill="#1a1a1a"/>
+          <path d="M9 22c-.4 3.8-.6 7.6.4 10.6 1.2-2 1.8-5.8 1.8-10.2L9 22Z" fill="#C8C2B4"/>
+          <path d="M25 22c.4 3.8.6 7.6-.4 10.6-1.2-2-1.8-5.8-1.8-10.2L25 22Z" fill="#C8C2B4"/>
+        </svg>
+      </div>
+    </div>
     <header class="sky-bar">
       <button type="button" class="wordmark" data-home="1">
         <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #2B2B2B;">
@@ -228,7 +297,7 @@
       <button type="button" class="sign-in" data-open-auth="login">Sign in</button>
     </header>
     <div class="sky-copy">
-      <h1>CRE marketing is boring. We fixed it.</h1>
+      <p>Cinematic listing tours from the photos you already have.</p>
       <a class="pill" href="#product">What we do</a>
     </div>
   </section>
@@ -237,16 +306,16 @@
     <div class="inner">
       <div class="beats">
         <article>
-          <h2>The page</h2>
-          <p>One URL for the pitch, the flyer, and the listing.</p>
+          <h2>The tour</h2>
+          <p>A cinematic walkthrough, cut by hand from the photos you already have.</p>
         </article>
         <article>
-          <h2>The QR</h2>
-          <p>On the rider. They scan it and walk the building.</p>
+          <h2>The work</h2>
+          <p>Show clients the space. Win the listing. Land the lease.</p>
         </article>
         <article>
-          <h2>The leads</h2>
-          <p>Who inquired, and which rooms they watched.</p>
+          <h2>The share</h2>
+          <p>A page and a QR for the flyer and the sign — Metro Detroit brokers, first.</p>
         </article>
       </div>
     </div>
@@ -291,7 +360,7 @@
         </details>
         <details>
           <summary>What’s the difference between $200 and $350?</summary>
-          <p>$200 is from the folder. $350 adds a two-minute phone walk of the space. Same page, QR, and leads either way.</p>
+          <p>$200 is from the folder. $350 adds a two-minute phone walk of the space. Same tour, page, and QR either way.</p>
         </details>
         <details>
           <summary>When do I pay?</summary>
@@ -411,7 +480,7 @@
     </div>
   </section>
 
-  <footer class="band-stone">
+  <footer class="band-sky">
     <div style="max-width: 1040px; margin: 0 auto; padding: 28px 24px 40px;">
       <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.VIDEO</p>
     </div>
