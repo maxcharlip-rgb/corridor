@@ -19,18 +19,18 @@
   a:hover { color: #1E5AA8; }
   input, select, textarea, button { font-family: inherit; }
   ::selection { background: #D3E3F6; }
-  @keyframes corridorPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
   @keyframes corridorMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @keyframes corridorNudge { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(-2deg); } }
+  figure { margin: 0; }
+  .hero-art { margin: 0 auto; max-width: 1400px; padding: 0 16px; }
+  .hero-art img { width: 100%; height: auto; display: block; border-radius: 28px; box-shadow: 0 28px 70px rgba(16, 30, 51, .12); }
+  @media (max-width: 720px) {
+    .hero-art { padding: 0 12px; }
+    .hero-art img { border-radius: 16px; }
+  }
 </style>
 </head>
 <body>
-<div style="min-height: 100vh; background: transparent; color: #101418; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
-<canvas id="field" style="position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none;"></canvas>
-  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; background: rgba(247,250,253,.66);"></div>
-  <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: overlay; background-size: 120px 120px; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.250'/%3E%3C/svg%3E&quot;);"></div>
-
-
+<div style="min-height: 100vh; background: #F7FAFD; color: #101418; font-family: 'Archivo', system-ui, 'Helvetica Neue', Arial, sans-serif;">
   <div style="position: relative; z-index: 1;">
   <header style="position: sticky; top: 0; z-index: 60; background: rgba(247,250,253,.88); backdrop-filter: blur(12px); border-bottom: 1px solid #E9F0F8;">
     <div style="max-width: 1160px; margin: 0 auto; padding: 13px 20px; display: flex; align-items: center; gap: 18px;">
@@ -49,24 +49,18 @@
 
     <div data-screen-label="Landing">
       <section>
-        <div style="max-width: 1160px; margin: 0 auto; padding: clamp(48px, 8vw, 108px) 20px clamp(28px, 4vw, 44px); text-align: center;">
-        <div style="display: inline-flex; align-items: center; gap: 9px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #1E5AA8; background: #E9F0F8; border-radius: 999px; padding: 8px 16px; margin-bottom: 26px;">
-          <span style="width: 7px; height: 7px; border-radius: 999px; background: #1E5AA8; display: block; animation: corridorPulse 1.8s ease-in-out infinite;"></span>
-          Photos in · finished tour back in 48 hours
+        <div style="max-width: 860px; margin: 0 auto; padding: clamp(64px, 10vw, 120px) 24px clamp(36px, 5vw, 56px); text-align: center;">
+        <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #1E5AA8; margin: 0 0 22px;">Metro Detroit · photos in, tour back in 48 hours</p>
+        <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(46px, 8.4vw, 92px); line-height: .96; letter-spacing: -.03em; margin: 0 auto 20px; max-width: 16ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #1E5AA8;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
+        <p style="font-size: clamp(17px, 1.7vw, 20px); line-height: 1.5; color: #5B6672; margin: 0 auto 36px; max-width: 36ch; text-wrap: pretty;">Send the listing photos you already have. We cut the tour by hand and send the page back.</p>
+        <a href="#intake" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 16px 32px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Send a listing</a>
         </div>
-        <h1 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(42px, 8vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 auto 22px; max-width: 22ch; text-wrap: pretty;">CRE marketing is <em style="font-style: italic; color: #1E5AA8;"><span id="boring-word">boring</span></em>.<br />So we fixed it.</h1>
-        <p style="font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: #5B6672; margin: 0 auto 40px; max-width: 50ch; text-wrap: pretty;">Your listing deserves better than 27 photos and a hopeful email. Send us the folder tonight. We cut it by hand and send a finished tour back in 48 hours.</p>
-
-        <a href="#intake" style="display: inline-block; font-size: 16px; color: #fff; background: #1E5AA8; padding: 17px 34px; border-radius: 999px; font-weight: 500;" data-hover="background: #17457F; color: #fff;">Send a listing</a>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 26px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5B6672;">
-          <span>No videographer</span>
-          <span>No shoot day</span>
-          <span>$200 a listing</span>
-        </div>
-        </div>
+        <figure class="hero-art">
+          <img src="/hero-detroit.jpg" width="1536" height="1024" alt="Illustrated Detroit street with a for-lease brick loft" fetchpriority="high" />
+        </figure>
       </section>
 
-      <div style="overflow: hidden; border-top: 1px solid #E9F0F8; border-bottom: 1px solid #E9F0F8; padding: 13px 0; margin-top: clamp(52px, 8vw, 104px);">
+      <div style="overflow: hidden; border-top: 1px solid #E9F0F8; border-bottom: 1px solid #E9F0F8; padding: 13px 0; margin-top: clamp(40px, 6vw, 72px);">
         <div style="display: flex; width: max-content; animation: corridorMarquee 26s linear infinite; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #5B6672;">
           <div style="display: flex; gap: 44px; width: auto; flex: none; padding-right: 44px; white-space: nowrap;">
             <span style="flex: none; white-space: nowrap;">A folder of 27 photos</span>
@@ -414,71 +408,7 @@
 
   var WORDS = ['boring', 'beige', 'a PDF', 'a Dropbox link', 'stuck in 2014'];
   var word = document.getElementById('boring-word'), wi = 0;
-  setInterval(function () { wi = (wi + 1) % WORDS.length; word.textContent = WORDS[wi]; }, 2200);
-
-  /* ---- ribbon field: curved bands (wave 14), per-pixel — CSS can't do this ---- */
-  var STOPS = [
-    [0.0000, 247, 250, 253], [0.0432, 247, 250, 253], [0.3318, 247, 250, 253],
-    [0.3786, 227, 237, 248], [0.5814, 227, 237, 248],
-    [0.5886, 194, 216, 238], [0.7964, 194, 216, 238],
-    [0.8000, 155, 191, 226], [1.0000, 155, 191, 226]
-  ];
-  var N = 1024, lut = new Uint8ClampedArray(N * 3), seg = 0;
-  for (var i = 0; i < N; i++) {
-    var p = i / (N - 1);
-    while (seg < STOPS.length - 2 && p > STOPS[seg + 1][0]) seg++;
-    var s0 = STOPS[seg], s1 = STOPS[seg + 1], span = s1[0] - s0[0];
-    var t = span > 0 ? (p - s0[0]) / span : 0;
-    lut[i * 3] = s0[1] + (s1[1] - s0[1]) * t;
-    lut[i * 3 + 1] = s0[2] + (s1[2] - s0[2]) * t;
-    lut[i * 3 + 2] = s0[3] + (s1[3] - s0[3]) * t;
-  }
-
-  var canvas = document.getElementById('field'), ctx = canvas.getContext('2d');
-  var off = document.createElement('canvas'), octx = off.getContext('2d');
-  var img = null, ow = 0, oh = 0;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function size() {
-    var r = canvas.getBoundingClientRect();
-    var w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
-    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-    var nw = 240, nh = Math.max(60, Math.min(220, Math.round(nw * h / w)));
-    if (nw !== ow || nh !== oh) { ow = nw; oh = nh; off.width = ow; off.height = oh; img = octx.createImageData(ow, oh); }
-  }
-
-  function frame(ph) {
-    size();
-    if (!img) return;
-    var amt = 0, spin = ph * 1;
-    var a = (32 + Math.sin(spin * 0.6) * 28 * amt) * Math.PI / 180;
-    var sa = Math.sin(a), ca = Math.cos(a), W = ow, H = oh;
-    var L = Math.abs(W * sa) + Math.abs(H * ca), Lc = Math.abs(W * ca) + Math.abs(H * sa);
-    var clock = 20.75 + ph * 1.2, k = (14 / 100) * 0.35, d = img.data, i = 0;
-    for (var y = 0; y < H; y++) {
-      var dy = y - H / 2;
-      for (var x = 0; x < W; x++) {
-        var dx = x - W / 2;
-        var cross = (dx * ca + dy * sa) / Lc + 0.5;
-        var along = (dx * sa - dy * ca) / L + 0.5;
-        along += k * Math.sin(cross * 2.4 * Math.PI * 2 + clock);
-        if (along < 0) along = 0; else if (along > 1) along = 1;
-        var idx = (along * 1023 | 0) * 3;
-        d[i] = lut[idx]; d[i + 1] = lut[idx + 1]; d[i + 2] = lut[idx + 2]; d[i + 3] = 255;
-        i += 4;
-      }
-    }
-    octx.putImageData(img, 0, 0);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(off, 0, 0, ow, oh, 0, 0, canvas.width, canvas.height);
-  }
-
-  if (reduce) { frame(0); } else {
-    var t0 = performance.now();
-    (function loop(now) { frame((now - t0) / 1000); requestAnimationFrame(loop); })(t0);
-  }
-  window.addEventListener('resize', function () { if (reduce) frame(0); });
+  if (word) setInterval(function () { wi = (wi + 1) % WORDS.length; word.textContent = WORDS[wi]; }, 2200);
 
   /* ---- sample tour ------------------------------------------------------
      One constant drives all four tour links, so pointing them at a real tour

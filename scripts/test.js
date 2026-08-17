@@ -738,6 +738,24 @@ main().catch(async (err) => {
   check('48-hour turnaround stated on landing and confirmation email', promised.length === 2);
 }
 
+// --- marketing homepage stays a light illustrated landing page --------------
+{
+  const fsx = await import('node:fs');
+  const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  const heroPath = new URL('../public/hero-detroit.jpg', import.meta.url);
+  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 50_000);
+  check('homepage uses the Detroit hero illustration', /hero-detroit\.jpg/.test(landing));
+  check('homepage stays on the light paper background', /background:\s*#F7FAFD/.test(landing));
+  check('primary blue is still the brand color', /#1E5AA8/.test(landing));
+  check('pricing still lists $200, $350, and $750', /\$200/.test(landing) && /\$350/.test(landing) && /\$750/.test(landing));
+  check('every price still includes the page', /Every price includes the page/.test(landing));
+  check('invoice-after-cut language is intact', /You see the cut before you owe/.test(landing));
+  check('no full-refund language', !/full refund/i.test(landing));
+  check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
+  check('primary hero CTA is Send a listing', /Send a listing/.test(landing));
+  check('footer still tells the intern story', /STARTED BY ONE CRE INTERN/.test(landing));
+}
+
 // --- payment must be confirmed, never assumed --------------------------------
 {
   const fsx = await import('node:fs');
