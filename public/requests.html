@@ -98,8 +98,8 @@
        operator discover it when a delivery silently goes nowhere. */
     var banner = mail.configured ? '' :
       '<div class="warn"><b>Email is not sending.</b> ' + esc(mail.reason || '') +
-      '. Requests are still captured and listed here, but neither you nor the broker is being notified. ' +
-      'Set RESEND_API_KEY and MAIL_FROM to turn it on.</div>';
+      '. Requests are still captured and listed here, but ' + esc(mail.notify || 'max@corridor.video') +
+      ' is not being emailed. Set RESEND_API_KEY and MAIL_FROM to turn it on.</div>';
 
     if (!STATE.requests.length) {
       $('#app').innerHTML = '<h1>Queue</h1>' + banner +

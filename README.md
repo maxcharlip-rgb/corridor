@@ -34,11 +34,14 @@ Copy `.env.example` to `.env`. Nothing is required to run.
 | `CREDIT_BUDGET` | Hard monthly ceiling. Generation returns `402` before spending past it. |
 | `SESSION_SECRET` | Session signing. Auto-generates into `db.json` with a warning if unset — set it before deploying. |
 | `ANTHROPIC_API_KEY` | Optional. Spec extraction from free text; degrades to a heuristic parse without it. |
+| `RESEND_API_KEY` | Operator + broker notification via Resend. Without it, orders still save; Max is not emailed. |
+| `MAIL_FROM` | Verified Resend from-address, e.g. `Corridor <hello@corridor.video>`. Required with the API key — send is skipped if this is unset. |
+| `NOTIFY_EMAIL` | Where new-order mail lands. Defaults to `max@corridor.video` if unset. |
 
 ## Before hosting
 
 ```bash
-npm test                                     # 58 checks, spends nothing
+npm test                                     # production readiness, spends nothing
 npm run doctor                               # config preflight
 node scripts/verify-higgsfield.js --confirm  # proves REST auth (~5 credits)
 curl localhost:4182/healthz                  # uptime, pending jobs, disk, RSS
@@ -169,9 +172,13 @@ The app warns loudly at boot if it detects a hosted platform with
    `https://corridor.onrender.com`). Higgsfield downloads listing photos from
    this origin and every tour/QR link is built from it — a wrong value breaks
    generation and sharing at once.
-2. Set `HIGGSFIELD_KEY_ID` / `HIGGSFIELD_KEY_SECRET` if you want cinematic
+2. Set operator mail or new orders will save (201) and never reach Max:
+   - `RESEND_API_KEY` — from the Resend dashboard
+   - `MAIL_FROM` — a verified Resend from-address, e.g. `Corridor <hello@corridor.video>`
+   - `NOTIFY_EMAIL=max@corridor.video` (optional; this is already the default)
+   Confirm with `curl https://<your-app>/healthz` — `mail.configured` must be `true`.
+3. Set `HIGGSFIELD_KEY_ID` / `HIGGSFIELD_KEY_SECRET` if you want cinematic
    rendering. Everything else works without them.
-3. Confirm: `curl https://<your-app>/healthz`
 
 ### Free tier
 

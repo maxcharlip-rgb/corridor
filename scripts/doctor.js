@@ -15,6 +15,7 @@ import { config, higgsfieldConfigured, ROOT } from '../server/config.js';
 import { fontsAvailable } from '../server/endcard.js';
 import { ffmpegAvailable } from '../server/render-preview.js';
 import { creditBudget } from '../server/limits.js';
+import { mailConfigured, mailUnconfiguredReason, notifyAddress } from '../server/mailer.js';
 
 const results = [];
 const add = (level, name, detail) => results.push({ level, name, detail });
@@ -55,6 +56,12 @@ if (/localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(config.publicUrl)) {
 creditBudget()
   ? add(OK, 'credit budget', `${creditBudget()} credits/month ceiling`)
   : add(WARN, 'credit budget', 'CREDIT_BUDGET unset — no ceiling on monthly spend. Set it in .env');
+
+mailConfigured()
+  ? add(OK, 'operator mail', `Resend → ${notifyAddress()}`)
+  : add(WARN, 'operator mail',
+      `${mailUnconfiguredReason()}. Orders save but ${notifyAddress()} is not emailed. ` +
+      'Set RESEND_API_KEY and MAIL_FROM (verified Resend from-address, e.g. Corridor <hello@corridor.video>).');
 
 // --- storage ---------------------------------------------------------------
 for (const [label, dir] of [

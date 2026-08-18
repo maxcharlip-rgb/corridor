@@ -16,6 +16,7 @@ import {
 } from './reliability.js';
 import { resumePending } from './jobs.js';
 import { ffmpegAvailable } from './render-preview.js';
+import { mailConfigured, mailUnconfiguredReason, notifyAddress, publicMailStatus } from './mailer.js';
 
 // Install before anything else can log or throw.
 installSafeLogging();
@@ -68,6 +69,7 @@ app.get('/healthz', (_req, res) => {
     ok: true,
     preview: ffmpegAvailable(),
     cinematic: higgsfieldConfigured,
+    mail: publicMailStatus(),
     ...snap,
   });
 });
@@ -83,6 +85,19 @@ const server = app.listen(config.port, () => {
       ? `ready (${config.higgsfield.model})`
       : 'not configured — add HIGGSFIELD_KEY_ID / HIGGSFIELD_KEY_SECRET to .env'
   );
+  line(
+    'Mail',
+    mailConfigured()
+      ? `ready → ${notifyAddress()}`
+      : `OFF — ${mailUnconfiguredReason()}. Orders save; ${notifyAddress()} is not emailed.`
+  );
+  if (!mailConfigured()) {
+    console.warn(
+      `\n  ⚠  OPERATOR MAIL OFF: ${mailUnconfiguredReason()}.\n` +
+        `     Guest orders are saved but ${notifyAddress()} will not be emailed.\n` +
+        '     Set RESEND_API_KEY and MAIL_FROM (a verified Resend from-address) on Render.\n'
+    );
+  }
   // Hosted platforms (Render, Railway, Fly, Heroku) have ephemeral filesystems.
   // If state is sitting inside the deployed checkout, the next deploy silently
   // destroys every account, listing, lead and rendered video — and published

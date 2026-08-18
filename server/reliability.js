@@ -37,6 +37,8 @@ export function redact(value) {
     process.env.ANTHROPIC_API_KEY,
     process.env.SESSION_SECRET,
     process.env.STAGING_API_KEY,
+    process.env.RESEND_API_KEY,
+    process.env.STRIPE_SECRET_KEY,
   ].filter((s) => s && String(s).length >= 8);
 
   for (const secret of secrets) {

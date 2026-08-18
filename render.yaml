@@ -64,8 +64,11 @@ services:
       - key: COMP_CODE
         sync: false
 
-      # Property intake. Requests are captured and listed at /requests without
-      # these, but neither you nor the broker is notified that one arrived.
+      # Operator mail (Resend). Orders are captured without these, but
+      # max@corridor.video is not emailed until they are set in the dashboard:
+      #   RESEND_API_KEY = (Resend API key — never commit it)
+      #   MAIL_FROM      = Corridor <hello@corridor.video>  # must be verified on Resend
+      #   NOTIFY_EMAIL   = max@corridor.video               # optional; this is the code default
       - key: RESEND_API_KEY
         sync: false
       - key: MAIL_FROM

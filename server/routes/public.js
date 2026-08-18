@@ -207,19 +207,24 @@ publicApi.post('/requests', intakeLimiter, intakeUpload.array('photos', 40), asy
 
   // Notifications happen after the response; the record is already safe.
   (async () => {
+    const operator = notifyAddress();
     const note = requestNotification(request, request.photos);
-    const toOperator = await sendMail({ to: notifyAddress(), subject: note.subject, html: note.html, replyTo: email });
+    const toOperator = await sendMail({ to: operator, subject: note.subject, html: note.html, replyTo: email });
 
     const confirm = requestConfirmation(request);
     const toBroker = await sendMail({ to: email, subject: confirm.subject, html: confirm.html });
 
     const stored = (getDb().requests || []).find((r) => r.id === request.id);
     if (stored) {
-      stored.notified = { operator: toOperator, broker: toBroker, at: now() };
+      stored.notified = {
+        operator: { ...toOperator, to: operator },
+        broker: { ...toBroker, to: email },
+        at: now(),
+      };
       save();
     }
     if (!toOperator.ok) {
-      console.error(`[intake] request ${request.id} saved but the operator was NOT emailed: ${toOperator.error}`);
+      console.error(`[intake] request ${request.id} SAVED but ${operator} was not emailed: ${toOperator.error}`);
     }
   })();
 });

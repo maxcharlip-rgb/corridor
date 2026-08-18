@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { getDb, saveNow, id, now } from '../store.js';
 import { accountByEmail, createAccount } from '../auth.js';
 import {
-  sendMail, orderNotification, orderConfirmation, mailConfigured, notifyAddress,
+  sendMail, orderNotification, orderConfirmation, notifyAddress,
 } from '../mailer.js';
 import { rateLimit } from '../limits.js';
 
@@ -294,13 +294,16 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
 
     const stored = (getDb().requests || []).find((r) => r.id === request.id);
     if (stored) {
-      stored.notified = { operator: toOperator, broker: toBroker, at: now() };
+      stored.notified = {
+        operator: { ...toOperator, to: operator },
+        broker: { ...toBroker, to: email },
+        at: now(),
+      };
       saveNow();
     }
     if (!toOperator.ok) {
       console.error(
-        `[intake] order ${order.id} SAVED but ${operator} was not emailed: ${toOperator.error}. ` +
-        (mailConfigured() ? 'Check the mail provider.' : 'Set RESEND_API_KEY and MAIL_FROM.')
+        `[intake] order ${order.id} SAVED but ${operator} was not emailed: ${toOperator.error}`
       );
     }
     if (created) console.log(`[intake] created account ${account.id} for ${email} from their first order.`);

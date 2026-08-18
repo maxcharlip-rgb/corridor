@@ -76,6 +76,9 @@ function start(env = {}) {
         CREDIT_BUDGET: '100',
         HIGGSFIELD_KEY_ID: '',
         HIGGSFIELD_KEY_SECRET: '',
+        RESEND_API_KEY: '',
+        MAIL_FROM: '',
+        NOTIFY_EMAIL: '',
         ...env,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -124,12 +127,22 @@ async function main() {
   check('boot log warns about localhost PUBLIC_URL', /localhost/i.test(bootLog));
   check('no secret material in boot log',
     !/test-secret-not-a-real-one/.test(bootLog), 'SESSION_SECRET appeared in logs');
+  check('boot log warns when operator mail is off',
+    /OPERATOR MAIL OFF/i.test(bootLog) && /RESEND_API_KEY is not set/.test(bootLog));
 
   const health = await req('/healthz');
   check('healthz responds', health.status === 200);
   check('healthz reports render disk usage', typeof health.json?.renderMB === 'number');
   check('healthz reports pending jobs', typeof health.json?.pendingTakes === 'number');
-  check('healthz leaks no secrets', !/secret|key/i.test(JSON.stringify(health.json || {})));
+  check('healthz reports operator mail status',
+    health.json?.mail?.configured === false
+      && health.json.mail.notify === 'max@corridor.video'
+      && health.json.mail.fromSet === false
+      && health.json.mail.reason === 'RESEND_API_KEY is not set');
+  check('healthz leaks no secrets',
+    !/test-secret-not-a-real-one/.test(JSON.stringify(health.json || {}))
+      && !/"re_[A-Za-z0-9]/.test(JSON.stringify(health.json || {})),
+    'a credential-shaped value appeared in /healthz');
 
   // 2. Missing env vars ------------------------------------------------------
   section('2. Missing configuration is explicit, not silent');
@@ -207,6 +220,22 @@ async function main() {
     (afterGuest.requests || []).some((r) => r.email === 'guest@test.example' && r.address === '2 Guest Ave, Detroit, MI'));
   check('guest email silently created an account for the queue',
     (afterGuest.accounts || []).some((a) => a.email === 'guest@test.example'));
+
+  /* Mail is a notification: the 201 already landed. The skip must still be
+     written onto the request so an operator can see Max was not emailed. */
+  let guestReq = (afterGuest.requests || []).find((r) => r.email === 'guest@test.example');
+  for (let i = 0; i < 20 && !guestReq?.notified?.operator; i += 1) {
+    await sleep(50);
+    guestReq = JSON.parse(fs.readFileSync(dbPath, 'utf8')).requests
+      .find((r) => r.email === 'guest@test.example');
+  }
+  check('guest order records notified.operator after skip',
+    guestReq?.notified?.operator?.skipped === true
+      && guestReq.notified.operator.to === 'max@corridor.video'
+      && guestReq.notified.operator.error === 'RESEND_API_KEY is not set',
+    JSON.stringify(guestReq?.notified || null));
+  check('intake log names the skip on the saved order',
+    /SAVED but max@corridor\.video was not emailed: RESEND_API_KEY is not set/.test(serverLog));
 
   /* Production repro: name+email+address and no photos used to 400 on size.
      After this fix it must fail on photos, never square footage. */
@@ -705,24 +734,79 @@ main().catch(async (err) => {
   const fsx = await import('node:fs');
   const intakeSrc = fsx.readFileSync(new URL('../server/routes/intake.js', import.meta.url), 'utf8');
   const mailSrc = fsx.readFileSync(new URL('../server/mailer.js', import.meta.url), 'utf8');
-  const { notifyAddress, orderConfirmation } = await import('../server/mailer.js');
+  const {
+    notifyAddress, orderConfirmation, orderNotification, sendMail, mailStatus, publicMailStatus,
+  } = await import('../server/mailer.js');
 
   check('intake does not hardcode hello@corridor.tours', !/hello@corridor\.tours/.test(intakeSrc));
   check('intake notifies via notifyAddress()', /notifyAddress\(\)/.test(intakeSrc));
+  check('intake reply-to is the broker', /replyTo:\s*email/.test(intakeSrc));
   check('intake does not require square footage', !/square footage is required/.test(intakeSrc));
   check('intake does not mint a magic-link gate', !/issueLoginToken/.test(intakeSrc) && !/magicUrl/.test(intakeSrc));
 
   const prevNotify = process.env.NOTIFY_EMAIL;
+  const prevKey = process.env.RESEND_API_KEY;
+  const prevFrom = process.env.MAIL_FROM;
   delete process.env.NOTIFY_EMAIL;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.MAIL_FROM;
   check('notifyAddress defaults to max@corridor.video', notifyAddress() === 'max@corridor.video');
-  if (prevNotify !== undefined) process.env.NOTIFY_EMAIL = prevNotify;
+  check('notify default is in the mailer, not a leftover tours address',
+    /max@corridor\.video/.test(mailSrc) && !/hello@corridor\.tours/.test(mailSrc));
+
+  const note = orderNotification({ address: '1 Woodward Ave Detroit', name: 'QA', photos: [] });
+  check('operator subject is New order — address', note.subject === 'New order — 1 Woodward Ave Detroit');
 
   const confirm = orderConfirmation({ address: '1 Test St', photos: [] });
   check('broker confirmation has no sign-in / magic link',
     !/sign-in|sign in|magic|verify\?token|View your tours/i.test(`${confirm.subject}\n${confirm.html}`));
   check('broker confirmation promises 48 hours', /48 hours/i.test(confirm.html));
-  check('notify default is in the mailer, not a leftover tours address',
-    /max@corridor\.video/.test(mailSrc) && !/hello@corridor\.tours/.test(mailSrc));
+
+  const skipped = await sendMail({ to: notifyAddress(), subject: 's', html: 'h' });
+  check('sendMail skips when Resend is unconfigured',
+    skipped.ok === false && skipped.skipped === true && skipped.error === 'RESEND_API_KEY is not set');
+  check('mailStatus explains the skip without leaking a key value',
+    mailStatus().configured === false
+      && mailStatus().notify === 'max@corridor.video'
+      && mailStatus().reason === 'RESEND_API_KEY is not set'
+      && mailStatus().from == null);
+  check('publicMailStatus does not include MAIL_FROM',
+    publicMailStatus().fromSet === false && !('from' in publicMailStatus()));
+
+  process.env.RESEND_API_KEY = 're_test_not_a_real_key';
+  delete process.env.MAIL_FROM;
+  const skippedFrom = await sendMail({ to: 'max@corridor.video', subject: 's', html: 'h' });
+  check('sendMail skips when MAIL_FROM is unset',
+    skippedFrom.skipped === true && skippedFrom.error === 'MAIL_FROM is not set');
+
+  process.env.MAIL_FROM = 'Corridor <hello@corridor.video>';
+  delete process.env.NOTIFY_EMAIL;
+  const origFetch = globalThis.fetch;
+  let captured = null;
+  globalThis.fetch = async (url, opts) => {
+    captured = { url, body: JSON.parse(opts.body), auth: opts.headers?.Authorization };
+    return { ok: true, json: async () => ({ id: 'mock_mail_1' }) };
+  };
+  const sent = await sendMail({
+    to: notifyAddress(),
+    subject: note.subject,
+    html: note.html,
+    replyTo: 'broker@test.example',
+  });
+  globalThis.fetch = origFetch;
+  check('configured sendMail posts to Resend',
+    sent.ok === true && sent.id === 'mock_mail_1' && captured?.url === 'https://api.resend.com/emails');
+  check('configured send targets max@corridor.video',
+    Array.isArray(captured?.body?.to) && captured.body.to.includes('max@corridor.video'));
+  check('configured send reply-to is the broker', captured?.body?.reply_to === 'broker@test.example');
+  check('configured send uses MAIL_FROM', captured?.body?.from === 'Corridor <hello@corridor.video>');
+
+  if (prevNotify !== undefined) process.env.NOTIFY_EMAIL = prevNotify;
+  else delete process.env.NOTIFY_EMAIL;
+  if (prevKey !== undefined) process.env.RESEND_API_KEY = prevKey;
+  else delete process.env.RESEND_API_KEY;
+  if (prevFrom !== undefined) process.env.MAIL_FROM = prevFrom;
+  else delete process.env.MAIL_FROM;
 }
 
 // --- property intake --------------------------------------------------------
@@ -745,10 +829,16 @@ main().catch(async (err) => {
   check('an email address is required', /valid email address is required/.test(intake));
 
   // Never throws: the caller decides what a failed send means.
+  const prevKey = process.env.RESEND_API_KEY;
+  const prevFrom = process.env.MAIL_FROM;
+  delete process.env.RESEND_API_KEY;
+  delete process.env.MAIL_FROM;
   const sent = await sendMail({ to: 'x@example.com', subject: 's', html: 'h' });
   check('sendMail reports failure instead of throwing', sent.ok === false && typeof sent.error === 'string');
   check('mailStatus explains why it is off when unconfigured',
-    mailStatus().configured === true || typeof mailStatus().reason === 'string');
+    mailStatus().configured === false && typeof mailStatus().reason === 'string');
+  if (prevKey !== undefined) process.env.RESEND_API_KEY = prevKey;
+  if (prevFrom !== undefined) process.env.MAIL_FROM = prevFrom;
 
   /* Marking delivered must follow the email actually being accepted. A request
      shown as delivered when nothing left the building leaves a customer waiting

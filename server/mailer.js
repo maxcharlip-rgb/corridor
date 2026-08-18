@@ -16,24 +16,42 @@ import { config } from './config.js';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
-export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY && mailFrom());
+/** Trim so a dashboard value of " " does not count as configured. */
+const env = (name) => String(process.env[name] ?? '').trim();
+
+export const mailConfigured = () => Boolean(env('RESEND_API_KEY') && mailFrom());
 
 /** Where new-order notifications land. NOTIFY_EMAIL wins; otherwise Max. */
 const DEFAULT_NOTIFY = 'max@corridor.video';
-export const notifyAddress = () => process.env.NOTIFY_EMAIL || DEFAULT_NOTIFY;
+export const notifyAddress = () => env('NOTIFY_EMAIL') || DEFAULT_NOTIFY;
 
-export const mailFrom = () => process.env.MAIL_FROM || null;
+export const mailFrom = () => env('MAIL_FROM') || null;
 
+export function mailUnconfiguredReason() {
+  if (mailConfigured()) return null;
+  return env('RESEND_API_KEY') ? 'MAIL_FROM is not set' : 'RESEND_API_KEY is not set';
+}
+
+/**
+ * Operator-facing status. `from` is the verified sender address, not a secret.
+ * Never include RESEND_API_KEY here.
+ */
 export function mailStatus() {
   return {
     configured: mailConfigured(),
     from: mailFrom(),
     notify: notifyAddress(),
-    reason: mailConfigured()
-      ? null
-      : !process.env.RESEND_API_KEY
-        ? 'RESEND_API_KEY is not set'
-        : 'MAIL_FROM is not set',
+    reason: mailUnconfiguredReason(),
+  };
+}
+
+/** Public /healthz shape: enough to see mail is off, nothing credential-shaped. */
+export function publicMailStatus() {
+  return {
+    configured: mailConfigured(),
+    notify: notifyAddress(),
+    fromSet: Boolean(mailFrom()),
+    reason: mailUnconfiguredReason(),
   };
 }
 
@@ -46,7 +64,9 @@ const esc = (s) =>
  */
 export async function sendMail({ to, subject, html, replyTo, attachments }) {
   if (!mailConfigured()) {
-    return { ok: false, skipped: true, error: mailStatus().reason };
+    const error = mailUnconfiguredReason();
+    console.warn(`[mail] skipped: ${error}`);
+    return { ok: false, skipped: true, error };
   }
   if (!to) return { ok: false, error: 'no recipient' };
 
@@ -55,7 +75,7 @@ export async function sendMail({ to, subject, html, replyTo, attachments }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${env('RESEND_API_KEY')}`,
       },
       body: JSON.stringify({
         from: mailFrom(),
@@ -74,6 +94,8 @@ export async function sendMail({ to, subject, html, replyTo, attachments }) {
       console.error('[mail] send failed:', detail);
       return { ok: false, error: detail };
     }
+    const recipient = Array.isArray(to) ? to.join(', ') : to;
+    console.log(`[mail] sent ${data.id} to ${recipient}`);
     return { ok: true, id: data.id };
   } catch (err) {
     console.error('[mail] send failed:', err.message);
