@@ -747,8 +747,12 @@ main().catch(async (err) => {
   const fsx = await import('node:fs');
   const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   const heroPath = new URL('../public/hero-detroit.png', import.meta.url);
+  const basePath = new URL('../public/hero-detroit-base.png', import.meta.url);
+  const cloudA = new URL('../public/hero-clouds-a.png', import.meta.url);
+  const cloudB = new URL('../public/hero-clouds-b.png', import.meta.url);
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
-  check('homepage uses the illustrated Detroit riverfront, not a photo', /hero-detroit\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
+  check('painted clouds were cut from the illustration', fsx.existsSync(basePath) && fsx.existsSync(cloudA) && fsx.existsSync(cloudB) && fsx.statSync(cloudA).size > 1_000_000);
+  check('homepage uses the illustrated Detroit riverfront, not a photo', /hero-detroit-base\.png/.test(landing) && /hero-clouds-a\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero keeps open left sky and water in the lower third', /background-position:\s*46%\s*22%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
@@ -765,9 +769,9 @@ main().catch(async (err) => {
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
-  check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /class="cloud-row/.test(landing) && /class="puff/.test(landing) && /@keyframes cloud-flow/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
-  check('river waves move in the water only', /class="river"/.test(landing) && /class="wave-row/.test(landing) && /@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
-  check('hero motion respects reduced-motion', /prefers-reduced-motion:\s*reduce/.test(landing) && /\.cloud-row,\s*\.wave-row/.test(landing));
+  check('painted clouds drift in the sky only', /class="sky-drift"/.test(landing) && /class="painted painted-a"/.test(landing) && /@keyframes painted-drift-a/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
+  check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
+  check('hero motion respects reduced-motion', /prefers-reduced-motion:\s*reduce/.test(landing) && /\.painted\s*\{[^}]*animation:\s*none/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
   check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Who owns the tour/.test(landing) && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
   check('three beats are the tour, the work, and the share', /The tour/.test(landing) && /The work/.test(landing) && /The share/.test(landing) && !/The leads/.test(landing) && !/who watched what/i.test(landing));
