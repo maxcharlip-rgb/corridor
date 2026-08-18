@@ -46,49 +46,63 @@
     background-repeat: no-repeat;
     image-rendering: auto;
   }
-  /* Soft drift over the open sky only. The riverfront stays still. */
+  /* Living sky: distinct cloud shapes, sky only. Type sits above. */
   .sky-drift {
     position: absolute; top: 0; left: 0; right: 0;
-    height: 54%;
+    height: 44%;
     overflow: hidden; pointer-events: none; z-index: 1;
-    -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
-    mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 64%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 64%, transparent 100%);
   }
-  .cloud {
-    position: absolute;
-    border-radius: 60% 40% 55% 45%;
-    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.5), rgba(255,255,255,.14) 55%, transparent 74%);
-    filter: blur(16px);
+  .cloud-row {
+    position: absolute; top: 0; left: 0;
+    width: 200%; height: 100%;
+    display: flex;
     will-change: transform;
   }
-  .cloud-a { top: 4%; left: 0%; width: 44%; height: 48%; animation: drift-a 36s linear infinite alternate; }
-  .cloud-b { top: 12%; left: 28%; width: 50%; height: 42%; animation: drift-b 42s linear infinite alternate; }
-  .cloud-c { top: 1%; left: 56%; width: 38%; height: 34%; animation: drift-a 28s linear infinite alternate-reverse; }
-  @keyframes drift-a {
-    from { transform: translate3d(-6%, 0, 0); }
-    to { transform: translate3d(12%, 3%, 0); }
+  .cloud-row-a { animation: cloud-flow 36s linear infinite; }
+  .cloud-row-b { animation: cloud-flow 28s linear infinite reverse; top: 6%; }
+  .cloud-row-c { animation: cloud-flow 40s linear infinite; top: 2%; }
+  .cloud-set { position: relative; width: 50%; height: 100%; flex: none; }
+  .puff {
+    position: absolute;
+    overflow: visible;
+    filter: drop-shadow(0 2px 10px rgba(255,255,255,.28));
   }
-  @keyframes drift-b {
-    from { transform: translate3d(8%, 2%, 0); }
-    to { transform: translate3d(-10%, 0, 0); }
+  .puff g { fill: #fff; }
+  .puff-lg { width: min(280px, 28vw); height: auto; opacity: .7; }
+  .puff-md { width: min(210px, 22vw); height: auto; opacity: .62; }
+  .puff-sm { width: min(150px, 16vw); height: auto; opacity: .55; }
+  @keyframes cloud-flow {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
   }
-  .water-shimmer {
+  /* Living river: layered wave bands, water only. */
+  .river {
     position: absolute; left: 0; right: 0; bottom: 0;
-    height: 44%;
-    pointer-events: none; z-index: 1;
-    background: linear-gradient(108deg, transparent 18%, rgba(255,255,255,.055) 46%, transparent 62%, rgba(255,255,255,.03) 76%, transparent 90%);
-    background-size: 240% 100%;
-    animation: water-shimmer 34s ease-in-out infinite alternate;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 86%, transparent 100%);
-    mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 86%, transparent 100%);
-    mix-blend-mode: soft-light;
+    height: 46%;
+    overflow: hidden; pointer-events: none; z-index: 1;
+    mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 86%, transparent 100%);
   }
-  @keyframes water-shimmer {
-    from { background-position: 10% 0; }
-    to { background-position: 86% 0; }
+  .wave-row {
+    position: absolute; left: 0;
+    width: 200%;
+    display: flex;
+    will-change: transform;
+  }
+  .wave-row svg { width: 50%; height: 100%; flex: none; display: block; }
+  .wave-row-a { top: 8%; height: 34%; opacity: .42; animation: river-flow 32s linear infinite; }
+  .wave-row-b { top: 28%; height: 38%; opacity: .5; animation: river-flow 24s linear infinite reverse; }
+  .wave-row-c { top: 52%; height: 42%; opacity: .56; animation: river-flow 20s linear infinite; }
+  .wave-row-d { top: 70%; height: 30%; opacity: .38; animation: river-flow 28s linear infinite reverse; }
+  @keyframes river-flow {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .cloud, .water-shimmer { animation: none; }
+    .cloud-row, .wave-row { animation: none; }
   }
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
@@ -224,6 +238,9 @@
       background-position: 34% 40%;
     }
     .sky-copy { width: min(20rem, 90%); padding: 4px 20px 0; }
+    .puff-lg { width: min(200px, 52vw); }
+    .puff-md { width: min(160px, 44vw); }
+    .puff-sm { width: min(120px, 36vw); }
     .beats, .prices { grid-template-columns: 1fr; }
   }
 </style>
@@ -232,11 +249,57 @@
   <section class="street" data-screen-label="Landing">
     <div class="street-art" role="img" aria-label="Detroit skyline from the Windsor riverfront. The Renaissance Center stands on the right."></div>
     <div class="sky-drift" aria-hidden="true">
-      <div class="cloud cloud-a"></div>
-      <div class="cloud cloud-b"></div>
-      <div class="cloud cloud-c"></div>
+      <div class="cloud-row cloud-row-a">
+        <div class="cloud-set">
+          <svg class="puff puff-lg" viewBox="0 0 260 100" style="left: 32%; top: 8%;"><g><ellipse cx="62" cy="64" rx="50" ry="28"/><ellipse cx="118" cy="46" rx="46" ry="34"/><ellipse cx="170" cy="58" rx="52" ry="30"/><ellipse cx="214" cy="68" rx="34" ry="22"/></g></svg>
+          <svg class="puff puff-md" viewBox="0 0 220 88" style="left: 68%; top: 22%;"><g><ellipse cx="52" cy="56" rx="42" ry="24"/><ellipse cx="100" cy="40" rx="40" ry="28"/><ellipse cx="148" cy="52" rx="44" ry="24"/></g></svg>
+        </div>
+        <div class="cloud-set">
+          <svg class="puff puff-lg" viewBox="0 0 260 100" style="left: 32%; top: 8%;"><g><ellipse cx="62" cy="64" rx="50" ry="28"/><ellipse cx="118" cy="46" rx="46" ry="34"/><ellipse cx="170" cy="58" rx="52" ry="30"/><ellipse cx="214" cy="68" rx="34" ry="22"/></g></svg>
+          <svg class="puff puff-md" viewBox="0 0 220 88" style="left: 68%; top: 22%;"><g><ellipse cx="52" cy="56" rx="42" ry="24"/><ellipse cx="100" cy="40" rx="40" ry="28"/><ellipse cx="148" cy="52" rx="44" ry="24"/></g></svg>
+        </div>
+      </div>
+      <div class="cloud-row cloud-row-b">
+        <div class="cloud-set">
+          <svg class="puff puff-md" viewBox="0 0 220 88" style="left: 12%; top: 4%;"><g><ellipse cx="52" cy="56" rx="42" ry="24"/><ellipse cx="100" cy="40" rx="40" ry="28"/><ellipse cx="148" cy="52" rx="44" ry="24"/></g></svg>
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 54%; top: 28%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 82%; top: 10%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+        </div>
+        <div class="cloud-set">
+          <svg class="puff puff-md" viewBox="0 0 220 88" style="left: 12%; top: 4%;"><g><ellipse cx="52" cy="56" rx="42" ry="24"/><ellipse cx="100" cy="40" rx="40" ry="28"/><ellipse cx="148" cy="52" rx="44" ry="24"/></g></svg>
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 54%; top: 28%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 82%; top: 10%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+        </div>
+      </div>
+      <div class="cloud-row cloud-row-c">
+        <div class="cloud-set">
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 40%; top: 2%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+          <svg class="puff puff-lg" viewBox="0 0 260 100" style="left: 74%; top: 16%;"><g><ellipse cx="62" cy="64" rx="50" ry="28"/><ellipse cx="118" cy="46" rx="46" ry="34"/><ellipse cx="170" cy="58" rx="52" ry="30"/><ellipse cx="214" cy="68" rx="34" ry="22"/></g></svg>
+        </div>
+        <div class="cloud-set">
+          <svg class="puff puff-sm" viewBox="0 0 180 72" style="left: 40%; top: 2%;"><g><ellipse cx="40" cy="46" rx="34" ry="18"/><ellipse cx="82" cy="34" rx="32" ry="22"/><ellipse cx="122" cy="44" rx="36" ry="18"/></g></svg>
+          <svg class="puff puff-lg" viewBox="0 0 260 100" style="left: 74%; top: 16%;"><g><ellipse cx="62" cy="64" rx="50" ry="28"/><ellipse cx="118" cy="46" rx="46" ry="34"/><ellipse cx="170" cy="58" rx="52" ry="30"/><ellipse cx="214" cy="68" rx="34" ry="22"/></g></svg>
+        </div>
+      </div>
     </div>
-    <div class="water-shimmer" aria-hidden="true"></div>
+    <div class="river" aria-hidden="true">
+      <div class="wave-row wave-row-a">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(255,255,255,.55)" d="M0 48C180 28 300 68 480 48S780 28 960 48 1260 68 1440 48V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.4" d="M0 36C180 16 300 56 480 36S780 16 960 36 1260 56 1440 36"/></svg>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(255,255,255,.55)" d="M0 48C180 28 300 68 480 48S780 28 960 48 1260 68 1440 48V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.4" d="M0 36C180 16 300 56 480 36S780 16 960 36 1260 56 1440 36"/></svg>
+      </div>
+      <div class="wave-row wave-row-b">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(230,244,255,.45)" d="M0 44C160 64 320 20 480 44S800 64 960 44 1280 20 1440 44V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.65)" stroke-width="1.2" d="M0 30C160 50 320 8 480 30S800 50 960 30 1280 8 1440 30"/></svg>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(230,244,255,.45)" d="M0 44C160 64 320 20 480 44S800 64 960 44 1280 20 1440 44V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.65)" stroke-width="1.2" d="M0 30C160 50 320 8 480 30S800 50 960 30 1280 8 1440 30"/></svg>
+      </div>
+      <div class="wave-row wave-row-c">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(255,255,255,.4)" d="M0 50C200 26 360 70 540 50S900 26 1080 50 1320 70 1440 50V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.5" d="M0 38C200 14 360 58 540 38S900 14 1080 38 1320 58 1440 38"/></svg>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="rgba(255,255,255,.4)" d="M0 50C200 26 360 70 540 50S900 26 1080 50 1320 70 1440 50V80H0Z"/><path fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.5" d="M0 38C200 14 360 58 540 38S900 14 1080 38 1320 58 1440 38"/></svg>
+      </div>
+      <div class="wave-row wave-row-d">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.1" d="M0 40C140 22 280 58 420 40S700 22 840 40 1120 58 1260 40 1380 22 1440 40"/></svg>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.1" d="M0 40C140 22 280 58 420 40S700 22 840 40 1120 58 1260 40 1380 22 1440 40"/></svg>
+      </div>
+    </div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
       <button type="button" class="wordmark" data-home="1">

@@ -765,7 +765,9 @@ main().catch(async (err) => {
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer credits the riverfront photograph', /Photo: Andrew Heneen \/ Wikimedia Commons, CC BY 4\.0/.test(landing));
   check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
-  check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /@keyframes drift-a/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
+  check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /class="cloud-row/.test(landing) && /class="puff/.test(landing) && /@keyframes cloud-flow/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
+  check('river waves move in the water only', /class="river"/.test(landing) && /class="wave-row/.test(landing) && /@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
+  check('hero motion respects reduced-motion', /prefers-reduced-motion:\s*reduce/.test(landing) && /\.cloud-row,\s*\.wave-row/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
   check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Who owns the tour/.test(landing) && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
   check('three beats are the tour, the work, and the share', /The tour/.test(landing) && /The work/.test(landing) && /The share/.test(landing) && !/The leads/.test(landing) && !/who watched what/i.test(landing));
