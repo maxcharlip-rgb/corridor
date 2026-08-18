@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — cinematic listing tours from the photos you already have</title>
-  <meta name="description" content="Corridor cuts cinematic listing tours from the photos you already have. Detroit based. We work with anyone around the world. Back in 48 hours." />
+  <title>Corridor — They walk the building on their phone. Then they book the showing.</title>
+  <meta name="description" content="They walk the building on their phone. Then they book the showing. Detroit based. We work with anyone around the world." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -84,7 +84,7 @@
   }
   .sky-copy p {
     font-size: 15px; line-height: 1.4; letter-spacing: -.01em;
-    margin: 0 0 14px; max-width: 28ch; color: #2B2B2B;
+    margin: 0 0 14px; max-width: 34ch; color: #2B2B2B;
     text-shadow: 0 1px 14px rgba(255,255,255,.42);
   }
   .sky-copy .pill { padding: 10px 18px; font-size: 14px; }
@@ -128,10 +128,17 @@
   .beats p { margin: 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
 
   .prices {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 24px 32px;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 220px));
+    gap: 24px 48px;
     border-top: 1px solid #D47A54; padding-top: 28px;
   }
+  .proof-head {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -.02em;
+    margin: 0 0 10px;
+  }
+  .proof-note { margin: 0; font-size: 15px; line-height: 1.5; color: #5F5C57; max-width: 42ch; }
+  .owe-line { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5F5C57; text-align: center; }
   .prices h3 {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(40px, 4.6vw, 56px); line-height: .9; letter-spacing: -.03em;
@@ -224,7 +231,7 @@
     </header>
     <div class="sky-copy">
       <h1>CRE marketing is boring. So we fixed it.</h1>
-      <p>Photos in. A cinematic listing tour back in 48 hours.</p>
+      <p>They walk the building on their phone. Then they book the showing.</p>
       <a class="pill" href="#product">What we do</a>
     </div>
   </section>
@@ -238,16 +245,16 @@
       </aside>
       <div class="beats">
         <article>
-          <h2>The tour</h2>
-          <p>A cinematic walkthrough, cut by hand from the photos you already have.</p>
+          <h2>The walk</h2>
+          <p>They see the space in 40 seconds, not 27 stills.</p>
         </article>
         <article>
-          <h2>The work</h2>
-          <p>Show clients the space. Win the listing. Land the lease.</p>
+          <h2>The showing</h2>
+          <p>The ones who stay in the rooms are the ones who book.</p>
         </article>
         <article>
-          <h2>The share</h2>
-          <p>A page and a QR for the flyer and the sign. Detroit based — we work with anyone around the world.</p>
+          <h2>The listing</h2>
+          <p>One link and a QR for the flyer and the sign.</p>
         </article>
       </div>
       <aside class="gutter gutter-end">
@@ -255,6 +262,13 @@
         <p class="aside-line">Detroit based.</p>
         <p class="aside-note">We work with anyone around the world.</p>
       </aside>
+    </div>
+  </section>
+
+  <section id="proof" class="band-paper" style="scroll-margin-top: 24px;">
+    <div class="inner" style="padding-top: 8px; padding-bottom: clamp(40px, 6vw, 64px);">
+      <h2 class="proof-head">This is what your listing looks like.</h2>
+      <p class="proof-note">A walk through the rooms. A page. A QR for the flyer and the sign.</p>
     </div>
   </section>
 
@@ -266,23 +280,14 @@
         <p class="aside-note">No deposit up front. The invoice follows the review.</p>
       </aside>
       <div>
-        <p style="font-family: var(--serif); font-size: clamp(22px, 2.6vw, 30px); margin: 0 0 22px;">Every price includes the page.</p>
         <div class="prices">
           <article>
             <h3>$200</h3>
-            <p>Photos you already have.</p>
-          </article>
-          <article>
-            <h3>$350</h3>
-            <p>Plus a two-minute phone walk.</p>
+            <p>One listing.</p>
           </article>
           <article>
             <h3>$750</h3>
-            <p>Five listings. $150 each.</p>
-          </article>
-          <article>
-            <h3>Custom</h3>
-            <p><a href="mailto:max@corridor.video?subject=Corridor%20for%20our%20brokerage" style="color: #1E5AA8; text-decoration: underline; text-underline-offset: 2px;">The brokerage</a>, priced once.</p>
+            <p>Five listings.</p>
           </article>
         </div>
         <p class="note">You see the cut before you owe.</p>
@@ -306,15 +311,11 @@
         <h2>Questions</h2>
         <details>
           <summary>What do I send?</summary>
-          <p>The listing photos you already have. Twelve to forty. Crooked phone shots are fine — we cut the best ten.</p>
+          <p>The listing photos you already have. We cut by hand from your photos. Twelve to forty. Crooked phone shots are fine — we cut the best ten.</p>
         </details>
         <details>
           <summary>How fast is it back?</summary>
           <p>48 hours. Two revision rounds are included. If we need a photo you didn’t send, we just ask.</p>
-        </details>
-        <details>
-          <summary>What’s the difference between $200 and $350?</summary>
-          <p>$200 is from the folder. $350 adds a two-minute phone walk of the space. Same tour, page, and QR either way.</p>
         </details>
         <details>
           <summary>When do I pay?</summary>
@@ -379,6 +380,7 @@
             <p class="err" data-err="form"></p>
             <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5F5C57; font-family: var(--sans); letter-spacing: 0; text-transform: none;">Upload trouble? Email the photos to <a href="mailto:max@corridor.video" style="color: #1E5AA8;">max@corridor.video</a>.</p>
             <button type="button" id="intake-submit" class="pill" style="width: 100%; padding: 17px; margin-top: 4px;">Send a listing</button>
+            <p class="owe-line">You see the cut before you owe anything.</p>
             <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: #C8C2B4; overflow: hidden;">
               <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #1E5AA8;"></div>
             </div>
@@ -451,7 +453,7 @@
 
   <footer class="band-sky">
     <div style="max-width: 1400px; margin: 0 auto; padding: 28px 24px 40px;">
-      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.VIDEO</p>
+      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
 
