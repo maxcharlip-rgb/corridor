@@ -823,24 +823,23 @@ main().catch(async (err) => {
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
-  const skyCopy = landing.slice(landing.indexOf('class="sky-copy"'), landing.indexOf('id="product"'));
-  check('hero copy is the punch line in the open left sky', /class="sky-copy"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /They walk the building on their phone\. Then they book the showing\./.test(landing) && !/id="boring-word"/.test(landing));
+  const skyCopy = landing.slice(landing.indexOf('class="sky-copy"'), landing.indexOf('id="pricing"'));
+  check('hero copy is the punch line in the open left sky', /class="sky-copy"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /They walk the building\. Then they book\./.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
-  check('title and meta match the new subhead, no cinematic', /They walk the building on their phone/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('title and meta match the shorter subhead, no cinematic', /They walk the building\. Then they book\./.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
+  check('nav is Pricing, FAQ, and a quieter Sign in', /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && !/href="#product"/.test(landing) && !/What we do/.test(landing) && !/data-open-auth="create"/.test(landing));
   check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
-  check('editorial asides sit in the side gutters', /class="gutter"/.test(landing) && /48 hours\./.test(landing) && /Invoice after you see the cut\./.test(landing) && /Detroit based\./.test(landing) && /From the photos you already have\./.test(landing));
-  check('Detroit based, work with anyone around the world', /Detroit based/.test(landing) && /we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing) && !/we.ll tell you if we can.t/.test(landing));
+  check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
+  check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Who owns the tour/.test(landing) && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
-  check('three beats are the walk, the showing, and the listing', /<h2>The walk<\/h2>/.test(landing) && /<h2>The showing<\/h2>/.test(landing) && /<h2>The listing<\/h2>/.test(landing) && !/<h2>The tour<\/h2>/.test(landing) && !/<h2>The work<\/h2>/.test(landing) && !/<h2>The share<\/h2>/.test(landing));
+  check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 3 && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
-  check('proof block sits above pricing with no demo link', /This is what your listing looks like/.test(landing) && landing.indexOf('id="proof"') < landing.indexOf('id="pricing"') && !/\/t\/demo/.test(landing) && !/the space is real/.test(landing));
-  check('pricing lists $200 and $750 only', /<h3>\$200<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing) && !/<h3>\$350<\/h3>/.test(landing) && !/<h3>Custom<\/h3>/.test(landing));
-  check('invoice-after-cut language is intact', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
+  check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
+  check('pricing lists $200, $350, and $750', /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing) && !/<h3>Custom<\/h3>/.test(landing));
+  check('invoice-after-cut language is one trust line, not a column', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
@@ -849,7 +848,7 @@ main().catch(async (err) => {
     /xhr\.open\('POST'/.test(sendIntake) && !/openAuth\(/.test(sendIntake) && !/\/api\/auth\/link/.test(sendIntake));
   check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
-  check('hero CTA is What we do, inquire stays on the form', /href="#product"/.test(landing) && /What we do/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
+  check('hero CTA is Send a listing, the only inquire action', /href="#intake"/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
 }
 
