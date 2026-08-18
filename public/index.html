@@ -494,7 +494,7 @@
       link:   '/api/auth/link',
       verify: '/api/auth/verify',
       intake: INTAKE_ENDPOINT,
-      studio: '/studio'
+      desk:   '/listings'
     },
     price: {
       baseCents:      20000,
@@ -756,7 +756,7 @@
     submit.disabled = false; submit.textContent = 'Email me a link';
   }
   function openAuth(mode) {
-    if (account) { location.href = CONFIG.endpoints.studio; return; }
+    if (account) { location.href = CONFIG.endpoints.desk; return; }
     closeAuth();
     setAuthMode(mode);
     modal.style.display = 'block';
