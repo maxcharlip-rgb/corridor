@@ -940,6 +940,15 @@ main().catch(async (err) => {
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
   check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.png/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
+  const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
+  const phoneAvif = new URL('../public/hero-detroit-phone.avif', import.meta.url);
+  check('phone hero is a compressed recut of the same painting',
+    fsx.existsSync(phoneWebp) && fsx.statSync(phoneWebp).size < 200_000
+      && fsx.existsSync(phoneAvif) && fsx.statSync(phoneAvif).size < 120_000
+      && /hero-detroit-phone\.webp/.test(landing) && /hero-detroit-phone\.avif/.test(landing));
+  check('headline fonts are local and optional, so they do not swap late',
+    /font-display:\s*optional/.test(landing) && /\/fonts\/instrument-serif\.woff2/.test(landing) && !/fonts\.googleapis\.com/.test(landing));
+  check('phone hero is not a forced 100vh river', /min-height:\s*68svh/.test(landing) && /max-width:\s*11\.2em/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero is full-bleed and pinned to the river', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*100%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));

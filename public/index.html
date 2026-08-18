@@ -6,10 +6,40 @@
   <title>Corridor — They walk the building. Then they book.</title>
   <meta name="description" content="They walk the building. Then they book. Detroit founded. We cut a listing anywhere." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/hero-detroit-phone.webp" as="image" type="image/webp" media="(max-width: 720px)" />
+  <link rel="preload" href="/hero-detroit.png" as="image" media="(min-width: 721px)" />
 <style>
+  @font-face {
+    font-family: "Instrument Serif";
+    src: url("/fonts/instrument-serif.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: optional;
+  }
+  @font-face {
+    font-family: "Instrument Fallback";
+    src: local("Georgia");
+    size-adjust: 86%;
+    ascent-override: 92%;
+    descent-override: 22%;
+    line-gap-override: 0%;
+  }
+  @font-face {
+    font-family: "Archivo";
+    src: url("/fonts/archivo.woff2") format("woff2");
+    font-weight: 400 600;
+    font-style: normal;
+    font-display: optional;
+  }
+  @font-face {
+    font-family: "IBM Plex Mono";
+    src: url("/fonts/ibm-plex-mono.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: optional;
+  }
   :root {
     --paper: #F7F4ED;
     --sky: #B8D7EB;
@@ -18,7 +48,7 @@
     --stone: #C8C2B4;
     --ink: #2B2B2B;
     --muted: #5F5C57;
-    --serif: "Instrument Serif", Georgia, serif;
+    --serif: "Instrument Serif", "Instrument Fallback", Georgia, serif;
     --sans: "Archivo", system-ui, "Helvetica Neue", Arial, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
@@ -170,6 +200,40 @@
     header a, header button { min-height: 44px; }
     .sky-copy { width: min(22rem, 90%); padding: 4px 20px 0; }
     .prices { grid-template-columns: 1fr; }
+  }
+
+  /* Phone: shorter hero, recut painting, type in the sky, no FOUT wrap. */
+  @media (max-width: 720px) {
+    .street {
+      min-height: 0;
+      min-height: 68svh;
+    }
+    .street-art {
+      background-image: image-set(
+        url("/hero-detroit-phone.avif") type("image/avif"),
+        url("/hero-detroit-phone.webp") type("image/webp")
+      );
+      background-position: 48% 30%;
+      background-size: cover;
+    }
+    .sky-copy {
+      width: auto;
+      max-width: none;
+      padding: 8px 20px 40px;
+      background: linear-gradient(180deg, rgba(184,215,235,.92) 0%, rgba(247,244,237,.94) 82%, rgba(247,244,237,.2) 100%);
+    }
+    .sky-copy h1 {
+      max-width: 11.2em;
+      font-size: 30px;
+      min-height: 2.3em;
+    }
+    .sky-copy p {
+      max-width: 36ch;
+    }
+    .sky-copy .geo {
+      max-width: 36ch;
+      color: #2B2B2B;
+    }
   }
 </style>
 </head>
