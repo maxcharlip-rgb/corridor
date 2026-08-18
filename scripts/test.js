@@ -901,8 +901,6 @@ main().catch(async (err) => {
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('hero CTA is What we do, inquire stays on the form', /href="#product"/.test(landing) && /What we do/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
-  check('signed-in homepage entry points at the desk, not studio',
-    /desk:\s*'\/listings'/.test(landing) && !/studio:\s*'\/studio'/.test(landing));
 }
 
 // --- broker desk is not studio ----------------------------------------------
@@ -920,8 +918,16 @@ main().catch(async (err) => {
       && /no password/.test(desk) && !/type="password"/.test(desk));
   check('desk is not the operator studio',
     !/\/studio/.test(desk) && !/generate/i.test(desk) && !/higgsfield/i.test(desk));
-  check('desk does not ship $260, first-one-free, or /t/demo',
-    !/\$260/.test(desk) && !/first-one-free|first one free/i.test(desk) && !/\/t\/demo/.test(desk));
+  check('desk does not ship $260, $350, Custom, first-one-free, or /t/demo',
+    !/\$260/.test(desk) && !/\$350/.test(desk) && !/\bCustom\b/.test(desk)
+      && !/first-one-free|first one free/i.test(desk) && !/\/t\/demo/.test(desk));
+  check('desk email is max@corridor.video if shown',
+    /max@corridor\.video/.test(desk) && !/hello@corridor\.tours/.test(desk) && !/@corridor\.tours/.test(desk));
+  check('desk is light homepage type and color',
+    /#F7F4ED/.test(desk) && /#1E5AA8/.test(desk) && /#2B2B2B/.test(desk)
+      && /Instrument Serif/.test(desk) && /Archivo/.test(desk) && !/#101E33/.test(desk));
+  check('landing file is unchanged by the desk',
+    !/desk:\s*'\/listings'/.test(fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')));
   check('verify redirect target is the desk', /res\.redirect\(302, '\/listings'\)/.test(authSrc));
   check('desk list is scoped to req.account.id',
     /r\.accountId === req\.account\.id/.test(authSrc) && !/\/api\/requests/.test(authSrc));
