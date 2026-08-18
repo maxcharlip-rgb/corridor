@@ -746,15 +746,15 @@ main().catch(async (err) => {
 {
   const fsx = await import('node:fs');
   const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  const heroPath = new URL('../public/hero-detroit.png', import.meta.url);
-  check('hero illustration is a real image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 3_100_000);
-  check('homepage uses the full-resolution Detroit PNG', /hero-detroit\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing));
-  check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && /background-size:\s*175%\s*auto/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
-  check('hero crops the lower-left billboard via position and size, not a painted patch', /background-position:\s*100%\s*42%/.test(landing) && /background-size:\s*175%\s*auto/.test(landing) && !/street-patch/.test(landing));
-  check('first viewport is the full-bleed street, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
-  check('painting is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('type sits in the open sky, not over the brick loft', /class="sky-copy"/.test(landing) && /width:\s*min\(22rem,\s*40%\)/.test(landing));
-  check('pricing and intake live on sampled color bands after the street', /band-sky/.test(landing) && /band-paper/.test(landing));
+  const heroPath = new URL('../public/hero-detroit.jpg', import.meta.url);
+  check('hero photograph is a real full-quality image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 12_000_000);
+  check('homepage uses the Detroit riverfront photograph', /hero-detroit\.jpg/.test(landing) && !/background-image:\s*url\("\/hero-detroit\.png"\)/.test(landing));
+  check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
+  check('hero keeps the skyline low with open sky for type', /background-position:\s*38%\s*28%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
+  check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
+  check('photograph is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
+  check('type sits in the open sky, not over the skyline', /class="sky-copy"/.test(landing) && /width:\s*min\(22rem,\s*40%\)/.test(landing));
+  check('pricing and intake live on sampled color bands after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the painting', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
   check('homepage stays on the light sampled palette', /background:\s*#F7FAFD/.test(landing) && /background:\s*#D6E6F5/.test(landing));
@@ -762,7 +762,8 @@ main().catch(async (err) => {
   check('moodboard palette is on the homepage', /#D6E6F5/.test(landing) && /#C45A3A/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   check('hero type is quiet, not a poster headline', /class="sky-copy"/.test(landing) && /Cinematic listing tours/.test(landing) && !/<h1>/.test(landing) && !/id="boring-word"/.test(landing) && !/CRE marketing is boring/.test(landing));
-  check('hero is a still street, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing));
+  check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
+  check('footer credits the riverfront photograph', /Photo: Andrew Heneen \/ Wikimedia Commons, CC BY 4\.0/.test(landing));
   check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
   check('clouds drift in the sky only', /class="sky-drift"/.test(landing) && /@keyframes drift-a/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));

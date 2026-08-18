@@ -39,35 +39,31 @@
   }
   .street-art {
     position: absolute; inset: 0;
-    background-color: #D6E6F5;
-    background-image: url("/hero-detroit.png");
-    background-size: 175% auto;
-    background-position: 100% 42%;
+    background-color: #2A5F9A;
+    background-image: url("/hero-detroit.jpg");
+    background-size: cover;
+    background-position: 38% 28%;
     background-repeat: no-repeat;
     image-rendering: auto;
   }
-  /* Sky only. The loft stays still. */
+  /* Soft drift over the open sky only. The riverfront stays still. */
   .sky-drift {
-    position: absolute; top: 0; left: 0;
-    width: min(56%, 740px); height: 50%;
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 54%;
     overflow: hidden; pointer-events: none; z-index: 1;
-    -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent 100%),
-                        linear-gradient(180deg, #000 68%, transparent 100%);
-    -webkit-mask-composite: source-in;
-    mask-image: linear-gradient(90deg, #000 58%, transparent 100%),
-                linear-gradient(180deg, #000 68%, transparent 100%);
-    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
   }
   .cloud {
     position: absolute;
     border-radius: 60% 40% 55% 45%;
-    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.46), rgba(214,230,245,.1) 58%, transparent 74%);
-    filter: blur(14px);
+    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.34), rgba(255,255,255,.08) 58%, transparent 74%);
+    filter: blur(18px);
     will-change: transform;
   }
-  .cloud-a { top: 6%; left: 2%; width: 46%; height: 42%; animation: drift-a 36s linear infinite alternate; }
-  .cloud-b { top: 16%; left: 26%; width: 50%; height: 36%; animation: drift-b 42s linear infinite alternate; }
-  .cloud-c { top: 2%; left: 14%; width: 34%; height: 28%; animation: drift-a 28s linear infinite alternate-reverse; }
+  .cloud-a { top: 4%; left: 0%; width: 42%; height: 46%; animation: drift-a 36s linear infinite alternate; }
+  .cloud-b { top: 12%; left: 28%; width: 48%; height: 40%; animation: drift-b 42s linear infinite alternate; }
+  .cloud-c { top: 1%; left: 58%; width: 36%; height: 32%; animation: drift-a 28s linear infinite alternate-reverse; }
   @keyframes drift-a {
     from { transform: translate3d(-6%, 0, 0); }
     to { transform: translate3d(12%, 3%, 0); }
@@ -76,8 +72,23 @@
     from { transform: translate3d(8%, 2%, 0); }
     to { transform: translate3d(-10%, 0, 0); }
   }
+  .water-shimmer {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 44%;
+    pointer-events: none; z-index: 1;
+    background: linear-gradient(108deg, transparent 18%, rgba(255,255,255,.055) 46%, transparent 62%, rgba(255,255,255,.03) 76%, transparent 90%);
+    background-size: 240% 100%;
+    animation: water-shimmer 34s ease-in-out infinite alternate;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 86%, transparent 100%);
+    mix-blend-mode: soft-light;
+  }
+  @keyframes water-shimmer {
+    from { background-position: 10% 0; }
+    to { background-position: 86% 0; }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .cloud { animation: none; }
+    .cloud, .water-shimmer { animation: none; }
   }
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
@@ -95,10 +106,12 @@
     display: flex; align-items: center; gap: 9px;
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
   }
-  .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; }
+  .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; text-shadow: 0 1px 12px rgba(255,255,255,.4); }
+  .sky-bar .wordmark svg { filter: drop-shadow(0 1px 8px rgba(255,255,255,.35)); }
   .sky-bar .nav-wide, .sky-bar .sign-in {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
+    text-shadow: 0 1px 12px rgba(255,255,255,.4);
   }
   .sky-copy {
     position: relative; z-index: 3;
@@ -108,6 +121,7 @@
   .sky-copy p {
     font-size: 15px; line-height: 1.4; letter-spacing: -.01em;
     margin: 0 0 14px; max-width: 28ch; color: #2B2B2B;
+    text-shadow: 0 1px 14px rgba(255,255,255,.42);
   }
   .sky-copy .pill { padding: 10px 18px; font-size: 14px; }
   .pill {
@@ -198,8 +212,8 @@
 
   @media (max-width: 1200px) {
     .street-art {
-      background-size: 165% auto;
-      background-position: 100% 44%;
+      background-size: cover;
+      background-position: 36% 30%;
     }
   }
   @media (max-width: 860px) {
@@ -207,7 +221,7 @@
     header a, header button { min-height: 44px; }
     .street-art {
       background-size: cover;
-      background-position: 90% 28%;
+      background-position: 34% 40%;
     }
     .sky-copy { width: min(20rem, 90%); padding: 4px 20px 0; }
     .beats, .prices { grid-template-columns: 1fr; }
@@ -216,12 +230,13 @@
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <div class="street-art" role="img" aria-label="Painted Detroit street. A five-story brick loft for lease stands on the right."></div>
+    <div class="street-art" role="img" aria-label="Detroit skyline from the Windsor riverfront. The Renaissance Center stands on the right."></div>
     <div class="sky-drift" aria-hidden="true">
       <div class="cloud cloud-a"></div>
       <div class="cloud cloud-b"></div>
       <div class="cloud cloud-c"></div>
     </div>
+    <div class="water-shimmer" aria-hidden="true"></div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
       <button type="button" class="wordmark" data-home="1">
@@ -424,6 +439,7 @@
   <footer class="band-sky">
     <div style="max-width: 1040px; margin: 0 auto; padding: 28px 24px 40px;">
       <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">STARTED BY ONE CRE INTERN. THE JOB IS BETTER CRE MARKETING · MAX@CORRIDOR.VIDEO</p>
+      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .04em; margin: 10px 0 0; color: #5F5C57;">Photo: Andrew Heneen / Wikimedia Commons, CC BY 4.0.</p>
     </div>
   </footer>
 
