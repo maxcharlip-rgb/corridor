@@ -829,7 +829,12 @@ main().catch(async (err) => {
   check('title and meta match the shorter subhead, no cinematic', /They walk the building\. Then they book\./.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav is Pricing, FAQ, and a quieter Sign in', /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && !/href="#product"/.test(landing) && !/What we do/.test(landing) && !/data-open-auth="create"/.test(landing));
+  check('nav is Pricing and FAQ — guest home is inquire only',
+    /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
+      && !/href="#product"/.test(landing) && !/What we do/.test(landing)
+      && !/data-open-auth/.test(landing) && !/Create account/.test(landing) && !/>Sign in</.test(landing));
+  check('landing has no email-me-a-link auth path',
+    !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
   check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
