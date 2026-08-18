@@ -4,9 +4,9 @@ import express from 'express';
 import multer from 'multer';
 import { config } from '../config.js';
 import { getDb, saveNow, id, now } from '../store.js';
-import { accountByEmail, createAccount, issueLoginToken } from '../auth.js';
+import { accountByEmail, createAccount } from '../auth.js';
 import {
-  sendMail, orderNotification, orderConfirmation, mailConfigured,
+  sendMail, orderNotification, orderConfirmation, mailConfigured, notifyAddress,
 } from '../mailer.js';
 import { rateLimit } from '../limits.js';
 
@@ -32,10 +32,8 @@ const MAX_ATTACHMENTS = 12;
 const MAX_BRANDING = 4;
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 500 * 1024 * 1024;
-const NOTIFY = 'hello@corridor.tours';
-
 /* Priced here as well as on the page. The page is a convenience; this is the
-   rule. Keep in step with CONFIG.price in corridor-web-v5/public/index.html. */
+   rule. Public cards stay $200 / $750; these are the single-listing extras. */
 const BASE_CENTS = 20000;      // photos-only listing
 const PHONE_WALK_CENTS = 15000; // two-minute phone walk → $350
 const EXTENDED_CENTS = 6000;   // large or multi-building
@@ -145,8 +143,9 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
   const address = clean(body.address);
   if (!address) return fail(400, 'The property address is required.');
 
+  /* Optional extras live in the homepage expander. The public form only asks
+     for name, email, address and photos — do not 400 when the rest is blank. */
   const size = clean(body.size, 80);
-  if (!size) return fail(400, 'The square footage is required.');
 
   /* Re-checked here even though the page checks it. The page is a convenience;
      this is the rule. */
@@ -284,19 +283,13 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
       photoUrls: request.photos.map((p) => `${config.publicUrl}/uploads/${p.file}`),
       attachedCount: attached.length,
     });
+    const operator = notifyAddress();
     const toOperator = await sendMail({
-      to: NOTIFY, subject: note.subject, html: note.html, replyTo: email, attachments: attached,
+      to: operator, subject: note.subject, html: note.html, replyTo: email, attachments: attached,
     });
 
-    /* The confirmation carries a sign-in link, so the first order is also how
-       the account becomes reachable. Nobody was asked to register. */
-    let magicUrl = null;
-    try {
-      magicUrl = `${config.publicUrl}/api/auth/verify?token=${encodeURIComponent(issueLoginToken(account.id))}`;
-    } catch (err) {
-      console.error(`[intake] could not mint a sign-in link for ${email}: ${err.message}`);
-    }
-    const confirm = orderConfirmation(request, magicUrl);
+    /* Confirmation is optional and never a gate. The order is already saved. */
+    const confirm = orderConfirmation(request);
     const toBroker = await sendMail({ to: email, subject: confirm.subject, html: confirm.html });
 
     const stored = (getDb().requests || []).find((r) => r.id === request.id);
@@ -306,7 +299,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     }
     if (!toOperator.ok) {
       console.error(
-        `[intake] order ${order.id} SAVED but ${NOTIFY} was not emailed: ${toOperator.error}. ` +
+        `[intake] order ${order.id} SAVED but ${operator} was not emailed: ${toOperator.error}. ` +
         (mailConfigured() ? 'Check the mail provider.' : 'Set RESEND_API_KEY and MAIL_FROM.')
       );
     }

@@ -18,9 +18,9 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY && mailFrom());
 
-/** Where notifications land. Falls back to the from-address so a half-configured
- *  install still reaches somebody rather than silently reaching nobody. */
-export const notifyAddress = () => process.env.NOTIFY_EMAIL || process.env.MAIL_FROM || null;
+/** Where new-order notifications land. NOTIFY_EMAIL wins; otherwise Max. */
+const DEFAULT_NOTIFY = 'max@corridor.video';
+export const notifyAddress = () => process.env.NOTIFY_EMAIL || DEFAULT_NOTIFY;
 
 export const mailFrom = () => process.env.MAIL_FROM || null;
 
@@ -155,27 +155,16 @@ export function signInLink(account, url, minutes) {
 
 const priceLine = (cents) => `$${(cents / 100).toLocaleString('en-US')}`;
 
-/** What the broker gets back the moment an order lands. */
-export function orderConfirmation(request, magicUrl) {
-  const o = request.order || {};
-  const extras = [o.phoneWalk ? 'Phone walk ($350)' : null, o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
-
+/** What the broker gets back the moment an order lands. Notification only —
+ *  never a sign-in gate. A listing is done when the form returns 201. */
+export function orderConfirmation(request) {
   return {
     subject: `We've got it — ${request.address || 'your listing'}`,
     html: SHELL(`
       <h2 style="margin:0 0 10px;font-size:20px">We've got it.</h2>
-      <p style="margin:0 0 18px">We're cutting the tour for <b>${esc(request.address)}</b> now.
+      <p style="margin:0 0 16px">We're cutting the tour for <b>${esc(request.address || 'your listing')}</b> now.
       It comes back to this address <b>within 48 hours</b>. If we need a photo you didn't send, we'll just ask.</p>
-      <table style="border-collapse:collapse;font-size:14px;margin:0 0 20px">
-        ${row('Property', request.address)}
-        ${row('Size', request.size)}
-        ${row('Type', request.propertyType)}
-        ${row('Photos', String((request.photos || []).length))}
-        ${extras.length ? row('Options', extras.join(' · ')) : ''}
-        ${row('Price', `${priceLine(o.amountCents || 0)} — invoiced after delivery`)}
-      </table>
-      ${magicUrl ? `<p style="margin:0 0 16px"><a href="${esc(magicUrl)}" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">View your tours</a></p>
-      <p style="margin:0;color:#6b7280;font-size:13px">That link signs you in — no password needed. It works once and expires in 30 minutes; ask for another any time from the site.</p>` : ''}
+      <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
     `),
   };
 }
