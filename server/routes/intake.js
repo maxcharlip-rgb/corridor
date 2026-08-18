@@ -4,7 +4,7 @@ import express from 'express';
 import multer from 'multer';
 import { config } from '../config.js';
 import { getDb, saveNow, id, now } from '../store.js';
-import { accountByEmail, createAccount } from '../auth.js';
+import { accountByEmail, createAccount, setSessionCookie } from '../auth.js';
 import {
   sendMail, orderNotification, orderConfirmation, mailConfigured, notifyAddress,
 } from '../mailer.js';
@@ -134,10 +134,15 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     return res.status(status).json({ success: false, error, rejected: req.rejectedFiles || [] });
   };
 
-  const name = clean(body.name, 120);
+  /* Signed-in desk: identity comes from the session. Guest form still sends
+     name and email. A signed-in broker cannot attach the upload to someone else
+     by editing hidden fields. */
+  const name = clean((req.account && req.account.name) || body.name, 120);
   if (!name) return fail(400, 'Tell us who to send it back to.');
 
-  const email = clean(body.email, 200).toLowerCase();
+  const email = req.account
+    ? req.account.email
+    : clean(body.email, 200).toLowerCase();
   if (!EMAIL_RE.test(email)) return fail(400, 'A valid email address is required — it is your account.');
 
   const address = clean(body.address);
@@ -169,8 +174,9 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
   const marketingOptIn = yes(body.marketing);
 
   /* The account, found or created. This is the whole of registration: a broker
-     never chose a password and never will. */
-  let account = accountByEmail(email);
+     never chose a password and never will. A session wins so the desk upload
+     stays on this account even if the form is missing an email. */
+  let account = req.account || accountByEmail(email);
   let created = false;
   if (!account) {
     try {
@@ -239,7 +245,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
       sessionId: null,
     },
     createdAt: now(),
-    source: 'landing',
+    source: req.account ? 'desk' : 'landing',
   };
 
   const db = getDb();
@@ -250,6 +256,10 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
   // Durable before we answer: this is somebody's job, not a cache entry.
   saveNow();
 
+  /* First order is how they get in. Same cookie as magic-link verify, so the
+     landing form can send them straight to their desk without an emailed link. */
+  setSessionCookie(res, account.id);
+
   res.status(201).json({
     success: true,
     error: null,
@@ -258,6 +268,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     photos: photos.length,
     rejected: request.rejected,
     order: { amountCents, extended, phoneWalk },
+    redirect: '/listings',
   });
 
   // After the response. The record is already safe; mail is a notification.

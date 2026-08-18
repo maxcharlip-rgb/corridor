@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your listings — Corridor</title>
+  <meta name="description" content="Upload a listing. See the ones we are working on." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Archivo:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F7F4ED;
+    --card: #fff;
+    --blue: #1E5AA8;
+    --ink: #2B2B2B;
+    --muted: #5F5C57;
+    --line: #C8C2B4;
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans: "Archivo", system-ui, "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  input, button { font-family: inherit; }
+  ::selection { background: #B8D7EB; }
+
+  header { position: sticky; top: 0; z-index: 20; background: rgba(247,244,237,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1080px; margin: 0 auto; padding: 16px 22px; display: flex; align-items: center; gap: 14px; }
+  .wordmark { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; }
+  .wordmark:hover { text-decoration: none; }
+  .wordmark span { font-family: var(--serif); font-size: 26px; color: var(--ink); }
+  .who { margin-left: auto; font-size: 13.5px; color: var(--muted); }
+  .who button { background: none; border: 0; padding: 0; color: var(--blue); cursor: pointer; font-size: inherit; }
+
+  .desk { max-width: 1080px; margin: 0 auto; padding: 28px 22px 80px; display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 28px 36px; align-items: start; }
+  @media (max-width: 760px) { .desk { grid-template-columns: 1fr; } }
+
+  .side h2, .main h1 { font-family: var(--serif); font-weight: 400; letter-spacing: -.02em; margin: 0 0 8px; }
+  .side h2 { font-size: 22px; }
+  .main h1 { font-size: clamp(32px, 5vw, 44px); line-height: 1.05; }
+  .lede { margin: 0 0 22px; font-size: 15px; line-height: 1.5; color: var(--muted); max-width: 42ch; }
+  .mono { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  .group { margin: 18px 0 8px; }
+  .item { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 0 0 8px; cursor: pointer; color: inherit; }
+  .item:hover, .item.on { border-color: var(--blue); }
+  .item b { display: block; font-weight: 500; font-size: 14.5px; margin: 0 0 3px; }
+  .item span { font-size: 13px; color: var(--muted); }
+  .empty-side { font-size: 14px; color: var(--muted); line-height: 1.5; padding: 8px 0; }
+  .new { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; color: var(--blue); cursor: pointer; font-size: 14px; margin: 4px 0 10px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: clamp(22px, 4vw, 32px); }
+  .field { display: grid; gap: 7px; margin: 0 0 14px; }
+  .field > span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .field input { width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); outline: none; }
+  .field input:focus { border-color: var(--blue); background: #fff; }
+  .drop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--line); border-radius: 14px; padding: 16px; background: var(--paper); cursor: pointer; }
+  .drop:hover, .drop.over { border-color: var(--blue); }
+  .drop i { color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px; font-style: normal; background: #fff; }
+  .drop em { font-style: normal; font-size: 14px; color: var(--muted); }
+  .err { display: none; margin: 0 0 12px; font-size: 13.5px; color: #A93521; }
+  .pill { display: inline-block; font-size: 15px; color: #fff; background: var(--blue); padding: 14px 26px; border-radius: 999px; font-weight: 500; border: 0; cursor: pointer; }
+  .pill:hover { background: #17457F; }
+  .pill:disabled { opacity: .5; cursor: default; }
+  .ghost { background: none; border: 0; padding: 0; color: var(--blue); cursor: pointer; font-size: 14px; }
+  .progress { display: none; height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 14px; }
+  .progress > i { display: block; width: 0; height: 100%; background: var(--blue); }
+
+  .status { font-family: var(--serif); font-size: 28px; margin: 0 0 8px; }
+  .facts { display: grid; gap: 6px 20px; margin: 16px 0; font-size: 14.5px; color: var(--muted); }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 7px; margin-top: 16px; }
+  /* display:block — an inline <a> ignores aspect-ratio and collapses to a sliver. */
+  .thumbs a { display: block; aspect-ratio: 4/3; border-radius: 8px; background: #F7F4ED center/cover no-repeat; border: 1px solid var(--line); }
+  .thumbs a:hover { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  .gate { max-width: 420px; margin: 12vh auto; padding: 0 22px; }
+  .gate h1 { font-family: var(--serif); font-weight: 400; font-size: 36px; margin: 0 0 10px; }
+  .gate p { font-size: 15px; line-height: 1.55; color: var(--muted); margin: 0 0 18px; }
+  .gate input { width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 12px; border: 1px solid var(--line); background: #fff; margin: 0 0 12px; }
+</style>
+</head>
+<body>
+  <header><div class="bar">
+    <a class="wordmark" href="/listings">
+      <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true"><path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="#1E5AA8" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="#1E5AA8"/></svg>
+      <span>Corridor</span>
+    </a>
+    <div class="who" id="who"></div>
+  </div></header>
+  <div id="app"></div>
+<script>
+(function () {
+  var MIN = 12, MAX = 40;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var account = null;
+  var listings = [];
+  var selected = null;
+  var files = [];
+
+  var $ = function (s, root) { return (root || document).querySelector(s); };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+  function when(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  function working(l) { return /^(new|in progress|cutting)$/.test(l.status); }
+
+  function boot() {
+    fetch('/api/auth/me', { credentials: 'same-origin' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        account = data && data.account;
+        if (!account) return drawGate();
+        $('#who').innerHTML = esc(account.email) + ' · <button type="button" id="out">Sign out</button>';
+        $('#out').onclick = function () {
+          fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+            .finally(function () { location.href = '/'; });
+        };
+        return loadList().then(drawDesk);
+      })
+      .catch(function () { drawGate(); });
+  }
+
+  function loadList() {
+    return fetch('/api/auth/listings', { credentials: 'same-origin' })
+      .then(function (res) {
+        if (res.status === 401) { drawGate(); return; }
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data) return;
+        listings = data.listings || [];
+        if (selected) selected = listings.find(function (l) { return l.id === selected.id; }) || null;
+      });
+  }
+
+  function drawGate() {
+    $('#who').innerHTML = '';
+    $('#app').innerHTML =
+      '<div class="gate">' +
+        '<h1>Your listings</h1>' +
+        '<p>Already sent a listing? Enter the email you used.</p>' +
+        '<input id="gate-email" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
+        '<p class="err" id="gate-err"></p>' +
+        '<button type="button" class="ghost" id="gate-go">Continue</button>' +
+        '<p style="margin-top:28px"><a href="/#intake">Or send a listing</a></p>' +
+      '</div>';
+    var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email');
+    function send() {
+      var v = (email.value || '').trim();
+      if (!EMAIL_RE.test(v)) { err.textContent = 'Enter the email you used on the order.'; err.style.display = 'block'; return; }
+      go.disabled = true; go.textContent = 'One moment…'; err.style.display = 'none';
+      fetch('/api/auth/link', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: v })
+      }).then(function (res) { return res.json().then(function (d) { return { res: res, d: d }; }); })
+        .then(function (out) {
+          if (!out.res.ok || !(out.d && out.d.success)) throw new Error((out.d && out.d.error) || 'Could not send that.');
+          $('.gate p').textContent = 'Check that inbox — the link opens your listings.';
+          email.style.display = 'none'; go.style.display = 'none';
+        })
+        .catch(function (e) {
+          err.textContent = e.message; err.style.display = 'block';
+          go.disabled = false; go.textContent = 'Continue';
+        });
+    }
+    go.onclick = send;
+    email.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+  }
+
+  function sideList(title, items) {
+    if (!items.length) return '';
+    return '<p class="mono group">' + esc(title) + '</p>' + items.map(function (l) {
+      return '<button type="button" class="item' + (selected && selected.id === l.id ? ' on' : '') + '" data-id="' + esc(l.id) + '">' +
+        '<b>' + esc(l.address || 'Listing') + '</b>' +
+        '<span>' + esc(l.label) + (when(l.createdAt) ? ' · ' + when(l.createdAt) : '') + '</span>' +
+      '</button>';
+    }).join('');
+  }
+
+  function drawDesk() {
+    var open = listings.filter(working);
+    var past = listings.filter(function (l) { return !working(l); });
+    $('#app').innerHTML =
+      '<div class="desk">' +
+        '<aside class="side">' +
+          '<h2>Your listings</h2>' +
+          '<button type="button" class="new" id="new-listing">Upload listing</button>' +
+          (listings.length
+            ? sideList('Working on', open) + sideList('Past', past)
+            : '<p class="empty-side">Nothing yet. Upload a listing and it will show up here.</p>') +
+        '</aside>' +
+        '<main class="main" id="main"></main>' +
+      '</div>';
+    $('#new-listing').onclick = function () { selected = null; drawDesk(); };
+    Array.prototype.forEach.call(document.querySelectorAll('.item'), function (el) {
+      el.onclick = function () {
+        selected = listings.find(function (l) { return l.id === el.getAttribute('data-id'); }) || null;
+        drawDesk();
+      };
+    });
+    if (selected) drawStatus();
+    else drawUpload();
+  }
+
+  function drawStatus() {
+    var l = selected;
+    var photos = l.photos || [];
+    $('#main').innerHTML =
+      '<p class="mono">Listing</p>' +
+      '<h1>' + esc(l.address || 'Listing') + '</h1>' +
+      '<p class="status">' + esc(l.label) + '</p>' +
+      '<div class="facts">' +
+        (when(l.createdAt) ? '<div>Sent ' + esc(when(l.createdAt)) + '</div>' : '') +
+        '<div>' + (l.photoCount || photos.length || 0) + ' photo' + ((l.photoCount || photos.length || 0) === 1 ? '' : 's') + '</div>' +
+        (l.size ? '<div>' + esc(l.size) + ' SF</div>' : '') +
+      '</div>' +
+      (l.notes ? '<p class="lede">' + esc(l.notes) + '</p>' : '') +
+      (photos.length
+        ? '<div class="thumbs">' + photos.map(function (u) {
+            return '<a href="' + esc(u) + '" target="_blank" rel="noopener" style="background-image:url(' + esc(u) + ')"></a>';
+          }).join('') + '</div>'
+        : '') +
+      '<p style="margin-top:22px"><button type="button" class="ghost" id="back">Upload another listing</button></p>';
+    $('#back').onclick = function () { selected = null; drawDesk(); };
+  }
+
+  function drawUpload() {
+    var needName = !(account && account.name);
+    $('#main').innerHTML =
+      '<div class="card">' +
+        '<h1>Upload listing</h1>' +
+        '<p class="lede">Address and photos. We already have you as ' + esc(account.email) + '.</p>' +
+        (needName ? '<label class="field"><span>Your name</span><input id="name" type="text" autocomplete="name" placeholder="Max Charlip"></label>' : '') +
+        '<label class="field"><span>Property address</span><input id="address" type="text" placeholder="6432 Woodward Ave, Detroit, MI"></label>' +
+        '<label class="field"><span>Photos · 12 to 40</span>' +
+          '<span class="drop" id="drop"><input id="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" style="display:none">' +
+          '<i>Choose photos</i><em id="photo-label">12 to 40 · crooked phone shots welcome</em></span>' +
+        '</label>' +
+        '<p class="err" id="form-err"></p>' +
+        '<button type="button" class="pill" id="go">Upload listing</button>' +
+        '<p class="lede" style="margin:14px 0 0">Upload trouble? Email the photos to <a href="mailto:max@corridor.video">max@corridor.video</a>.</p>' +
+        '<div class="progress" id="bar"><i id="bar-fill"></i></div>' +
+      '</div>';
+
+    var input = $('#photos'), drop = $('#drop'), label = $('#photo-label'), go = $('#go'), err = $('#form-err');
+    function setFiles(list) {
+      files = Array.prototype.slice.call(list || []).filter(function (f) { return /^image\/(jpeg|png|webp)$/i.test(f.type); });
+      label.textContent = files.length
+        ? files.length + ' photo' + (files.length === 1 ? '' : 's') + ' ready'
+        : '12 to 40 · crooked phone shots welcome';
+    }
+    drop.onclick = function () { input.click(); };
+    input.onchange = function () { setFiles(input.files); };
+    drop.ondragover = function (e) { e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave = function () { drop.classList.remove('over'); };
+    drop.ondrop = function (e) {
+      e.preventDefault(); drop.classList.remove('over');
+      setFiles(e.dataTransfer && e.dataTransfer.files);
+    };
+
+    go.onclick = function () {
+      var address = ($('#address').value || '').trim();
+      var name = needName ? (($('#name').value || '').trim()) : (account.name || '');
+      if (needName && !name) { err.textContent = 'Tell us who to send it back to.'; err.style.display = 'block'; return; }
+      if (!address) { err.textContent = 'The property address is required.'; err.style.display = 'block'; return; }
+      if (files.length < MIN) { err.textContent = 'We need at least ' + MIN + ' photos.'; err.style.display = 'block'; return; }
+      if (files.length > MAX) { err.textContent = 'Send your best ' + MAX + ' photos.'; err.style.display = 'block'; return; }
+      err.style.display = 'none';
+      go.disabled = true; go.textContent = 'Sending…';
+      $('#bar').style.display = 'block';
+
+      var fd = new FormData();
+      fd.append('name', name);
+      fd.append('email', account.email);
+      fd.append('address', address);
+      files.forEach(function (f) { fd.append('photos', f, f.name); });
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/intake');
+      xhr.timeout = 10 * 60 * 1000;
+      xhr.upload.onprogress = function (e) {
+        if (!e.lengthComputable) return;
+        var pct = Math.round((e.loaded / e.total) * 100);
+        $('#bar-fill').style.width = pct + '%';
+        go.textContent = pct < 100 ? 'Sending… ' + pct + '%' : 'Almost there…';
+      };
+      xhr.onload = function () {
+        var data = null;
+        try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
+        if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
+          if (needName && name) account.name = name;
+          files = [];
+          loadList().then(function () {
+            selected = listings[0] || null;
+            drawDesk();
+          });
+          return;
+        }
+        err.textContent = (data && data.error) || 'We could not take that listing. Try again.';
+        err.style.display = 'block';
+        go.disabled = false; go.textContent = 'Upload listing';
+      };
+      xhr.onerror = function () {
+        err.textContent = 'That did not reach us. Check your connection and try again.';
+        err.style.display = 'block';
+        go.disabled = false; go.textContent = 'Upload listing';
+      };
+      xhr.send(fd);
+    };
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

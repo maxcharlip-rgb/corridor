@@ -13,6 +13,7 @@ import {
 import { rateLimit } from '../limits.js';
 import { config } from '../config.js';
 import { sendMail, signInLink, mailConfigured } from '../mailer.js';
+import { requests as requestsRepo } from '../store.js';
 
 export const authApi = express.Router();
 authApi.use(express.json({ limit: '16kb' }));
@@ -43,6 +44,64 @@ authApi.get('/me', (req, res) => {
     account: req.account ? publicView(req.account) : null,
     authEnabled: authEnabled(),
   });
+});
+
+/**
+ * Status as the broker should read it. Operator values stay on the request;
+ * this is the only wording the desk shows.
+ */
+export function deskStatusLabel(status) {
+  switch (String(status || '')) {
+    case 'ready':
+    case 'delivered':
+      return 'Ready';
+    case 'in progress':
+    case 'cutting':
+      return 'Working on it';
+    case 'declined':
+      return 'Declined';
+    case 'new':
+    default:
+      return 'Sent';
+  }
+}
+
+/** What a signed-in broker is allowed to see about their own request. */
+function deskView(request) {
+  return {
+    id: request.id,
+    address: request.address || '',
+    status: request.status || 'new',
+    label: deskStatusLabel(request.status),
+    createdAt: request.createdAt || request.at || null,
+    photoCount: (request.photos || []).length,
+    size: request.size || '',
+    notes: request.notes || '',
+    photos: (request.photos || []).map((p) => `/uploads/${p.file}`),
+  };
+}
+
+/**
+ * This account's listings only. Never other brokers', never the operator queue.
+ */
+authApi.get('/listings', (req, res) => {
+  if (!req.account) return res.status(401).json({ error: 'Sign in to continue.' });
+  const mine = requestsRepo
+    .all()
+    .filter((r) => r.accountId === req.account.id)
+    .slice()
+    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+    .map(deskView);
+  res.json({ listings: mine });
+});
+
+authApi.get('/listings/:id', (req, res) => {
+  if (!req.account) return res.status(401).json({ error: 'Sign in to continue.' });
+  const request = requestsRepo.byId(req.params.id);
+  if (!request || request.accountId !== req.account.id) {
+    return res.status(404).json({ error: 'Listing not found.' });
+  }
+  res.json({ listing: deskView(request) });
 });
 
 /**
@@ -83,8 +142,9 @@ authApi.post('/link', credentialLimiter, async (req, res) => {
 });
 
 /**
- * The link itself. Spends the token, starts the session, and lands on /studio.
- * A redirect rather than JSON because this is opened from an inbox, not fetched.
+ * The link itself. Spends the token, starts the session, and lands on the
+ * broker desk. A redirect rather than JSON because this is opened from an
+ * inbox, not fetched. Studio stays the operator cut tool, not the sign-in home.
  */
 authApi.get('/verify', (req, res) => {
   const account = redeemLoginToken(String(req.query.token || ''));
@@ -96,10 +156,10 @@ authApi.get('/verify', (req, res) => {
         '<div style="font:16px/1.6 -apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;max-width:34em;margin:14vh auto;padding:0 20px;color:#101418">' +
         '<h1 style="font:400 30px/1.1 Georgia,serif">That link has expired.</h1>' +
         `<p style="color:#5B6672">Sign-in links last ${LINK_EXPIRY_MINUTES} minutes and work once. ` +
-        '<a href="/" style="color:#1E5AA8">Ask for a new one</a>.</p></div>');
+        '<a href="/listings" style="color:#1E5AA8">Ask for a new one</a>.</p></div>');
   }
   setSessionCookie(res, account.id);
-  res.redirect(302, '/studio');
+  res.redirect(302, '/listings');
 });
 
 authApi.post('/login', credentialLimiter, (req, res, next) => {
