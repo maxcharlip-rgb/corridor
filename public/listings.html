@@ -95,6 +95,7 @@
 <script>
 (function () {
   var MIN = 12, MAX = 40;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var account = null;
   var listings = [];
   var selected = null;
@@ -148,9 +149,34 @@
     $('#app').innerHTML =
       '<div class="gate">' +
         '<h1>Your listings</h1>' +
-        '<p>Send a listing and you’ll land here. First order is how you get in.</p>' +
-        '<p><a href="/#intake">Upload a listing</a></p>' +
+        '<p>Already sent a listing? Enter the email you used.</p>' +
+        '<input id="gate-email" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
+        '<p class="err" id="gate-err"></p>' +
+        '<button type="button" class="ghost" id="gate-go">Continue</button>' +
+        '<p style="margin-top:28px"><a href="/#intake">Or send a listing</a></p>' +
       '</div>';
+    var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email');
+    function send() {
+      var v = (email.value || '').trim();
+      if (!EMAIL_RE.test(v)) { err.textContent = 'Enter the email you used on the order.'; err.style.display = 'block'; return; }
+      go.disabled = true; go.textContent = 'One moment…'; err.style.display = 'none';
+      fetch('/api/auth/link', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: v })
+      }).then(function (res) { return res.json().then(function (d) { return { res: res, d: d }; }); })
+        .then(function (out) {
+          if (!out.res.ok || !(out.d && out.d.success)) throw new Error((out.d && out.d.error) || 'Could not send that.');
+          $('.gate p').textContent = 'Check that inbox — the link opens your listings.';
+          email.style.display = 'none'; go.style.display = 'none';
+        })
+        .catch(function (e) {
+          err.textContent = e.message; err.style.display = 'block';
+          go.disabled = false; go.textContent = 'Continue';
+        });
+    }
+    go.onclick = send;
+    email.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
   }
 
   function sideList(title, items) {

@@ -952,9 +952,13 @@ main().catch(async (err) => {
     /Upload listing/.test(desk) && /Your listings/.test(desk) && /Working on/.test(desk) && /Past/.test(desk));
   check('desk reuses guest intake and session identity',
     /\/api\/intake/.test(desk) && /\/api\/auth\/me/.test(desk) && /\/api\/auth\/listings/.test(desk));
-  check('unauthenticated desk sends them to guest upload, not an emailed link',
-    /\/#intake/.test(desk) && !/\/api\/auth\/link/.test(desk)
-      && !/email me a link/i.test(desk) && !/type="password"/.test(desk));
+  check('unauthenticated desk is a quiet return path, not Create account',
+    /Already sent a listing\? Enter the email you used/.test(desk)
+      && /\/api\/auth\/link/.test(desk)
+      && /\/#intake/.test(desk)
+      && !/Create account/.test(desk)
+      && !/email me a link/i.test(desk)
+      && !/type="password"/.test(desk));
   check('desk is not the operator studio',
     !/\/studio/.test(desk) && !/generate/i.test(desk) && !/higgsfield/i.test(desk));
   check('desk does not ship $260, $350, Custom, first-one-free, or /t/demo',
