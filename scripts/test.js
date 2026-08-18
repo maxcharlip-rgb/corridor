@@ -189,6 +189,27 @@ async function main() {
   check('auth gates after first account', (await req('/api/bootstrap')).status === 401);
   check('authenticated request succeeds', (await req('/api/bootstrap', { cookie })).status === 200);
 
+  const guestFd = new FormData();
+  guestFd.append('name', 'Guest Broker');
+  guestFd.append('email', 'guest@test.example');
+  guestFd.append('address', '2 Guest Ave, Detroit, MI');
+  for (let i = 0; i < 12; i += 1) {
+    guestFd.append('photos', new Blob([TINY_JPEG], { type: 'image/jpeg' }), `g${i}.jpg`);
+  }
+  const guestRes = await fetch(`${BASE}/api/intake`, { method: 'POST', body: guestFd });
+  const guestJson = await guestRes.json().catch(() => null);
+  check('guest intake without a session succeeds', guestRes.status === 201 && guestJson?.success,
+    `got ${guestRes.status}`);
+  check('guest intake does not require size, firm, or phone',
+    guestRes.status === 201 && !guestJson?.error);
+  const afterGuest = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  check('guest listing persisted without a cookie',
+    (afterGuest.requests || []).some((r) => r.email === 'guest@test.example' && r.address === '2 Guest Ave, Detroit, MI'));
+  check('guest email silently created an account for the queue',
+    (afterGuest.accounts || []).some((a) => a.email === 'guest@test.example'));
+  const getIntake = await req('/api/intake');
+  check('GET /api/intake is not an auth wall', getIntake.status !== 401, `got ${getIntake.status}`);
+
   // 4. Restart durability ----------------------------------------------------
   section('4. Survives restart with state intact');
   const listing = await req('/api/listings', {
@@ -667,6 +688,31 @@ main().catch(async (err) => {
   check('a verified spec row is kept', /24,000 SF/.test(rows));
 }
 
+// --- listing intake is public and notifies Max --------------------------------
+{
+  const fsx = await import('node:fs');
+  const intakeSrc = fsx.readFileSync(new URL('../server/routes/intake.js', import.meta.url), 'utf8');
+  const mailSrc = fsx.readFileSync(new URL('../server/mailer.js', import.meta.url), 'utf8');
+  const { notifyAddress, orderConfirmation } = await import('../server/mailer.js');
+
+  check('intake does not hardcode hello@corridor.tours', !/hello@corridor\.tours/.test(intakeSrc));
+  check('intake notifies via notifyAddress()', /notifyAddress\(\)/.test(intakeSrc));
+  check('intake does not require square footage', !/square footage is required/.test(intakeSrc));
+  check('intake does not mint a magic-link gate', !/issueLoginToken/.test(intakeSrc) && !/magicUrl/.test(intakeSrc));
+
+  const prevNotify = process.env.NOTIFY_EMAIL;
+  delete process.env.NOTIFY_EMAIL;
+  check('notifyAddress defaults to max@corridor.video', notifyAddress() === 'max@corridor.video');
+  if (prevNotify !== undefined) process.env.NOTIFY_EMAIL = prevNotify;
+
+  const confirm = orderConfirmation({ address: '1 Test St', photos: [] });
+  check('broker confirmation has no sign-in / magic link',
+    !/sign-in|sign in|magic|verify\?token|View your tours/i.test(`${confirm.subject}\n${confirm.html}`));
+  check('broker confirmation promises 48 hours', /48 hours/i.test(confirm.html));
+  check('notify default is in the mailer, not a leftover tours address',
+    /max@corridor\.video/.test(mailSrc) && !/hello@corridor\.tours/.test(mailSrc));
+}
+
 // --- property intake --------------------------------------------------------
 {
   const fsx = await import('node:fs');
@@ -786,6 +832,9 @@ main().catch(async (err) => {
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
+  const sendIntake = landing.slice(landing.indexOf('function sendIntake'), landing.indexOf('intakeGo.addEventListener'));
+  check('homepage listing submit does not require sign-in',
+    /xhr\.open\('POST'/.test(sendIntake) && !/openAuth\(/.test(sendIntake) && !/\/api\/auth\/link/.test(sendIntake));
   check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('hero CTA is What we do, inquire stays on the form', /href="#product"/.test(landing) && /What we do/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
