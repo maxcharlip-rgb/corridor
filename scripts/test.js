@@ -154,6 +154,16 @@ async function main() {
   const intakeRes = await fetch(`${BASE}/api/intake`, { method: 'POST', body: fd });
   const intakeJson = await intakeRes.json().catch(() => null);
   check('first order creates the account', intakeRes.status === 201 && intakeJson?.success, `got ${intakeRes.status}`);
+  const intakeCookieHeader = intakeRes.headers.get('set-cookie') || '';
+  const intakeCookie = intakeCookieHeader.split(';')[0];
+  check('first order sets a session cookie', /corridor_session/.test(intakeCookieHeader) && /HttpOnly/i.test(intakeCookieHeader));
+  check('first order tells the client to open the desk', intakeJson?.redirect === '/listings',
+    `got ${JSON.stringify(intakeJson?.redirect)}`);
+  const firstDesk = await req('/api/auth/listings', { cookie: intakeCookie });
+  check('first-order session opens their portfolio without a magic link',
+    firstDesk.status === 200
+      && (firstDesk.json?.listings || []).some((l) => l.address === '1 Test St, Detroit, MI'),
+    `got ${firstDesk.status} ${(firstDesk.json?.listings || []).map((l) => l.address)}`);
 
   const link = await req('/api/auth/link', { method: 'POST', body: { email: 'ops@test.example' } });
   check('sign-in link endpoint succeeds', link.status === 200 && link.json?.success === true);
@@ -202,6 +212,18 @@ async function main() {
     `got ${guestRes.status}`);
   check('guest intake does not require size, firm, or phone',
     guestRes.status === 201 && !guestJson?.error);
+  const guestOrderCookie = (guestRes.headers.get('set-cookie') || '').split(';')[0];
+  check('guest intake 201 sets a session cookie',
+    /corridor_session/.test(guestRes.headers.get('set-cookie') || '')
+      && /HttpOnly/i.test(guestRes.headers.get('set-cookie') || ''));
+  check('guest intake JSON lands on the desk', guestJson?.redirect === '/listings');
+  const guestFromOrder = await req('/api/auth/listings', { cookie: guestOrderCookie });
+  const guestFromOrderAddresses = (guestFromOrder.json?.listings || []).map((l) => l.address);
+  check('guest first order opens their desk without a magic link',
+    guestFromOrder.status === 200
+      && guestFromOrderAddresses.includes('2 Guest Ave, Detroit, MI')
+      && !guestFromOrderAddresses.includes('1 Test St, Detroit, MI'),
+    `got ${JSON.stringify(guestFromOrderAddresses)}`);
   const afterGuest = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
   check('guest listing persisted without a cookie',
     (afterGuest.requests || []).some((r) => r.email === 'guest@test.example' && r.address === '2 Guest Ave, Detroit, MI'));
@@ -770,6 +792,8 @@ main().catch(async (err) => {
   check('intake notifies via notifyAddress()', /notifyAddress\(\)/.test(intakeSrc));
   check('intake does not require square footage', !/square footage is required/.test(intakeSrc));
   check('intake does not mint a magic-link gate', !/issueLoginToken/.test(intakeSrc) && !/magicUrl/.test(intakeSrc));
+  check('intake signs them in and points the client at the desk',
+    /setSessionCookie\(res, account\.id\)/.test(intakeSrc) && /redirect: '\/listings'/.test(intakeSrc));
 
   const prevNotify = process.env.NOTIFY_EMAIL;
   delete process.env.NOTIFY_EMAIL;
@@ -888,7 +912,13 @@ main().catch(async (err) => {
   check('title and meta match the new subhead, no cinematic', /They walk the building on their phone/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav has What we do, Pricing, FAQ, Sign in, and Create account', /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing) && /data-open-auth="login"/.test(landing) && /data-open-auth="create"/.test(landing) && /Create account/.test(landing));
+  check('nav has What we do, Pricing, and FAQ — no Sign in or Create account',
+    /href="#product"/.test(landing) && /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
+      && !/data-open-auth/.test(landing) && !/Create account/.test(landing) && !/>Sign in</.test(landing));
+  check('landing has no email-me-a-link auth path',
+    !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
+  check('landing form follows intake redirect to the desk',
+    /data\.redirect/.test(landing) && /\/listings/.test(landing));
   check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('editorial asides sit in the side gutters', /class="gutter"/.test(landing) && /48 hours\./.test(landing) && /Invoice after you see the cut\./.test(landing) && /Detroit based\./.test(landing) && /From the photos you already have\./.test(landing));
@@ -922,9 +952,9 @@ main().catch(async (err) => {
     /Upload listing/.test(desk) && /Your listings/.test(desk) && /Working on/.test(desk) && /Past/.test(desk));
   check('desk reuses guest intake and session identity',
     /\/api\/intake/.test(desk) && /\/api\/auth\/me/.test(desk) && /\/api\/auth\/listings/.test(desk));
-  check('unauthenticated desk offers the passwordless link or guest upload',
-    /\/api\/auth\/link/.test(desk) && /upload a listing as a guest/.test(desk)
-      && /no password/.test(desk) && !/type="password"/.test(desk));
+  check('unauthenticated desk sends them to guest upload, not an emailed link',
+    /\/#intake/.test(desk) && !/\/api\/auth\/link/.test(desk)
+      && !/email me a link/i.test(desk) && !/type="password"/.test(desk));
   check('desk is not the operator studio',
     !/\/studio/.test(desk) && !/generate/i.test(desk) && !/higgsfield/i.test(desk));
   check('desk does not ship $260, $350, Custom, first-one-free, or /t/demo',

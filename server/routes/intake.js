@@ -4,7 +4,7 @@ import express from 'express';
 import multer from 'multer';
 import { config } from '../config.js';
 import { getDb, saveNow, id, now } from '../store.js';
-import { accountByEmail, createAccount } from '../auth.js';
+import { accountByEmail, createAccount, setSessionCookie } from '../auth.js';
 import {
   sendMail, orderNotification, orderConfirmation, mailConfigured, notifyAddress,
 } from '../mailer.js';
@@ -256,6 +256,10 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
   // Durable before we answer: this is somebody's job, not a cache entry.
   saveNow();
 
+  /* First order is how they get in. Same cookie as magic-link verify, so the
+     landing form can send them straight to their desk without an emailed link. */
+  setSessionCookie(res, account.id);
+
   res.status(201).json({
     success: true,
     error: null,
@@ -264,6 +268,7 @@ intakeApi.post('/', limiter, capTotalSize, receive, async (req, res) => {
     photos: photos.length,
     rejected: request.rejected,
     order: { amountCents, extended, phoneWalk },
+    redirect: '/listings',
   });
 
   // After the response. The record is already safe; mail is a notification.

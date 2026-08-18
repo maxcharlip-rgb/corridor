@@ -95,7 +95,6 @@
 <script>
 (function () {
   var MIN = 12, MAX = 40;
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var account = null;
   var listings = [];
   var selected = null;
@@ -149,34 +148,9 @@
     $('#app').innerHTML =
       '<div class="gate">' +
         '<h1>Your listings</h1>' +
-        '<p>We’ll email you a link. That’s the whole sign-in — no password.</p>' +
-        '<input id="gate-email" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
-        '<p class="err" id="gate-err"></p>' +
-        '<button type="button" class="pill" id="gate-go">Email me a link</button>' +
-        '<p style="margin-top:22px">Or <a href="/">upload a listing as a guest</a>. No account required.</p>' +
+        '<p>Send a listing and you’ll land here. First order is how you get in.</p>' +
+        '<p><a href="/#intake">Upload a listing</a></p>' +
       '</div>';
-    var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email');
-    function send() {
-      var v = (email.value || '').trim();
-      if (!EMAIL_RE.test(v)) { err.textContent = 'Enter a valid email address.'; err.style.display = 'block'; return; }
-      go.disabled = true; go.textContent = 'One moment…'; err.style.display = 'none';
-      fetch('/api/auth/link', {
-        method: 'POST', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: v })
-      }).then(function (res) { return res.json().then(function (d) { return { res: res, d: d }; }); })
-        .then(function (out) {
-          if (!out.res.ok || !(out.d && out.d.success)) throw new Error((out.d && out.d.error) || 'Could not send the link.');
-          $('.gate p').textContent = 'Check your inbox — we sent you a link.';
-          email.style.display = 'none'; go.style.display = 'none';
-        })
-        .catch(function (e) {
-          err.textContent = e.message; err.style.display = 'block';
-          go.disabled = false; go.textContent = 'Email me a link';
-        });
-    }
-    go.onclick = send;
-    email.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
   }
 
   function sideList(title, items) {

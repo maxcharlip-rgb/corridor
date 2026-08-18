@@ -66,7 +66,7 @@
   }
   .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; text-shadow: 0 1px 12px rgba(255,255,255,.4); }
   .sky-bar .wordmark svg { filter: drop-shadow(0 1px 8px rgba(255,255,255,.35)); }
-  .sky-bar .nav-wide, .sky-bar .sign-in {
+  .sky-bar .nav-wide {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
     text-shadow: 0 1px 12px rgba(255,255,255,.4);
@@ -192,13 +192,6 @@
   .faq summary::-webkit-details-marker { display: none; }
   .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
 
-  .auth-tabs { display: flex; gap: 16px; margin: 0 0 16px; }
-  .auth-tabs button {
-    background: none; border: 0; padding: 0 0 6px; cursor: pointer;
-    font-size: 14px; color: #5F5C57; border-bottom: 1px solid transparent;
-  }
-  .auth-tabs button.on { color: #2B2B2B; border-bottom-color: #2B2B2B; }
-
   @media (max-width: 1000px) {
     .spread { grid-template-columns: 1fr; gap: 22px; }
     .gutter-end { text-align: left; }
@@ -226,8 +219,6 @@
       <a class="nav-wide" href="#product">What we do</a>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
-      <button type="button" class="sign-in" data-open-auth="create">Create account</button>
-      <button type="button" class="sign-in" data-open-auth="login">Sign in</button>
     </header>
     <div class="sky-copy">
       <h1>CRE marketing is boring. So we fixed it.</h1>
@@ -456,32 +447,6 @@
       <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
-
-  <div id="auth-modal" style="display: none;">
-    <div data-close-auth="1" style="position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,.5); display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div data-modal-card="1" style="width: min(420px, 100%); background: #F7F4ED; border: 1px solid #B8D7EB; border-radius: 24px; padding: 32px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
-          <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 23px;">Corridor</span>
-          <button type="button" data-close-auth="1" aria-label="Close" style="font-size: 17px; color: #5F5C57; background: transparent; border: 1px solid #B8D7EB; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;">×</button>
-        </div>
-        <div class="auth-tabs">
-          <button type="button" id="auth-tab-login" class="on" data-auth-mode="login">Sign in</button>
-          <button type="button" id="auth-tab-create" data-auth-mode="create">Create account</button>
-        </div>
-        <h3 style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; margin: 0 0 8px;"><span id="auth-title">Sign in</span></h3>
-        <p style="font-size: 14.5px; line-height: 1.55; color: #5F5C57; margin: 0 0 20px;"><span id="auth-sub">We’ll email you a link. New here? That creates your account.</span></p>
-        <div id="auth-ask" style="display: grid; gap: 10px;">
-          <input class="field" type="text" autocomplete="name" placeholder="Your name" id="auth-name" style="display: none;" />
-          <input class="field" type="email" autocomplete="email" placeholder="you@brokerage.com" id="auth-email" />
-          <div id="auth-error" style="display: none;"><p style="font-size: 13.5px; color: #A93521; margin: 0;"></p></div>
-          <button type="button" id="auth-submit" class="pill" style="width: 100%;">Email me a link</button>
-        </div>
-        <div id="auth-sent" style="display: none;">
-          <p style="font-size: 15px; margin: 0;">Check your inbox — we sent you a link.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 <script>
 (function () {
   var INTAKE_ENDPOINT = '/api/intake';
@@ -491,10 +456,7 @@
   var CONFIG = {
     endpoints: {
       me:     '/api/auth/me',
-      link:   '/api/auth/link',
-      verify: '/api/auth/verify',
-      intake: INTAKE_ENDPOINT,
-      studio: '/studio'
+      intake: INTAKE_ENDPOINT
     },
     price: {
       baseCents:      20000,
@@ -706,7 +668,7 @@
       var data = null;
       try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
       if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
-        doneModal.style.display = 'block';
+        location.href = data.redirect || '/listings';
         return;
       }
       fail((data && data.error) ||
@@ -727,82 +689,8 @@
     intake.style.display = 'none';
   });
 
-  var modal = document.getElementById('auth-modal');
-  var err = document.getElementById('auth-error'), errText = err.querySelector('p');
-  var submit = document.getElementById('auth-submit');
-  var ask = document.getElementById('auth-ask'), sent = document.getElementById('auth-sent');
-
-  var authMode = 'login';
-  var authName = document.getElementById('auth-name');
-  var tabLogin = document.getElementById('auth-tab-login');
-  var tabCreate = document.getElementById('auth-tab-create');
-  var authTitle = document.getElementById('auth-title');
-  var authSub = document.getElementById('auth-sub');
-
-  function setAuthMode(mode) {
-    authMode = mode === 'create' ? 'create' : 'login';
-    tabLogin.className = authMode === 'login' ? 'on' : '';
-    tabCreate.className = authMode === 'create' ? 'on' : '';
-    authTitle.textContent = authMode === 'create' ? 'Create account' : 'Sign in';
-    authSub.textContent = authMode === 'create'
-      ? 'We’ll email you a link. That’s the whole signup — no password.'
-      : 'We’ll email you a link. New here? That creates your account.';
-    authName.style.display = authMode === 'create' ? 'block' : 'none';
-  }
-  function closeAuth() {
-    modal.style.display = 'none';
-    err.style.display = 'none';
-    ask.style.display = 'grid'; sent.style.display = 'none';
-    submit.disabled = false; submit.textContent = 'Email me a link';
-  }
-  function openAuth(mode) {
-    if (account) { location.href = CONFIG.endpoints.studio; return; }
-    closeAuth();
-    setAuthMode(mode);
-    modal.style.display = 'block';
-    var e = authMode === 'create' ? authName : document.getElementById('auth-email');
-    if (e) e.focus();
-  }
-  document.querySelectorAll('[data-open-auth]').forEach(function (el) {
-    el.addEventListener('click', function () { openAuth(el.getAttribute('data-open-auth')); });
-  });
-  tabLogin.addEventListener('click', function () { setAuthMode('login'); });
-  tabCreate.addEventListener('click', function () { setAuthMode('create'); });
-  document.querySelectorAll('[data-close-auth]').forEach(function (el) {
-    el.addEventListener('click', function (e) { if (e.target === el || el.tagName === 'BUTTON') closeAuth(); });
-  });
-  document.querySelector('[data-modal-card]').addEventListener('click', function (e) { e.stopPropagation(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAuth(); });
   document.querySelectorAll('[data-home]').forEach(function (el) {
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-  });
-
-  function requestLink() {
-    var email = (document.getElementById('auth-email').value || '').trim();
-    if (!email) { errText.textContent = 'Enter your email address.'; err.style.display = 'block'; return; }
-    if (!EMAIL_RE.test(email)) { errText.textContent = 'That email address does not look right.'; err.style.display = 'block'; return; }
-    submit.disabled = true; submit.textContent = 'One moment…'; err.style.display = 'none';
-    fetch(CONFIG.endpoints.link, {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, name: (authName.value || '').trim() })
-    }).then(function (res) {
-      return res.text().then(function (text) {
-        var data = text ? JSON.parse(text) : null;
-        if (!res.ok || !(data && data.success)) {
-          throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
-        }
-        ask.style.display = 'none';
-        sent.style.display = 'block';
-      });
-    }).catch(function (e) {
-      errText.textContent = e.message || 'Could not reach Corridor.';
-      err.style.display = 'block'; submit.disabled = false; submit.textContent = 'Email me a link';
-    });
-  }
-  submit.addEventListener('click', requestLink);
-  document.getElementById('auth-email').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') requestLink();
   });
 
   fetch(CONFIG.endpoints.me, { credentials: 'same-origin' })
