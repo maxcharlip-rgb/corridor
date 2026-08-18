@@ -39,12 +39,18 @@ app.use('/uploads', express.static(config.uploadsDir, { maxAge: '1h' }));
    therefore serves the previous cut — a broker rebuilds a tour, downloads it,
    and gets the old video with no indication anything is stale. */
 app.use('/renders', express.static(config.rendersDir, { maxAge: 0, etag: true }));
-app.use(express.static(config.publicDir, { extensions: ['html'] }));
 
 // Session is loaded for every request; requireAuth decides what is gated.
 // The public tour API sits ABOVE auth on purpose — a prospect scanning a sign
 // must never meet a login screen.
 app.use(loadAccount);
+/* A signed-in broker lands on their desk, not the public inquire page.
+   Guests still get `/`. Studio stays the operator cut tool. */
+app.get('/', (req, res, next) => {
+  if (req.account) return res.redirect(302, '/listings');
+  next();
+});
+app.use(express.static(config.publicDir, { extensions: ['html'] }));
 app.use('/api/public', publicApi);
 // Before the authenticated '/api' router below, which would otherwise swallow
 // it: intake is by definition from someone who has no account yet.

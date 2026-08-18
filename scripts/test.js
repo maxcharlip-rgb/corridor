@@ -154,6 +154,16 @@ async function main() {
   const intakeRes = await fetch(`${BASE}/api/intake`, { method: 'POST', body: fd });
   const intakeJson = await intakeRes.json().catch(() => null);
   check('first order creates the account', intakeRes.status === 201 && intakeJson?.success, `got ${intakeRes.status}`);
+  const intakeCookieHeader = intakeRes.headers.get('set-cookie') || '';
+  const intakeCookie = intakeCookieHeader.split(';')[0];
+  check('first order sets a session cookie', /corridor_session/.test(intakeCookieHeader) && /HttpOnly/i.test(intakeCookieHeader));
+  check('first order tells the client to open the desk', intakeJson?.redirect === '/listings',
+    `got ${JSON.stringify(intakeJson?.redirect)}`);
+  const firstDesk = await req('/api/auth/listings', { cookie: intakeCookie });
+  check('first-order session opens their portfolio without a magic link',
+    firstDesk.status === 200
+      && (firstDesk.json?.listings || []).some((l) => l.address === '1 Test St, Detroit, MI'),
+    `got ${firstDesk.status} ${(firstDesk.json?.listings || []).map((l) => l.address)}`);
 
   const link = await req('/api/auth/link', { method: 'POST', body: { email: 'ops@test.example' } });
   check('sign-in link endpoint succeeds', link.status === 200 && link.json?.success === true);
@@ -168,7 +178,7 @@ async function main() {
   check('magic link creates an account for a new email', Boolean(newbieLog), 'no URL in stdout for newbie');
   check('sign-in URL is logged when mail is off', Boolean(logged), 'no URL in stdout');
   const verify = await fetch(logged ? logged[1] : `${BASE}/api/auth/verify?token=missing`, { redirect: 'manual' });
-  check('verify redirects to studio', verify.status === 302 && verify.headers.get('location') === '/studio', `got ${verify.status}`);
+  check('verify redirects to the desk', verify.status === 302 && verify.headers.get('location') === '/listings', `got ${verify.status} ${verify.headers.get('location')}`);
   const cookie = verify.headers.get('set-cookie')?.split(';')[0];
   check('session cookie issued', Boolean(cookie));
   check('cookie is HttpOnly', /HttpOnly/i.test(verify.headers.get('set-cookie') || ''));
@@ -202,6 +212,18 @@ async function main() {
     `got ${guestRes.status}`);
   check('guest intake does not require size, firm, or phone',
     guestRes.status === 201 && !guestJson?.error);
+  const guestOrderCookie = (guestRes.headers.get('set-cookie') || '').split(';')[0];
+  check('guest intake 201 sets a session cookie',
+    /corridor_session/.test(guestRes.headers.get('set-cookie') || '')
+      && /HttpOnly/i.test(guestRes.headers.get('set-cookie') || ''));
+  check('guest intake JSON lands on the desk', guestJson?.redirect === '/listings');
+  const guestFromOrder = await req('/api/auth/listings', { cookie: guestOrderCookie });
+  const guestFromOrderAddresses = (guestFromOrder.json?.listings || []).map((l) => l.address);
+  check('guest first order opens their desk without a magic link',
+    guestFromOrder.status === 200
+      && guestFromOrderAddresses.includes('2 Guest Ave, Detroit, MI')
+      && !guestFromOrderAddresses.includes('1 Test St, Detroit, MI'),
+    `got ${JSON.stringify(guestFromOrderAddresses)}`);
   const afterGuest = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
   check('guest listing persisted without a cookie',
     (afterGuest.requests || []).some((r) => r.email === 'guest@test.example' && r.address === '2 Guest Ave, Detroit, MI'));
@@ -221,6 +243,65 @@ async function main() {
       && /photo/i.test(noPhotoJson?.error || '')
       && !/square footage/i.test(noPhotoJson?.error || ''),
     `got ${noPhotoRes.status} ${noPhotoJson?.error}`);
+
+  const deskPage = await fetch(`${BASE}/listings`, { redirect: 'manual' });
+  check('desk page is public HTML', deskPage.status === 200 && /Upload listing/i.test(await deskPage.text()));
+  check('unauthenticated desk list is 401', (await req('/api/auth/listings')).status === 401);
+
+  const homeSigned = await fetch(`${BASE}/`, { redirect: 'manual', headers: { Cookie: cookie } });
+  check('signed-in home redirects to the desk',
+    homeSigned.status === 302 && homeSigned.headers.get('location') === '/listings',
+    `got ${homeSigned.status} ${homeSigned.headers.get('location')}`);
+  const homeGuest = await fetch(`${BASE}/`, { redirect: 'manual' });
+  check('guest home still serves the landing page', homeGuest.status === 200);
+
+  const opsDesk = await req('/api/auth/listings', { cookie });
+  check('signed-in desk list succeeds', opsDesk.status === 200 && Array.isArray(opsDesk.json?.listings));
+  const opsAddresses = (opsDesk.json?.listings || []).map((l) => l.address);
+  check('desk list includes this account’s listing', opsAddresses.includes('1 Test St, Detroit, MI'));
+  check('desk list excludes another broker’s listing',
+    !opsAddresses.includes('2 Guest Ave, Detroit, MI'),
+    `got ${JSON.stringify(opsAddresses)}`);
+  check('desk list never includes other emails',
+    !(opsDesk.json?.listings || []).some((l) => Object.prototype.hasOwnProperty.call(l, 'email')));
+  const opsOwn = (opsDesk.json?.listings || []).find((l) => l.address === '1 Test St, Detroit, MI');
+  check('desk listing includes photo URLs and a status label',
+    Array.isArray(opsOwn?.photos) && opsOwn.photos.length === 12
+      && opsOwn.photos.every((u) => String(u).startsWith('/uploads/'))
+      && typeof opsOwn.label === 'string' && opsOwn.label.length > 0,
+    `got photos=${opsOwn?.photos?.length} label=${opsOwn?.label}`);
+  const guestReq = (afterGuest.requests || []).find((r) => r.email === 'guest@test.example');
+  const peekOther = await req(`/api/auth/listings/${guestReq?.id || 'req_missing'}`, { cookie });
+  check('another broker’s listing is 404, not 200', peekOther.status === 404);
+
+  await req('/api/auth/link', { method: 'POST', body: { email: 'guest@test.example' } });
+  await sleep(200);
+  const guestLink = serverLog.match(/sign-in link for guest@test\.example: (\S+)/);
+  const guestVerify = await fetch(guestLink ? guestLink[1] : `${BASE}/api/auth/verify?token=missing`, { redirect: 'manual' });
+  check('guest magic-link also lands on the desk',
+    guestVerify.status === 302 && guestVerify.headers.get('location') === '/listings',
+    `got ${guestVerify.status} ${guestVerify.headers.get('location')}`);
+  const guestCookie = guestVerify.headers.get('set-cookie')?.split(';')[0];
+  const guestDesk = await req('/api/auth/listings', { cookie: guestCookie });
+  const guestAddresses = (guestDesk.json?.listings || []).map((l) => l.address);
+  check('guest session only sees their own listing',
+    guestDesk.status === 200
+      && guestAddresses.includes('2 Guest Ave, Detroit, MI')
+      && !guestAddresses.includes('1 Test St, Detroit, MI'),
+    `got ${JSON.stringify(guestAddresses)}`);
+
+  const deskFd = new FormData();
+  deskFd.append('address', '99 Desk St, Detroit, MI');
+  for (let i = 0; i < 12; i += 1) {
+    deskFd.append('photos', new Blob([TINY_JPEG], { type: 'image/jpeg' }), `d${i}.jpg`);
+  }
+  const deskUp = await fetch(`${BASE}/api/intake`, { method: 'POST', headers: { Cookie: cookie }, body: deskFd });
+  const deskUpJson = await deskUp.json().catch(() => null);
+  check('signed-in desk upload without size still 201', deskUp.status === 201 && deskUpJson?.success,
+    `got ${deskUp.status} ${deskUpJson?.error || ''}`);
+  const afterDesk = await req('/api/auth/listings', { cookie });
+  check('desk upload lands on this account’s list',
+    (afterDesk.json?.listings || []).some((l) => l.address === '99 Desk St, Detroit, MI'));
 
   // 4. Restart durability ----------------------------------------------------
   section('4. Survives restart with state intact');
@@ -711,6 +792,8 @@ main().catch(async (err) => {
   check('intake notifies via notifyAddress()', /notifyAddress\(\)/.test(intakeSrc));
   check('intake does not require square footage', !/square footage is required/.test(intakeSrc));
   check('intake does not mint a magic-link gate', !/issueLoginToken/.test(intakeSrc) && !/magicUrl/.test(intakeSrc));
+  check('intake signs them in and points the client at the desk',
+    /setSessionCookie\(res, account\.id\)/.test(intakeSrc) && /redirect: '\/listings'/.test(intakeSrc));
 
   const prevNotify = process.env.NOTIFY_EMAIL;
   delete process.env.NOTIFY_EMAIL;
@@ -835,6 +918,8 @@ main().catch(async (err) => {
       && !/data-open-auth/.test(landing) && !/Create account/.test(landing) && !/>Sign in</.test(landing));
   check('landing has no email-me-a-link auth path',
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
+  check('landing form follows intake redirect to the desk',
+    /data\.redirect/.test(landing) && /\/listings/.test(landing));
   check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
@@ -855,6 +940,45 @@ main().catch(async (err) => {
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('hero CTA is Send a listing, the only inquire action', /href="#intake"/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
+}
+
+// --- broker desk is not studio ----------------------------------------------
+{
+  const fsx = await import('node:fs');
+  const desk = fsx.readFileSync(new URL('../public/listings.html', import.meta.url), 'utf8');
+  const authSrc = fsx.readFileSync(new URL('../server/routes/auth.js', import.meta.url), 'utf8');
+
+  check('desk page is Upload listing plus a sidebar',
+    /Upload listing/.test(desk) && /Your listings/.test(desk) && /Working on/.test(desk) && /Past/.test(desk));
+  check('desk reuses guest intake and session identity',
+    /\/api\/intake/.test(desk) && /\/api\/auth\/me/.test(desk) && /\/api\/auth\/listings/.test(desk));
+  check('unauthenticated desk is a quiet return path, not Create account',
+    /Already sent a listing\? Enter the email you used/.test(desk)
+      && /\/api\/auth\/link/.test(desk)
+      && /\/#intake/.test(desk)
+      && !/Create account/.test(desk)
+      && !/email me a link/i.test(desk)
+      && !/type="password"/.test(desk));
+  check('desk is not the operator studio',
+    !/\/studio/.test(desk) && !/generate/i.test(desk) && !/higgsfield/i.test(desk));
+  check('desk does not ship $260, $350, Custom, first-one-free, or /t/demo',
+    !/\$260/.test(desk) && !/\$350/.test(desk) && !/\bCustom\b/.test(desk)
+      && !/first-one-free|first one free/i.test(desk) && !/\/t\/demo/.test(desk));
+  check('desk email is max@corridor.video if shown',
+    /max@corridor\.video/.test(desk) && !/hello@corridor\.tours/.test(desk) && !/@corridor\.tours/.test(desk));
+  check('desk is light homepage type and color',
+    /#F7F4ED/.test(desk) && /#1E5AA8/.test(desk) && /#2B2B2B/.test(desk)
+      && /Instrument Serif/.test(desk) && /Archivo/.test(desk) && !/#101E33/.test(desk));
+  check('landing file is unchanged by the desk',
+    !/desk:\s*'\/listings'/.test(fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')));
+  check('verify redirect target is the desk', /res\.redirect\(302, '\/listings'\)/.test(authSrc));
+  check('desk list is scoped to req.account.id',
+    /r\.accountId === req\.account\.id/.test(authSrc) && !/\/api\/requests/.test(authSrc));
+  check('status labels are plain language',
+    /Working on it/.test(authSrc) && /'Ready'/.test(authSrc) && /'Sent'/.test(authSrc));
+  check('desk is not an all-listings founder console',
+    !/isOperator|isAdmin|max@corridor\.video|maxcharlip@gmail\.com/.test(authSrc)
+      && /r\.accountId === req\.account\.id/.test(authSrc));
 }
 
 // --- listing/tour page stays the existing /t/:slug template, now light ------

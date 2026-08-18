@@ -881,7 +881,7 @@ api.patch('/requests/:id', handle(async (req, res) => {
   const request = requestsRepo.byId(req.params.id);
   if (!request) return res.status(404).json({ error: 'Request not found.' });
 
-  const STATUSES = ['new', 'in progress', 'delivered', 'declined'];
+  const STATUSES = ['new', 'in progress', 'cutting', 'ready', 'delivered', 'declined'];
   if (req.body?.status !== undefined) {
     if (!STATUSES.includes(req.body.status)) {
       return res.status(400).json({ error: `Status must be one of: ${STATUSES.join(', ')}.` });

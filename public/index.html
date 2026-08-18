@@ -558,7 +558,7 @@
       var data = null;
       try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
       if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
-        doneModal.style.display = 'block';
+        location.href = data.redirect || '/listings';
         return;
       }
       fail((data && data.error) ||
