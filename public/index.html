@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — They walk the building on their phone. Then they book the showing.</title>
-  <meta name="description" content="They walk the building on their phone. Then they book the showing. Detroit based. We work with anyone around the world." />
+  <title>Corridor — They walk the building. Then they book.</title>
+  <meta name="description" content="They walk the building. Then they book. Detroit founded. We cut a listing anywhere." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -84,8 +84,11 @@
   }
   .sky-copy p {
     font-size: 15px; line-height: 1.4; letter-spacing: -.01em;
-    margin: 0 0 14px; max-width: 34ch; color: #2B2B2B;
+    margin: 0 0 14px; max-width: 28ch; color: #2B2B2B;
     text-shadow: 0 1px 14px rgba(255,255,255,.42);
+  }
+  .sky-copy .geo {
+    max-width: 32ch; font-size: 14px; color: #3d3a36;
   }
   .sky-copy .pill { padding: 10px 18px; font-size: 14px; }
   .pill {
@@ -96,48 +99,12 @@
 
   .band-paper { background: #F7F4ED; }
   .band-sky { background: #B8D7EB; }
-  .inner { max-width: 1400px; margin: 0 auto; padding: clamp(56px, 8vw, 88px) 24px; }
-  .spread {
-    display: grid;
-    grid-template-columns: minmax(148px, 200px) minmax(0, 1fr) minmax(148px, 200px);
-    gap: 28px 36px;
-    align-items: start;
-  }
-  .gutter .kicker {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em;
-    text-transform: uppercase; color: #D47A54; margin: 4px 0 8px;
-  }
-  .gutter .aside-line {
-    font-family: var(--serif); font-size: clamp(22px, 2.2vw, 28px);
-    line-height: 1.15; margin: 0; color: #2B2B2B;
-  }
-  .gutter .aside-note {
-    margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #5F5C57;
-  }
-  .gutter-end { text-align: right; }
-
-  .beats {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: clamp(28px, 4vw, 48px);
-  }
-  .beats h2 {
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(28px, 3.4vw, 40px); line-height: 1.05; letter-spacing: -.02em;
-    margin: 0 0 8px;
-  }
-  .beats p { margin: 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
-
+  .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
   .prices {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 220px));
-    gap: 24px 48px;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 32px;
     border-top: 1px solid #D47A54; padding-top: 28px;
   }
-  .proof-head {
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -.02em;
-    margin: 0 0 10px;
-  }
-  .proof-note { margin: 0; font-size: 15px; line-height: 1.5; color: #5F5C57; max-width: 42ch; }
   .owe-line { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5F5C57; text-align: center; }
   .prices h3 {
     font-family: var(--serif); font-weight: 400;
@@ -181,7 +148,7 @@
   .check { display: flex; align-items: flex-start; gap: 11px; font-family: var(--sans); font-size: 14.5px; letter-spacing: 0; text-transform: none; color: #2B2B2B; cursor: pointer; }
   .err { display: none; font-family: var(--sans); font-size: 12.5px; letter-spacing: 0; text-transform: none; color: #A93521; }
 
-  .faq { max-width: 640px; }
+  .faq { max-width: 640px; margin: 0 auto; }
   .faq h2 {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 20px;
@@ -192,15 +159,10 @@
   .faq summary::-webkit-details-marker { display: none; }
   .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
 
-  @media (max-width: 1000px) {
-    .spread { grid-template-columns: 1fr; gap: 22px; }
-    .gutter-end { text-align: left; }
-  }
   @media (max-width: 860px) {
-    .nav-wide { display: none !important; }
     header a, header button { min-height: 44px; }
     .sky-copy { width: min(22rem, 90%); padding: 4px 20px 0; }
-    .beats, .prices { grid-template-columns: 1fr; }
+    .prices { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -216,126 +178,59 @@
         </svg>
         <span>Corridor</span>
       </button>
-      <a class="nav-wide" href="#product">What we do</a>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
     </header>
     <div class="sky-copy">
       <h1>CRE marketing is boring. So we fixed it.</h1>
-      <p>They walk the building on their phone. Then they book the showing.</p>
-      <a class="pill" href="#product">What we do</a>
-    </div>
-  </section>
-
-  <section id="product" class="band-paper" style="scroll-margin-top: 24px;">
-    <div class="inner spread">
-      <aside class="gutter">
-        <p class="kicker">Turnaround</p>
-        <p class="aside-line">48 hours.</p>
-        <p class="aside-note">From the photos you already have. No reshoot. No crew on site.</p>
-      </aside>
-      <div class="beats">
-        <article>
-          <h2>The walk</h2>
-          <p>They see the space in 40 seconds, not 27 stills.</p>
-        </article>
-        <article>
-          <h2>The showing</h2>
-          <p>The ones who stay in the rooms are the ones who book.</p>
-        </article>
-        <article>
-          <h2>The listing</h2>
-          <p>One link and a QR for the flyer and the sign.</p>
-        </article>
-      </div>
-      <aside class="gutter gutter-end">
-        <p class="kicker">Where</p>
-        <p class="aside-line">Detroit based.</p>
-        <p class="aside-note">We work with anyone around the world.</p>
-      </aside>
-    </div>
-  </section>
-
-  <section id="proof" class="band-paper" style="scroll-margin-top: 24px;">
-    <div class="inner" style="padding-top: 8px; padding-bottom: clamp(40px, 6vw, 64px);">
-      <h2 class="proof-head">This is what your listing looks like.</h2>
-      <p class="proof-note">A walk through the rooms. A page. A QR for the flyer and the sign.</p>
+      <p>They walk the building. Then they book.</p>
+      <p class="geo">Detroit founded. We cut a listing anywhere.</p>
+      <a class="pill" href="#intake">Send a listing</a>
     </div>
   </section>
 
   <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
-    <div class="inner spread">
-      <aside class="gutter">
-        <p class="kicker">Pay</p>
-        <p class="aside-line">Invoice after you see the cut.</p>
-        <p class="aside-note">No deposit up front. The invoice follows the review.</p>
-      </aside>
-      <div>
-        <div class="prices">
-          <article>
-            <h3>$200</h3>
-            <p>One listing.</p>
-          </article>
-          <article>
-            <h3>$750</h3>
-            <p>Five listings.</p>
-          </article>
-        </div>
-        <p class="note">You see the cut before you owe.</p>
+    <div class="inner">
+      <div class="prices">
+        <article>
+          <h3>$200</h3>
+          <p>Photos you already have.</p>
+        </article>
+        <article>
+          <h3>$350</h3>
+          <p>Phone walk.</p>
+        </article>
+        <article>
+          <h3>$750</h3>
+          <p>Five-pack.</p>
+        </article>
       </div>
-      <aside class="gutter gutter-end">
-        <p class="kicker">Start</p>
-        <p class="aside-line">From the photos you already have.</p>
-        <p class="aside-note">Phone photos are fine. Listing photos are better. Either works.</p>
-      </aside>
+      <p class="note">You see the cut before you owe.</p>
     </div>
   </section>
 
   <section id="faq" class="band-paper" style="scroll-margin-top: 24px;">
-    <div class="inner spread" style="padding-bottom: clamp(40px, 6vw, 56px);">
-      <aside class="gutter">
-        <p class="kicker">Usual</p>
-        <p class="aside-line">Same questions.</p>
-        <p class="aside-note">Photos, turnaround, who pays when.</p>
-      </aside>
+    <div class="inner" style="padding-bottom: clamp(40px, 6vw, 56px);">
       <div class="faq">
         <h2>Questions</h2>
         <details>
           <summary>What do I send?</summary>
-          <p>The listing photos you already have. We cut by hand from your photos. Twelve to forty. Crooked phone shots are fine — we cut the best ten.</p>
+          <p>The listing photos you already have. We cut by hand from your photos. Twelve to forty.</p>
         </details>
         <details>
           <summary>How fast is it back?</summary>
-          <p>48 hours. Two revision rounds are included. If we need a photo you didn’t send, we just ask.</p>
+          <p>48 hours. Two revision rounds are included.</p>
         </details>
         <details>
           <summary>When do I pay?</summary>
           <p>After you see the cut. If it isn’t right, we revise or we don’t bill.</p>
         </details>
-        <details>
-          <summary>Who owns the tour?</summary>
-          <p>You do. The page, the QR, and the cut are yours to share on the listing, the flyer, and the sign.</p>
-        </details>
-        <details>
-          <summary>Do you only work Detroit?</summary>
-          <p>Detroit is home. We work with anyone around the world.</p>
-        </details>
       </div>
-      <aside class="gutter gutter-end">
-        <p class="kicker">Then</p>
-        <p class="aside-line">Send the address.</p>
-        <p class="aside-note">Four fields. The rest is optional.</p>
-      </aside>
     </div>
   </section>
 
   <section class="band-sky">
-    <div class="inner spread" style="padding-top: clamp(48px, 7vw, 72px);">
-      <aside class="gutter">
-        <p class="kicker">Now</p>
-        <p class="aside-line">Four fields.</p>
-        <p class="aside-note">Name, email, address, photos. Expand if you have more.</p>
-      </aside>
+    <div class="inner" style="padding-top: clamp(48px, 7vw, 72px);">
       <div class="inquire" id="intake" style="scroll-margin-top: 32px;">
         <h2>Send a listing.</h2>
         <div id="intake-form" data-endpoint="/api/intake">
@@ -434,11 +329,6 @@
           </div>
         </div>
       </div>
-      <aside class="gutter gutter-end">
-        <p class="kicker">After</p>
-        <p class="aside-line">You see the cut before you owe.</p>
-        <p class="aside-note">Invoice follows the review. No deposit up front.</p>
-      </aside>
     </div>
   </section>
 
