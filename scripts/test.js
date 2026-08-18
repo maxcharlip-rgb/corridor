@@ -786,7 +786,7 @@ main().catch(async (err) => {
   const fsx = await import('node:fs');
   const intakeSrc = fsx.readFileSync(new URL('../server/routes/intake.js', import.meta.url), 'utf8');
   const mailSrc = fsx.readFileSync(new URL('../server/mailer.js', import.meta.url), 'utf8');
-  const { notifyAddress, orderConfirmation } = await import('../server/mailer.js');
+  const { notifyAddress, orderConfirmation, requestConfirmation, signInLink, requestDelivery, orderNotification } = await import('../server/mailer.js');
 
   check('intake does not hardcode hello@corridor.tours', !/hello@corridor\.tours/.test(intakeSrc));
   check('intake notifies via notifyAddress()', /notifyAddress\(\)/.test(intakeSrc));
@@ -804,8 +804,54 @@ main().catch(async (err) => {
   check('broker confirmation has no sign-in / magic link',
     !/sign-in|sign in|magic|verify\?token|View your tours/i.test(`${confirm.subject}\n${confirm.html}`));
   check('broker confirmation promises 48 hours', /48 hours/i.test(confirm.html));
+  check('broker confirmation says they see the cut before they owe', /see the cut before you owe/i.test(confirm.html));
   check('notify default is in the mailer, not a leftover tours address',
     /max@corridor\.video/.test(mailSrc) && !/hello@corridor\.tours/.test(mailSrc));
+  check('shared shell dropped the generic cinematic-marketing footer',
+    !/cinematic marketing for commercial real estate/i.test(mailSrc));
+  check('shared shell uses the live-site line and Detroit footer',
+    /CRE marketing is boring\. So we fixed it\./.test(confirm.html)
+      && /corridor\.video/.test(confirm.html)
+      && /Detroit/.test(confirm.html)
+      && /#F7FAFD/.test(confirm.html)
+      && /https:\/\/www\.corridor\.video/.test(confirm.html));
+
+  const requestConfirm = requestConfirmation({ address: '1 Test St', wants: ['video tour'], photos: [] });
+  check('request confirmation sits in the branded shell',
+    /We've got it\./.test(requestConfirm.html)
+      && /48 hours/i.test(requestConfirm.html)
+      && /see the cut before you owe/i.test(requestConfirm.html)
+      && !/\/t\/demo/.test(requestConfirm.html)
+      && !/monthly/i.test(requestConfirm.html));
+
+  const link = signInLink({ email: 'broker@test.example' }, 'https://www.corridor.video/verify?token=abc', 20);
+  check('sign-in email is Corridor, not a generic login template',
+    link.subject === 'Your Corridor link'
+      && /Open Corridor\./.test(link.html)
+      && /One tap\. No password\./.test(link.html)
+      && />Sign in</.test(link.html)
+      && /Works once\. Expires in 20 minutes\./.test(link.html)
+      && /ignore it/.test(link.html)
+      && /Here's your link/.test(link.html) === false);
+
+  const delivery = requestDelivery({ address: '1 Test St' }, {
+    tourUrl: 'https://www.corridor.video/watch/1',
+    downloadUrl: 'https://www.corridor.video/dl/1.mp4',
+    note: '',
+  });
+  check('delivery email keeps watch and download in the branded shell',
+    /It's ready\./.test(delivery.html)
+      && /Watch the tour/.test(delivery.html)
+      && /Download the MP4/.test(delivery.html)
+      && /CRE marketing is boring\. So we fixed it\./.test(delivery.html)
+      && !/\/t\/demo/.test(delivery.html));
+
+  const notify = orderNotification({ address: '1 Test St', name: 'Ada', email: 'ada@test.example', photos: [] });
+  check('operator notify keeps the queue table and subject, only the shell changed',
+    notify.subject === 'New order — 1 Test St'
+      && /Open the queue/.test(notify.html)
+      && /ada@test\.example/.test(notify.html)
+      && /CRE marketing is boring\. So we fixed it\./.test(notify.html));
 }
 
 // --- property intake --------------------------------------------------------

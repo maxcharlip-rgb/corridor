@@ -83,9 +83,18 @@ export async function sendMail({ to, subject, html, replyTo, attachments }) {
 
 // --- templates ---------------------------------------------------------------
 
-const SHELL = (body) => `<div style="font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;max-width:620px">
+const SERIF = "'Instrument Serif',Georgia,'Times New Roman',serif";
+const SANS = "Archivo,'Helvetica Neue',Helvetica,Arial,sans-serif";
+
+const SHELL = (body) => `<div style="margin:0;padding:28px 20px;background:#F7FAFD">
+<div style="font:15px/1.6 ${SANS};color:#101418;max-width:560px;margin:0 auto">
+<p style="margin:0 0 28px;font:22px/1.15 ${SERIF};color:#101418">Corridor</p>
 ${body}
-<p style="margin-top:28px;font-size:12px;color:#9aa0a6">Corridor · cinematic marketing for commercial real estate</p>
+<div style="margin-top:32px;padding-top:20px;border-top:1px solid #E9F0F8">
+<p style="margin:0 0 8px;font:italic 16px/1.4 ${SERIF};color:#1E5AA8">CRE marketing is boring. So we fixed it.</p>
+<p style="margin:0;font:11px/1.5 ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#5B6672"><a href="https://www.corridor.video" style="color:#5B6672;text-decoration:none">corridor.video</a> · Detroit</p>
+</div>
+</div>
 </div>`;
 
 const row = (label, value) =>
@@ -128,13 +137,13 @@ export function requestConfirmation(request) {
   return {
     subject: 'We got your property — Corridor',
     html: SHELL(`
-      <h2 style="margin:0 0 10px;font-size:20px">Thanks — we have it.</h2>
+      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">We've got it.</h2>
       <p style="margin:0 0 16px">We are cutting the ${esc(request.wants.join(' and ') || 'video tour')} for
       <b>${esc(request.address || 'your property')}</b> now. It comes back to this address, ready to post
       on CoStar, LinkedIn, or anywhere else your listing lives.</p>
-      <p style="margin:0 0 16px;color:#6b7280">Your video comes back in 48 hours or less. If we need
-      anything else — a better exterior shot, a floor plate — we will reply to this email.</p>
-      <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
+      <p style="margin:0 0 16px;color:#5B6672">Your video comes back in 48 hours or less. You see the cut
+      before you owe. If we need a photo — a better exterior shot, a floor plate — we will reply to this email.</p>
+      <p style="margin:0;color:#5B6672;font-size:13px">Nothing else to do on your end.</p>
     `),
   };
 }
@@ -142,13 +151,12 @@ export function requestConfirmation(request) {
 /** The sign-in link. The whole of authentication, as far as a broker is concerned. */
 export function signInLink(account, url, minutes) {
   return {
-    subject: 'Your Corridor sign-in link',
+    subject: 'Your Corridor link',
     html: SHELL(`
-      <h2 style="margin:0 0 10px;font-size:20px">Here's your link.</h2>
-      <p style="margin:0 0 20px">It signs you straight in — no password to remember.</p>
-      <p style="margin:0 0 18px"><a href="${esc(url)}" style="background:#1E5AA8;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:500;font-size:15px">Sign in to Corridor</a></p>
-      <p style="margin:0;color:#6b7280;font-size:13px">The link works once and expires in ${minutes} minutes.
-      If you didn't ask for it, you can ignore this — nothing has changed on your account.</p>
+      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">Open Corridor.</h2>
+      <p style="margin:0 0 20px">One tap. No password.</p>
+      <p style="margin:0 0 18px"><a href="${esc(url)}" style="background:#1E5AA8;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:500;font-size:15px">Sign in</a></p>
+      <p style="margin:0;color:#5B6672;font-size:13px">Works once. Expires in ${minutes} minutes. If you didn’t ask for this, ignore it.</p>
     `),
   };
 }
@@ -161,10 +169,10 @@ export function orderConfirmation(request) {
   return {
     subject: `We've got it — ${request.address || 'your listing'}`,
     html: SHELL(`
-      <h2 style="margin:0 0 10px;font-size:20px">We've got it.</h2>
+      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">We've got it.</h2>
       <p style="margin:0 0 16px">We're cutting the tour for <b>${esc(request.address || 'your listing')}</b> now.
-      It comes back to this address <b>within 48 hours</b>. If we need a photo you didn't send, we'll just ask.</p>
-      <p style="margin:0;color:#6b7280;font-size:13px">Nothing else to do on your end.</p>
+      It comes back to this address <b>within 48 hours</b>. You see the cut before you owe. If we need a photo you didn't send, we'll just ask.</p>
+      <p style="margin:0;color:#5B6672;font-size:13px">Nothing else to do on your end.</p>
     `),
   };
 }
@@ -216,11 +224,11 @@ export function requestDelivery(request, { tourUrl, downloadUrl, note }) {
   return {
     subject: `Your video tour — ${request.address || 'Corridor'}`,
     html: SHELL(`
-      <h2 style="margin:0 0 10px;font-size:20px">It is ready.</h2>
+      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">It's ready.</h2>
       ${note ? `<p style="margin:0 0 16px">${esc(note).replace(/\n/g, '<br>')}</p>` : ''}
-      ${tourUrl ? `<p style="margin:0 0 12px"><a href="${esc(tourUrl)}" style="background:#2B4FD7;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Watch the tour</a></p>` : ''}
-      ${downloadUrl ? `<p style="margin:0 0 16px"><a href="${esc(downloadUrl)}" style="color:#2B4FD7">Download the MP4</a> — post it anywhere.</p>` : ''}
-      <p style="margin:16px 0 0;color:#6b7280;font-size:13px">Want a change? Reply to this email and say what to fix.</p>
+      ${tourUrl ? `<p style="margin:0 0 12px"><a href="${esc(tourUrl)}" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Watch the tour</a></p>` : ''}
+      ${downloadUrl ? `<p style="margin:0 0 16px"><a href="${esc(downloadUrl)}" style="color:#1E5AA8">Download the MP4</a> — post it anywhere.</p>` : ''}
+      <p style="margin:16px 0 0;color:#5B6672;font-size:13px">Want a change? Reply to this email and say what to fix.</p>
     `),
   };
 }
