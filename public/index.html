@@ -42,7 +42,7 @@
     background-color: #2A5F9A;
     background-image: url("/hero-detroit.jpg");
     background-size: cover;
-    background-position: 38% 28%;
+    background-position: 38% 18%;
     background-repeat: no-repeat;
     image-rendering: auto;
   }
@@ -57,13 +57,13 @@
   .cloud {
     position: absolute;
     border-radius: 60% 40% 55% 45%;
-    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.34), rgba(255,255,255,.08) 58%, transparent 74%);
-    filter: blur(18px);
+    background: radial-gradient(ellipse at 36% 40%, rgba(255,255,255,.5), rgba(255,255,255,.14) 55%, transparent 74%);
+    filter: blur(16px);
     will-change: transform;
   }
-  .cloud-a { top: 4%; left: 0%; width: 42%; height: 46%; animation: drift-a 36s linear infinite alternate; }
-  .cloud-b { top: 12%; left: 28%; width: 48%; height: 40%; animation: drift-b 42s linear infinite alternate; }
-  .cloud-c { top: 1%; left: 58%; width: 36%; height: 32%; animation: drift-a 28s linear infinite alternate-reverse; }
+  .cloud-a { top: 4%; left: 0%; width: 44%; height: 48%; animation: drift-a 36s linear infinite alternate; }
+  .cloud-b { top: 12%; left: 28%; width: 50%; height: 42%; animation: drift-b 42s linear infinite alternate; }
+  .cloud-c { top: 1%; left: 56%; width: 38%; height: 34%; animation: drift-a 28s linear infinite alternate-reverse; }
   @keyframes drift-a {
     from { transform: translate3d(-6%, 0, 0); }
     to { transform: translate3d(12%, 3%, 0); }

@@ -750,7 +750,7 @@ main().catch(async (err) => {
   check('hero photograph is a real full-quality image in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 12_000_000);
   check('homepage uses the Detroit riverfront photograph', /hero-detroit\.jpg/.test(landing) && !/background-image:\s*url\("\/hero-detroit\.png"\)/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
-  check('hero keeps the skyline low with open sky for type', /background-position:\s*38%\s*28%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
+  check('hero keeps the skyline low with open sky for type', /background-position:\s*38%\s*18%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('photograph is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
   check('type sits in the open sky, not over the skyline', /class="sky-copy"/.test(landing) && /width:\s*min\(22rem,\s*40%\)/.test(landing));
