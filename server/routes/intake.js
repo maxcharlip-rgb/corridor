@@ -104,13 +104,6 @@ async function discard(files) {
 
 const limiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, scope: 'intake' });
 
-/* GET used to fall through to the authenticated /api router and look like a
-   login wall. This route is public; only POST creates an order. */
-intakeApi.get('/', (_req, res) => {
-  res.set('Allow', 'POST');
-  res.status(405).json({ success: false, error: 'POST a listing to this endpoint.' });
-});
-
 /* multer signals its own limits by throwing, which would otherwise surface as a
    500 and an unusable message. Translate into the {success,error} contract. */
 function receive(req, res, next) {

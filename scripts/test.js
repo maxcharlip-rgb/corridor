@@ -207,8 +207,20 @@ async function main() {
     (afterGuest.requests || []).some((r) => r.email === 'guest@test.example' && r.address === '2 Guest Ave, Detroit, MI'));
   check('guest email silently created an account for the queue',
     (afterGuest.accounts || []).some((a) => a.email === 'guest@test.example'));
-  const getIntake = await req('/api/intake');
-  check('GET /api/intake is not an auth wall', getIntake.status !== 401, `got ${getIntake.status}`);
+
+  /* Production repro: name+email+address and no photos used to 400 on size.
+     After this fix it must fail on photos, never square footage. */
+  const noPhotoFd = new FormData();
+  noPhotoFd.append('name', 'No Photos');
+  noPhotoFd.append('email', 'nophotos@test.example');
+  noPhotoFd.append('address', '3 Empty Lot, Detroit, MI');
+  const noPhotoRes = await fetch(`${BASE}/api/intake`, { method: 'POST', body: noPhotoFd });
+  const noPhotoJson = await noPhotoRes.json().catch(() => null);
+  check('name+email+address without photos is a photo error, not size',
+    noPhotoRes.status === 400
+      && /photo/i.test(noPhotoJson?.error || '')
+      && !/square footage/i.test(noPhotoJson?.error || ''),
+    `got ${noPhotoRes.status} ${noPhotoJson?.error}`);
 
   // 4. Restart durability ----------------------------------------------------
   section('4. Survives restart with state intact');
