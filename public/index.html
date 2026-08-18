@@ -41,9 +41,9 @@
     position: absolute; inset: 0;
     background-color: #B8D7EB;
     background-image: url("/hero-detroit.png");
-    /* Height-fill keeps the painted river (the bottom of the PNG) in frame.
-       cover + a high sky crop hid the water on wide / fullscreen viewports. */
-    background-size: auto 100%;
+    /* Full-bleed cover, pinned to the bottom so the painted river stays
+       in frame. A high sky crop (22%) was what hid the water in fullscreen. */
+    background-size: cover;
     background-position: 46% 100%;
     background-repeat: no-repeat;
     image-rendering: auto;
