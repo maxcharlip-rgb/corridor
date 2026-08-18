@@ -906,7 +906,7 @@ main().catch(async (err) => {
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
-  const skyCopy = landing.slice(landing.indexOf('class="sky-copy"'), landing.indexOf('id="pricing"'));
+  const skyCopy = landing.slice(landing.indexOf('class="sky-copy"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
   check('hero copy is the punch line in the open left sky', /class="sky-copy"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /They walk the building\. Then they book\./.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the shorter subhead, no cinematic', /They walk the building\. Then they book\./.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
@@ -914,8 +914,13 @@ main().catch(async (err) => {
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   check('nav is Pricing and FAQ — guest home is inquire only',
     /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
-      && !/href="#product"/.test(landing) && !/What we do/.test(landing)
+      && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
       && !/data-open-auth/.test(landing) && !/Create account/.test(landing) && !/>Sign in</.test(landing));
+  check('What we do is two sentences, not process cards',
+    /<h2>What we do<\/h2>/.test(landing)
+      && /Sending a photo dump is how CRE still does it/.test(landing)
+      && /Corridor is the video they send and the one they put on the listing/.test(landing)
+      && landing.indexOf('id="what"') < landing.indexOf('id="pricing"'));
   check('landing has no email-me-a-link auth path',
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
   check('landing form follows intake redirect to the desk',

@@ -159,6 +159,13 @@
   .faq summary::-webkit-details-marker { display: none; }
   .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
 
+  .what { max-width: 36rem; }
+  .what h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 12px;
+  }
+  .what p { margin: 0; font-size: 17px; line-height: 1.45; color: #5F5C57; }
+
   @media (max-width: 860px) {
     header a, header button { min-height: 44px; }
     .sky-copy { width: min(22rem, 90%); padding: 4px 20px 0; }
@@ -186,6 +193,15 @@
       <p>They walk the building. Then they book.</p>
       <p class="geo">Detroit founded. We cut a listing anywhere.</p>
       <a class="pill" href="#intake">Send a listing</a>
+    </div>
+  </section>
+
+  <section id="what" class="band-paper" style="scroll-margin-top: 24px;">
+    <div class="inner">
+      <div class="what">
+        <h2>What we do</h2>
+        <p>Sending a photo dump is how CRE still does it — nobody has time. Corridor is the video they send and the one they put on the listing.</p>
+      </div>
     </div>
   </section>
 
