@@ -1012,6 +1012,17 @@ main().catch(async (err) => {
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
   check('pricing lists $200, $350, and $750', /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing) && !/<h3>Custom<\/h3>/.test(landing));
+  check('pricing also lists monthly for shops that keep sending',
+    /class="price-kicker">One-time</.test(landing)
+      && /class="price-kicker later">Monthly</.test(landing)
+      && /\$750 <span class="per">\/ month<\/span>/.test(landing)
+      && /4 videos\./.test(landing)
+      && /Unused roll 60 days, bank cap 8\./.test(landing)
+      && /Extra listing \$200\./.test(landing)
+      && /Shops that keep sending listings\./.test(landing)
+      && !/dark SaaS|pricing-grid|featured plan/i.test(landing)
+      && !/<h3>Custom<\/h3>/.test(landing)
+      && !/half forever/i.test(landing));
   check('invoice-after-cut language is one trust line, not a column', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));

@@ -185,6 +185,12 @@
   .band-paper { background: #F7F4ED; }
   .band-sky { background: #B8D7EB; }
   .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
+  .price-kicker {
+    font-family: var(--mono);
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: #5F5C57; margin: 0 0 14px;
+  }
+  .price-kicker.later { margin-top: 40px; }
   .prices {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px 32px;
@@ -196,7 +202,16 @@
     font-size: clamp(40px, 4.6vw, 56px); line-height: .9; letter-spacing: -.03em;
     margin: 0 0 6px;
   }
+  .prices h3 .per {
+    font-family: var(--sans); font-weight: 400;
+    font-size: .34em; letter-spacing: -.01em; color: #5F5C57;
+  }
   .prices p { margin: 0; font-size: 14px; line-height: 1.45; color: #5F5C57; }
+  .prices p + p { margin-top: 6px; }
+  .month-quiet {
+    margin: 16px 0 0;
+    font-size: 14px; line-height: 1.45; color: #5F5C57;
+  }
   .note {
     font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
     line-height: 1.2; margin: 28px 0 0;
@@ -352,6 +367,7 @@
 
   <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
     <div class="inner">
+      <p class="price-kicker">One-time</p>
       <div class="prices">
         <article>
           <h3>$200</h3>
@@ -366,6 +382,16 @@
           <p>Five-pack.</p>
         </article>
       </div>
+      <p class="price-kicker later">Monthly</p>
+      <div class="prices">
+        <article>
+          <h3>$750 <span class="per">/ month</span></h3>
+          <p>4 videos.</p>
+          <p>Unused roll 60 days, bank cap 8.</p>
+          <p>Extra listing $200.</p>
+        </article>
+      </div>
+      <p class="month-quiet">Shops that keep sending listings.</p>
       <p class="note">You see the cut before you owe.</p>
     </div>
   </section>
