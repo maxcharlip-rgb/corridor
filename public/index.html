@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Corridor — They walk the building. Then they book.</title>
-  <meta name="description" content="They walk the building. Then they book. Detroit founded. We cut a listing anywhere." />
-  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'&gt;&lt;path d='M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23' stroke='%231E5AA8' stroke-width='2.4' fill='none' stroke-linecap='round'/&gt;&lt;path d='M8.6 8.4 15.4 12l-6.8 3.6z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
+  <title>Corridor — CRE marketing is boring.</title>
+  <meta name="description" content="We make a video of your listing. It helps it lease. You get the day back. Not a BS tour. Detroit founded. We cut a listing anywhere." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 24'&gt;&lt;path d='M16.4 5.1a8.15 8.15 0 1 0 0 13.8' stroke='%232B2B2B' stroke-width='2.2' fill='none' stroke-linecap='round'/&gt;&lt;path d='M7.7 8.2 14.4 12 7.7 15.8z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
   <link rel="preload" href="/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/hero-detroit-phone.webp" as="image" type="image/webp" media="(max-width: 720px)" />
@@ -62,24 +62,12 @@
 
   .street {
     position: relative;
-    height: 148vh;
-    background: #B8D7EB;
-  }
-  .street-pin {
-    position: sticky;
-    top: 0;
     height: 100vh;
     height: 100dvh;
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
     background: #B8D7EB;
-  }
-  .street-stage {
-    position: absolute;
-    inset: 0;
-    transform-origin: 58% 72%;
-    will-change: transform;
   }
   .street-art {
     position: absolute; inset: 0;
@@ -118,24 +106,28 @@
     padding: 22px clamp(20px, 4.5vw, 64px);
     background: transparent;
   }
-  .sky-bar .wordmark {
-    display: flex; align-items: center; gap: 9px;
+  .wordmark {
+    display: inline-flex; align-items: center; gap: 0;
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
+    color: #2B2B2B;
   }
-  .sky-bar .wordmark span { font-family: var(--serif); font-size: 28px; color: #2B2B2B; }
+  .wordmark .mark-c { display: block; width: 18px; height: 22px; flex: none; }
+  .wordmark .rest {
+    font-family: var(--serif); font-size: 26px; letter-spacing: -.035em; color: #2B2B2B;
+    margin-left: -1px;
+  }
   .sky-bar .nav-wide {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
   }
-  .nav-send { padding: 10px 18px; font-size: 13px; }
   .sky-board { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   .sky-board h1 {
     position: absolute;
     left: clamp(20px, 4.5vw, 64px);
-    top: 38%;
-    width: min(12em, calc(100% - 2 * clamp(20px, 4.5vw, 64px)));
+    top: max(88px, 15vh);
+    width: min(8.4em, 40vw);
     font-family: var(--serif); font-weight: 400;
-    font-size: clamp(48px, 3.8vw, 52px); line-height: .96; letter-spacing: -.04em;
+    font-size: clamp(40px, 3.5vw, 48px); line-height: .96; letter-spacing: -.04em;
     margin: 0; color: #2B2B2B;
   }
   .sky-lead {
@@ -145,9 +137,10 @@
     max-width: 22em;
     pointer-events: auto;
   }
-  .sky-lead .walk {
+  .sky-lead .pitch {
     margin: 0;
-    font-size: 15px; line-height: 1.4; letter-spacing: -.01em; color: #2B2B2B;
+    color: #5F5C57;
+    font-size: 14px; line-height: 1.45; letter-spacing: -.01em;
   }
   .sky-lead .pill { margin-top: 16px; }
   .geo {
@@ -244,14 +237,24 @@
     .prices { grid-template-columns: 1fr; }
   }
 
+  .foot-bar {
+    max-width: 1400px; margin: 0 auto;
+    padding: 28px 24px 40px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .foot-bar .wordmark { margin-right: 0; }
+  .foot-bar .mark-c { width: 14px; height: 17px; }
+  .foot-bar .rest { font-size: 20px; }
+  .foot-bar p {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; margin: 0;
+  }
+
   /* Phone: full first screen, recut painting on top, type clustered at the bottom. */
   @media (max-width: 720px) {
-    .street { height: 128vh; }
-    .street-pin {
+    .street {
       height: 100svh;
       min-height: 100svh;
     }
-    .street-stage { transform-origin: 50% 42%; }
     .street-art {
       background-image: image-set(
         url("/hero-detroit-phone.avif") type("image/avif"),
@@ -266,7 +269,6 @@
         linear-gradient(90deg, rgba(247,244,237,.38) 0%, transparent 42%);
     }
     .street-fade { height: 40px; }
-    .nav-send,
     .geo { display: none; }
     .sky-board {
       inset: auto clamp(20px, 4.5vw, 64px) max(22px, 4.5vh) clamp(20px, 4.5vw, 64px);
@@ -282,50 +284,35 @@
       font-size: clamp(1.85rem, 8.4vw, 2.15rem);
     }
     .sky-lead { position: static; max-width: 22em; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .street {
-      height: 100vh;
-      height: 100dvh;
-      min-height: 100vh;
-      min-height: 100dvh;
-    }
-    .street-pin { position: relative; }
-    .street-stage { transform: none !important; will-change: auto; }
+    .foot-bar { flex-wrap: wrap; }
   }
 </style>
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <div class="street-pin">
-    <div class="street-stage">
     <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water."></div>
-    </div>
     <div class="street-haze" aria-hidden="true"></div>
     <div class="street-grain" aria-hidden="true"></div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
-      <button type="button" class="wordmark" data-home="1">
-        <svg width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true" style="display: block; color: #2B2B2B;">
-          <path d="M2.4 23V10.6a8.6 8.6 0 0 1 17.2 0V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
-          <path d="M8.6 8.4 15.4 12l-6.8 3.6z" fill="currentColor"></path>
+      <button type="button" class="wordmark" data-home="1" aria-label="Corridor">
+        <svg class="mark-c" viewBox="0 0 20 24" fill="none" aria-hidden="true">
+          <path d="M16.4 5.1a8.15 8.15 0 1 0 0 13.8" stroke="#2B2B2B" stroke-width="2.2" stroke-linecap="round"></path>
+          <path d="M7.7 8.2 14.4 12 7.7 15.8z" fill="#1E5AA8"></path>
         </svg>
-        <span>Corridor</span>
+        <span class="rest">orridor</span>
       </button>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
-      <a class="pill nav-send" href="#intake">Send a listing</a>
     </header>
     <div class="sky-board">
-      <h1>CRE marketing is boring. So we fixed it.</h1>
+      <h1>CRE marketing is boring.</h1>
       <div class="sky-lead">
-        <p class="walk">They walk the building. Then they book.</p>
+        <p class="pitch">We make a video of your listing. It helps it lease. You get the day back. Not a BS tour.</p>
         <a class="pill" href="#intake">Send a listing</a>
       </div>
     </div>
     <p class="geo">Detroit founded. We cut a listing anywhere.</p>
-    </div>
   </section>
 
   <section id="what" class="band-paper" style="scroll-margin-top: 24px;">
@@ -481,8 +468,15 @@
   </section>
 
   <footer class="band-sky">
-    <div style="max-width: 1400px; margin: 0 auto; padding: 28px 24px 40px;">
-      <p style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; margin: 0;">DETROIT · MAX@CORRIDOR.VIDEO</p>
+    <div class="foot-bar">
+      <a class="wordmark" href="/" aria-label="Corridor">
+        <svg class="mark-c" viewBox="0 0 20 24" fill="none" aria-hidden="true">
+          <path d="M16.4 5.1a8.15 8.15 0 1 0 0 13.8" stroke="#2B2B2B" stroke-width="2.2" stroke-linecap="round"></path>
+          <path d="M7.7 8.2 14.4 12 7.7 15.8z" fill="#1E5AA8"></path>
+        </svg>
+        <span class="rest">orridor</span>
+      </a>
+      <p>DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
 <script>
@@ -736,57 +730,6 @@
     .then(function (data) { if (data && data.account) account = data.account; })
     .catch(function () {})
     .then(function () { paintIdentity(); paintPrice(); });
-}());
-
-(function () {
-  var street = document.querySelector('.street');
-  var stage = document.querySelector('.street-stage');
-  if (!street || !stage) return;
-
-  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var phone = window.matchMedia('(max-width: 720px)');
-  var clip = document.querySelector('video.street-scroll');
-  if (clip && !clip.getAttribute('src') && !(clip.currentSrc || '')) clip = null;
-
-  function progress() {
-    var travel = street.offsetHeight - window.innerHeight;
-    if (travel <= 0) return 0;
-    return Math.max(0, Math.min(1, -street.getBoundingClientRect().top / travel));
-  }
-
-  function apply(p) {
-    if (motion.matches) {
-      stage.style.transform = '';
-      return;
-    }
-    var near = phone.matches;
-    var scale = 1 + p * (near ? 0.12 : 0.26);
-    var x = p * (near ? 0 : -3);
-    var y = p * (near ? 3 : 6);
-    stage.style.transform = 'scale(' + scale + ') translate(' + x + '%,' + y + '%)';
-    if (clip && clip.duration && clip.readyState >= 1) {
-      var t = p * Math.max(0, clip.duration - 0.05);
-      if (Math.abs(clip.currentTime - t) > 0.04) {
-        try { clip.currentTime = t; } catch (e) {}
-      }
-    }
-  }
-
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function () {
-      apply(progress());
-      ticking = false;
-    });
-  }
-
-  if (!motion.matches) {
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    apply(progress());
-  }
 }());
 </script>
 </body>
