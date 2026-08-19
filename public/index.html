@@ -80,11 +80,23 @@
     background-repeat: no-repeat;
     image-rendering: auto;
   }
+  .street-loop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 46% 100%;
+    pointer-events: none;
+    display: block;
+    border: 0;
+  }
   .street-haze {
     position: absolute; inset: 0;
     pointer-events: none; z-index: 1;
     background:
-      linear-gradient(90deg, rgba(247,244,237,.78) 0%, rgba(247,244,237,.28) 26%, rgba(247,244,237,0) 54%),
+      linear-gradient(180deg, rgba(247,244,237,.58) 0%, rgba(247,244,237,.2) 20%, rgba(247,244,237,0) 40%),
+      linear-gradient(90deg, rgba(247,244,237,.62) 0%, rgba(247,244,237,.2) 24%, rgba(247,244,237,0) 48%),
       linear-gradient(0deg, rgba(247,244,237,.58) 0%, rgba(247,244,237,.14) 22%, transparent 48%);
   }
   .street-grain {
@@ -107,7 +119,6 @@
     background: transparent;
   }
   .wordmark {
-    position: relative;
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
     color: #2B2B2B;
     font-family: var(--sans);
@@ -116,30 +127,27 @@
     letter-spacing: -.02em;
     line-height: 1;
   }
-  .wordmark-play {
-    position: absolute;
-    left: .4em;
-    top: 50%;
-    width: 0; height: 0;
-    margin-top: -.12em;
-    border-style: solid;
-    border-width: .12em 0 .12em .2em;
-    border-color: transparent transparent transparent #1E5AA8;
-    pointer-events: none;
-  }
   .sky-bar .nav-wide {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
   }
   .sky-board { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-  .sky-board h1 {
+  .sky-line {
     position: absolute;
     left: clamp(20px, 4.5vw, 64px);
+    right: clamp(20px, 4.5vw, 64px);
     top: max(88px, 15vh);
-    width: min(11.6em, 44vw);
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(40px, 3.5vw, 48px); line-height: .96; letter-spacing: -.04em;
+  }
+  .sky-line h1 {
+    font-family: var(--sans); font-weight: 500;
+    font-size: clamp(1.5rem, 6.35vw, 7rem); line-height: .95; letter-spacing: -.045em;
     margin: 0; color: #2B2B2B;
+    white-space: nowrap;
+  }
+  .sky-line .fix {
+    font-family: var(--sans); font-weight: 400;
+    font-size: clamp(17px, 1.7vw, 26px); line-height: 1.2; letter-spacing: -.02em;
+    margin: 12px 0 0; color: #2B2B2B;
   }
   .sky-lead {
     position: absolute;
@@ -177,21 +185,85 @@
   .band-paper { background: #F7F4ED; }
   .band-sky { background: #B8D7EB; }
   .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
-  .prices {
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px 32px;
-    border-top: 1px solid #D47A54; padding-top: 28px;
+  .price-wrap { max-width: 1120px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
+  .price-lead {
+    max-width: 34rem; margin: 0 auto 22px;
+    text-align: center; font-size: 16px; line-height: 1.4; color: #2B2B2B;
   }
-  .owe-line { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5F5C57; text-align: center; }
-  .prices h3 {
+  .price-switch {
+    position: relative;
+    display: flex; width: fit-content; margin: 0 auto 28px; gap: 4px;
+    padding: 4px; border: 1px solid #C8C2B4; border-radius: 999px; background: #F7F4ED;
+  }
+  .price-switch input {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+  }
+  .price-switch label {
+    padding: 10px 20px; border-radius: 999px; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: #5F5C57;
+  }
+  .price-switch label:hover { color: #1E5AA8; }
+  .price-switch input:checked + label { background: #1E5AA8; color: #fff; }
+  .price-switch input:focus-visible + label { outline: 2px solid #1E5AA8; outline-offset: 2px; }
+  .price-pane-month { display: none; }
+  .price-wrap:has(#price-month:checked) .price-pane-once { display: none; }
+  .price-wrap:has(#price-month:checked) .price-pane-month { display: block; }
+  .price-grid {
+    display: grid; gap: 16px; align-items: stretch;
+  }
+  .price-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .price-grid-2 { grid-template-columns: repeat(2, minmax(0, 22rem)); justify-content: center; }
+  .price-card {
+    display: flex; flex-direction: column;
+    background: #F7F4ED; border: 1px solid #C8C2B4; border-radius: 16px;
+    padding: 22px 20px 20px; min-height: 100%;
+  }
+  .price-card.primary { border-color: #D47A54; box-shadow: 0 0 0 1px #D47A54; }
+  .price-card .plan {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: #5F5C57; margin: 0 0 8px;
+  }
+  .price-card .ask {
+    display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px;
+  }
+  .price-card .was {
+    font-size: 14px; line-height: 1; color: #8A867E;
+    text-decoration: line-through; text-decoration-thickness: 1px;
+  }
+  .price-card .save {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: #D47A54;
+  }
+  .price-card h3 {
     font-family: var(--serif); font-weight: 400;
-    font-size: clamp(40px, 4.6vw, 56px); line-height: .9; letter-spacing: -.03em;
-    margin: 0 0 6px;
+    font-size: clamp(32px, 3.2vw, 44px); line-height: .9; letter-spacing: -.03em;
+    margin: 0 0 14px; color: #2B2B2B;
   }
-  .prices p { margin: 0; font-size: 14px; line-height: 1.45; color: #5F5C57; }
+  .price-card h3 .per {
+    font-family: var(--sans); font-weight: 400;
+    font-size: .36em; letter-spacing: -.01em; color: #5F5C57;
+  }
+  .price-card ul {
+    list-style: none; margin: 0 0 20px; padding: 0; flex: 1;
+  }
+  .price-card li {
+    font-size: 13.5px; line-height: 1.4; color: #5F5C57;
+    padding: 0 0 8px;
+  }
+  .price-card li:last-child { padding-bottom: 0; }
+  .price-card .pill { align-self: flex-start; margin-top: auto; font-size: 14px; padding: 12px 18px; }
+  .price-card .pill-mail {
+    background: transparent; color: #1E5AA8; border: 1px solid #1E5AA8;
+  }
+  .price-card .pill-mail:hover { background: #1E5AA8; color: #fff; }
+  .owe-line { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5F5C57; text-align: center; }
   .note {
     font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
-    line-height: 1.2; margin: 28px 0 0;
+    line-height: 1.2; margin: 28px 0 0; text-align: center;
+  }
+  .month-foot {
+    max-width: 36rem; margin: 22px auto 0;
+    text-align: center; font-size: 15px; line-height: 1.4; color: #5F5C57;
   }
 
   .inquire { max-width: 520px; margin: 0 auto; }
@@ -242,10 +314,16 @@
     font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 12px;
   }
   .what p { margin: 0; font-size: 17px; line-height: 1.45; color: #5F5C57; }
+  .what p + p { margin-top: 14px; }
 
+  @media (max-width: 980px) {
+    .price-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   @media (max-width: 860px) {
     header a, header button { min-height: 44px; }
-    .prices { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .price-grid-4, .price-grid-2 { grid-template-columns: 1fr; }
   }
 
   .foot-bar {
@@ -279,6 +357,7 @@
     }
     .street-fade { height: 40px; }
     .geo { display: none; }
+    .street-loop { object-position: 48% 30%; }
     .sky-board {
       inset: auto clamp(20px, 4.5vw, 64px) max(22px, 4.5vh) clamp(20px, 4.5vw, 64px);
       display: flex;
@@ -287,30 +366,43 @@
       gap: 14px;
       pointer-events: auto;
     }
-    .sky-board h1 {
-      position: static;
+    .sky-line { position: static; }
+    .sky-line h1 {
+      white-space: normal;
       width: min(16rem, 100%);
       font-size: clamp(1.85rem, 8.4vw, 2.15rem);
     }
+    .sky-line .fix { margin-top: 8px; font-size: 1.05rem; }
     .sky-lead { position: static; max-width: 22em; }
     .foot-bar { flex-wrap: wrap; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .street-loop { display: none; }
   }
 </style>
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water."></div>
+    <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water.">
+      <video class="street-loop" muted playsinline autoplay loop preload="none" poster="/hero-detroit.png" disablepictureinpicture disableremoteplayback aria-hidden="true">
+        <source src="/hero-detroit-loop.mp4" type="video/mp4" />
+      </video>
+    </div>
     <div class="street-haze" aria-hidden="true"></div>
     <div class="street-grain" aria-hidden="true"></div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
-      <button type="button" class="wordmark" data-home="1">Corridor<span class="wordmark-play" aria-hidden="true"></span></button>
+      <button type="button" class="wordmark" data-home="1">Corridor</button>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
       <a class="nav-wide" href="/listings">Account</a>
     </header>
     <div class="sky-board">
-      <h1>CRE marketing is boring. So we fixed it.</h1>
+      <div class="sky-line">
+        <h1>CRE marketing is boring.</h1>
+        <p class="fix">So we fixed it.</p>
+      </div>
       <div class="sky-lead">
         <p class="pitch">We make a video of your listing. It helps it lease. You get the day back. Not a BS tour.</p>
         <a class="pill" href="#intake">Send a listing</a>
@@ -323,28 +415,98 @@
     <div class="inner">
       <div class="what">
         <h2>What we do</h2>
-        <p>Sending a photo dump is how CRE still does it — nobody has time. Corridor is the video they send and the one they put on the listing.</p>
+        <p>Brokers still ship a photo dump. They burn a day. The other side never walks the building.</p>
+        <p>We cut a listing video from the photos you already have. Brokers send it and put it on the page. Tenants, buyers, and investors walk the space on their phone, then they book the showing.</p>
+        <p>That’s the mission. Better marketing for the people who list it. A real walk for the people who have to decide. 48 hours. We work the cut with you until it’s a video you’d send.</p>
       </div>
     </div>
   </section>
 
   <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
-    <div class="inner">
-      <div class="prices">
-        <article>
-          <h3>$200</h3>
-          <p>Photos you already have.</p>
-        </article>
-        <article>
-          <h3>$350</h3>
-          <p>Phone walk.</p>
-        </article>
-        <article>
-          <h3>$750</h3>
-          <p>Five-pack.</p>
-        </article>
+    <div class="price-wrap">
+      <p class="price-lead">They walk the listing on their phone. Leases and investor looks move faster. Not a brochure, not a photo dump, not a sign nobody sees.</p>
+      <div class="price-switch">
+        <input type="radio" name="price-view" id="price-once" checked />
+        <label for="price-once">One-time</label>
+        <input type="radio" name="price-view" id="price-month" />
+        <label for="price-month">Monthly</label>
       </div>
-      <p class="note">You see the cut before you owe.</p>
+      <div class="price-pane-once">
+        <div class="price-grid price-grid-4">
+          <article class="price-card">
+            <p class="plan">One listing</p>
+            <p class="ask"><span class="was">$400</span><span class="save">$200 off</span></p>
+            <h3>$200</h3>
+            <ul>
+              <li>They walk the listing on their phone.</li>
+              <li>Photos you already have. Hand-cut in 48 hours.</li>
+              <li>Not a photo dump. Not a sign nobody sees.</li>
+              <li>We work the cut with you until it’s a video you’d send.</li>
+            </ul>
+            <a class="pill" href="#intake">Send a listing</a>
+          </article>
+          <article class="price-card">
+            <p class="plan">Phone walk</p>
+            <p class="ask"><span class="was">$550</span><span class="save">$200 off</span></p>
+            <h3>$350</h3>
+            <ul>
+              <li>You walk the space on a call. We cut from that.</li>
+              <li>Leases and investor looks move faster.</li>
+              <li>When stills aren’t enough.</li>
+              <li>We work the cut with you until it’s a video you’d send.</li>
+            </ul>
+            <a class="pill" href="#intake">Send a listing</a>
+          </article>
+          <article class="price-card primary">
+            <p class="plan">Five-pack</p>
+            <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
+            <h3>$750</h3>
+            <ul>
+              <li>Five listings. Best per-cut.</li>
+              <li>The video they send and put on the listing.</li>
+              <li>Use them when the listings hit.</li>
+              <li>We work the cut with you until it’s a video you’d send.</li>
+            </ul>
+            <a class="pill" href="#intake">Send a listing</a>
+          </article>
+          <article class="price-card">
+            <p class="plan">Enterprise</p>
+            <h3>Custom</h3>
+            <ul>
+              <li>For brokerages.</li>
+              <li>Volume, a desk, a number that isn’t on a card.</li>
+            </ul>
+            <a class="pill pill-mail" href="mailto:max@corridor.video">max@corridor.video</a>
+          </article>
+        </div>
+        <p class="note">We work the cut with you until it’s a video you’d send.</p>
+      </div>
+      <div class="price-pane-month">
+        <div class="price-grid price-grid-2">
+          <article class="price-card primary">
+            <p class="plan">Shop</p>
+            <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
+            <h3>$750 <span class="per">/ month</span></h3>
+            <ul>
+              <li>4 videos a month. They walk it on their phone.</li>
+              <li>Unused roll 60 days. Bank cap 8.</li>
+              <li>Extra listing $200. For shops that keep sending.</li>
+              <li>We work each cut until it’s a video you’d send.</li>
+            </ul>
+            <a class="pill" href="#intake">Send a listing</a>
+          </article>
+          <article class="price-card">
+            <p class="plan">Enterprise</p>
+            <h3>Custom</h3>
+            <ul>
+              <li>For brokerages.</li>
+              <li>Volume, a desk, a number that isn’t on a card.</li>
+            </ul>
+            <a class="pill pill-mail" href="mailto:max@corridor.video">max@corridor.video</a>
+          </article>
+        </div>
+        <p class="month-foot">$750 a month for four. Unused roll 60 days, cap 8. Extra cuts $200. We work each cut until it’s a video you’d send. The month is the shop, not pay-per-cut.</p>
+      </div>
     </div>
   </section>
 
@@ -362,7 +524,8 @@
         </details>
         <details>
           <summary>When do I pay?</summary>
-          <p>After you see the cut. If it isn’t right, we revise or we don’t bill.</p>
+          <p>One listing, a phone walk, or a five-pack: after the video is right. If it isn’t, we keep working or we don’t bill.</p>
+          <p>Shop: $750 a month for four. Unused roll 60 days, cap 8. Extra cuts $200. The month is the shop, not pay-per-cut.</p>
         </details>
       </div>
     </div>
@@ -405,7 +568,7 @@
             <p class="err" data-err="form"></p>
             <p id="intake-fallback" style="display: none; font-size: 13.5px; line-height: 1.5; color: #5F5C57; font-family: var(--sans); letter-spacing: 0; text-transform: none;">Upload trouble? Email the photos to <a href="mailto:max@corridor.video" style="color: #1E5AA8;">max@corridor.video</a>.</p>
             <button type="button" id="intake-submit" class="pill" style="width: 100%; padding: 17px; margin-top: 4px;">Send a listing</button>
-            <p class="owe-line">You see the cut before you owe anything.</p>
+            <p class="owe-line">We work the cut with you until it’s a video you’d send.</p>
             <div id="intake-progress" style="display: none; height: 4px; border-radius: 999px; background: #C8C2B4; overflow: hidden;">
               <div id="intake-progress-fill" style="width: 0%; height: 100%; background: #1E5AA8;"></div>
             </div>
@@ -473,7 +636,7 @@
 
   <footer class="band-sky">
     <div class="foot-bar">
-      <a class="wordmark" href="/">Corridor<span class="wordmark-play" aria-hidden="true"></span></a>
+      <a class="wordmark" href="/">Corridor</a>
       <p>DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
@@ -728,6 +891,35 @@
     .then(function (data) { if (data && data.account) account = data.account; })
     .catch(function () {})
     .then(function () { paintIdentity(); paintPrice(); });
+}());
+
+(function () {
+  var video = document.querySelector('.street-loop');
+  if (!video) return;
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function stillOnly() {
+    video.pause();
+    video.removeAttribute('src');
+    while (video.firstChild) video.removeChild(video.firstChild);
+    video.load();
+    if (video.parentNode) video.parentNode.removeChild(video);
+  }
+  if (motion.matches) {
+    stillOnly();
+    return;
+  }
+  video.muted = true;
+  video.addEventListener('error', stillOnly);
+  Array.prototype.forEach.call(video.querySelectorAll('source'), function (source) {
+    source.addEventListener('error', stillOnly);
+  });
+  var play = video.play();
+  if (play && play.catch) play.catch(function () { stillOnly(); });
+  if (motion.addEventListener) {
+    motion.addEventListener('change', function () {
+      if (motion.matches) stillOnly();
+    });
+  }
 }());
 </script>
 </body>
