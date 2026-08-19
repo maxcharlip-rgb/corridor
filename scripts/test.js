@@ -1037,7 +1037,20 @@ main().catch(async (err) => {
     /max@corridor\.video/.test(desk) && !/hello@corridor\.tours/.test(desk) && !/@corridor\.tours/.test(desk));
   check('desk is light homepage type and color',
     /#F7F4ED/.test(desk) && /#1E5AA8/.test(desk) && /#2B2B2B/.test(desk)
+      && /#B8D7EB/.test(desk) && /#C8C2B4/.test(desk) && /#5F5C57/.test(desk)
       && /Instrument Serif/.test(desk) && /Archivo/.test(desk) && !/#101E33/.test(desk));
+  check('desk header is the homepage sky-bar, not desk chrome',
+    /class="sky-bar"/.test(desk)
+      && /class="wordmark" href="\/">Corridor</.test(desk)
+      && /class="nav-wide" href="\/#pricing">Pricing</.test(desk)
+      && /class="nav-wide" href="\/#faq">FAQ</.test(desk)
+      && /class="nav-wide" href="\/listings">Account</.test(desk)
+      && /font-family:\s*var\(--sans\)/.test(desk)
+      && /fonts\/archivo\.woff2/.test(desk)
+      && !/wordmark-play/.test(desk)
+      && !/class="mark-c"/.test(desk)
+      && !/M2\.4 23V10\.6/.test(desk)
+      && !/fonts\.googleapis\.com/.test(desk));
   check('landing file is unchanged by the desk',
     !/desk:\s*'\/listings'/.test(fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')));
   check('verify redirect target is the desk', /res\.redirect\(302, '\/listings'\)/.test(authSrc));
