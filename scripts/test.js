@@ -984,6 +984,10 @@ main().catch(async (err) => {
   check('landing form follows intake redirect to the desk',
     /data\.redirect/.test(landing) && /\/listings/.test(landing));
   check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
+  check('hero travel is scroll-scrubbed, not a looping wallpaper',
+    /class="street-pin"/.test(landing) && /position:\s*sticky/.test(landing) && /height:\s*148vh/.test(landing)
+      && /street-stage/.test(landing) && /prefers-reduced-motion:\s*reduce/.test(landing)
+      && !/hero-detroit-loop/.test(landing) && !/autoplay/.test(landing) && !/src="\/hero-detroit-scroll\.mp4"/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));

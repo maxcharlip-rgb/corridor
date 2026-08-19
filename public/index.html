@@ -62,12 +62,24 @@
 
   .street {
     position: relative;
+    height: 148vh;
+    background: #B8D7EB;
+  }
+  .street-pin {
+    position: sticky;
+    top: 0;
     height: 100vh;
     height: 100dvh;
     min-height: 100vh;
     min-height: 100dvh;
-    background: #B8D7EB;
     overflow: hidden;
+    background: #B8D7EB;
+  }
+  .street-stage {
+    position: absolute;
+    inset: 0;
+    transform-origin: 58% 72%;
+    will-change: transform;
   }
   .street-art {
     position: absolute; inset: 0;
@@ -234,10 +246,12 @@
 
   /* Phone: full first screen, recut painting on top, type clustered at the bottom. */
   @media (max-width: 720px) {
-    .street {
+    .street { height: 128vh; }
+    .street-pin {
       height: 100svh;
       min-height: 100svh;
     }
+    .street-stage { transform-origin: 50% 42%; }
     .street-art {
       background-image: image-set(
         url("/hero-detroit-phone.avif") type("image/avif"),
@@ -269,11 +283,25 @@
     }
     .sky-lead { position: static; max-width: 22em; }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .street {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    .street-pin { position: relative; }
+    .street-stage { transform: none !important; will-change: auto; }
+  }
 </style>
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
+    <div class="street-pin">
+    <div class="street-stage">
     <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water."></div>
+    </div>
     <div class="street-haze" aria-hidden="true"></div>
     <div class="street-grain" aria-hidden="true"></div>
     <div class="street-fade" aria-hidden="true"></div>
@@ -297,6 +325,7 @@
       </div>
     </div>
     <p class="geo">Detroit founded. We cut a listing anywhere.</p>
+    </div>
   </section>
 
   <section id="what" class="band-paper" style="scroll-margin-top: 24px;">
@@ -707,6 +736,57 @@
     .then(function (data) { if (data && data.account) account = data.account; })
     .catch(function () {})
     .then(function () { paintIdentity(); paintPrice(); });
+}());
+
+(function () {
+  var street = document.querySelector('.street');
+  var stage = document.querySelector('.street-stage');
+  if (!street || !stage) return;
+
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var phone = window.matchMedia('(max-width: 720px)');
+  var clip = document.querySelector('video.street-scroll');
+  if (clip && !clip.getAttribute('src') && !(clip.currentSrc || '')) clip = null;
+
+  function progress() {
+    var travel = street.offsetHeight - window.innerHeight;
+    if (travel <= 0) return 0;
+    return Math.max(0, Math.min(1, -street.getBoundingClientRect().top / travel));
+  }
+
+  function apply(p) {
+    if (motion.matches) {
+      stage.style.transform = '';
+      return;
+    }
+    var near = phone.matches;
+    var scale = 1 + p * (near ? 0.12 : 0.26);
+    var x = p * (near ? 0 : -3);
+    var y = p * (near ? 3 : 6);
+    stage.style.transform = 'scale(' + scale + ') translate(' + x + '%,' + y + '%)';
+    if (clip && clip.duration && clip.readyState >= 1) {
+      var t = p * Math.max(0, clip.duration - 0.05);
+      if (Math.abs(clip.currentTime - t) > 0.04) {
+        try { clip.currentTime = t; } catch (e) {}
+      }
+    }
+  }
+
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      apply(progress());
+      ticking = false;
+    });
+  }
+
+  if (!motion.matches) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    apply(progress());
+  }
 }());
 </script>
 </body>
