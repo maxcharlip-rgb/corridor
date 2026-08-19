@@ -64,7 +64,8 @@
     background: #B8D7EB;
   }
   .wordmark {
-    margin-right: auto; background: transparent; border: 0; padding: 0;
+    position: relative;
+    margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
     color: #2B2B2B;
     font-family: var(--sans);
     font-size: 17px;
@@ -73,6 +74,17 @@
     line-height: 1;
   }
   .wordmark:hover { color: #2B2B2B; }
+  .wordmark-play {
+    position: absolute;
+    left: .4em;
+    top: 50%;
+    width: 0; height: 0;
+    margin-top: -.12em;
+    border-style: solid;
+    border-width: .12em 0 .12em .2em;
+    border-color: transparent transparent transparent #1E5AA8;
+    pointer-events: none;
+  }
   .sky-bar .nav-wide {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
@@ -136,16 +148,17 @@
   .new:hover { color: #1E5AA8; }
 
   .card { background: transparent; border: 0; padding: 0; }
-  .field { display: grid; gap: 7px; margin: 0 0 12px; text-align: left; }
-  .field > span {
+  .stack { display: grid; gap: 12px; }
+  .lbl {
+    display: grid; gap: 7px; text-align: left;
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
     text-transform: uppercase; color: #5F5C57;
   }
-  .field input {
+  .field {
     width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px;
     border: 1px solid #C8C2B4; background: #F7F4ED; color: #2B2B2B; outline: none;
   }
-  .field input:focus { border-color: #1E5AA8; }
+  .field:focus { border-color: #1E5AA8; }
   .drop {
     display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
     border: 1px dashed #C8C2B4; border-radius: 10px; padding: 13px 15px;
@@ -179,11 +192,7 @@
   .gate { max-width: 520px; margin: 10vh auto 20vh; padding: 0 clamp(20px, 4.5vw, 64px); }
   .gate h1 { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.04; margin: 0 0 12px; }
   .gate p { font-size: 15px; line-height: 1.55; color: #5F5C57; margin: 0 0 18px; }
-  .gate input {
-    width: 100%; font-size: 15px; padding: 13px 15px; border-radius: 10px;
-    border: 1px solid #C8C2B4; background: #F7F4ED; color: #2B2B2B; margin: 0 0 12px; outline: none;
-  }
-  .gate input:focus { border-color: #1E5AA8; }
+  .gate .field { margin: 0 0 12px; }
   .gate a { color: #1E5AA8; }
 
   .band-sky { background: #B8D7EB; }
@@ -205,7 +214,7 @@
 </head>
 <body>
   <header class="sky-bar">
-    <a class="wordmark" href="/">Corridor</a>
+    <a class="wordmark" href="/">Corridor<span class="wordmark-play" aria-hidden="true"></span></a>
     <a class="nav-wide" href="/#pricing">Pricing</a>
     <a class="nav-wide" href="/#faq">FAQ</a>
     <a class="nav-wide" href="/listings">Account</a>
@@ -214,7 +223,7 @@
   <div id="app"></div>
   <footer class="band-sky">
     <div class="foot-bar">
-      <a class="wordmark" href="/">Corridor</a>
+      <a class="wordmark" href="/">Corridor<span class="wordmark-play" aria-hidden="true"></span></a>
       <p>DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
@@ -276,7 +285,7 @@
       '<div class="gate">' +
         '<h1>Your listings</h1>' +
         '<p>Already sent a listing? Enter the email you used.</p>' +
-        '<input id="gate-email" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
+        '<input id="gate-email" class="field" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
         '<p class="err" id="gate-err"></p>' +
         '<button type="button" class="ghost" id="gate-go">Continue</button>' +
         '<p style="margin-top:28px"><a href="/#intake">Or send a listing</a></p>' +
@@ -365,12 +374,12 @@
   function drawUpload() {
     var needName = !(account && account.name);
     $('#main').innerHTML =
-      '<div class="card">' +
+      '<div class="card stack">' +
         '<h1>Upload listing</h1>' +
         '<p class="lede">Address and photos. We already have you as ' + esc(account.email) + '.</p>' +
-        (needName ? '<label class="field"><span>Your name</span><input id="name" type="text" autocomplete="name" placeholder="Max Charlip"></label>' : '') +
-        '<label class="field"><span>Property address</span><input id="address" type="text" placeholder="6432 Woodward Ave, Detroit, MI"></label>' +
-        '<label class="field"><span>Photos · 12 to 40</span>' +
+        (needName ? '<label class="lbl">Your name<input id="name" class="field" type="text" autocomplete="name" placeholder="Max Charlip"></label>' : '') +
+        '<label class="lbl">Property address<input id="address" class="field" type="text" placeholder="6432 Woodward Ave, Detroit, MI"></label>' +
+        '<label class="lbl">Photos · 12 to 40' +
           '<span class="drop" id="drop"><input id="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" style="display:none">' +
           '<i>Choose photos</i><em id="photo-label">12 to 40 · crooked phone shots welcome</em></span>' +
         '</label>' +
