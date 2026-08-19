@@ -177,11 +177,95 @@
     font-size: 11px; line-height: 1.4; letter-spacing: .01em;
     text-align: right;
   }
+  /* Shiny CTA on primary pills. Keep in sync with listings.html.
+     Solid #1E5AA8 is the fallback when @property / conic animation is missing. */
+  @property --gradient-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+  @property --gradient-angle-offset { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+  @property --gradient-percent { syntax: "<percentage>"; initial-value: 5%; inherits: false; }
+  @property --gradient-shine { syntax: "<color>"; initial-value: white; inherits: false; }
+  @keyframes gradient-angle { to { --gradient-angle: 360deg; } }
+  @keyframes shimmer { to { rotate: 360deg; } }
   .pill {
-    display: inline-block; font-size: 15px; color: #fff; background: #1E5AA8;
-    padding: 14px 26px; border-radius: 999px; font-weight: 500; border: 0; cursor: pointer;
+    --shiny-cta-bg: #1E5AA8;
+    --shiny-cta-bg-subtle: #17457F;
+    --shiny-cta-fg: #ffffff;
+    --shiny-cta-highlight: #B8D7EB;
+    --shiny-cta-highlight-subtle: #D4E7F3;
+    --animation: gradient-angle linear infinite;
+    --duration: 3s;
+    --shadow-size: 2px;
+    --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+    isolation: isolate;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--shiny-cta-fg);
+    background: #1E5AA8;
+    background:
+      linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+      conic-gradient(
+        from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+        transparent,
+        var(--shiny-cta-highlight) var(--gradient-percent),
+        var(--gradient-shine) calc(var(--gradient-percent) * 2),
+        var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+        transparent calc(var(--gradient-percent) * 4)
+      ) border-box;
+    padding: 14px 26px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    outline-offset: 4px;
+    box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+    transition: var(--transition);
+    transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
+    animation: var(--animation) var(--duration), var(--animation) calc(var(--duration) / 0.4) reverse paused;
+    animation-composition: add;
   }
-  .pill:hover { background: #17457F; color: #fff; }
+  .pill::before, .pill::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    z-index: -1;
+    animation: var(--animation) var(--duration), var(--animation) calc(var(--duration) / 0.4) reverse paused;
+    animation-composition: add;
+  }
+  .pill::before {
+    --size: calc(100% - var(--shadow-size) * 3);
+    --position: 2px;
+    --space: calc(var(--position) * 2);
+    width: var(--size);
+    height: var(--size);
+    background: radial-gradient(circle at var(--position) var(--position), white calc(var(--position) / 4), transparent 0) padding-box;
+    background-size: var(--space) var(--space);
+    background-repeat: space;
+    mask-image: conic-gradient(from calc(var(--gradient-angle) + 45deg), black, transparent 10% 90%, black);
+    border-radius: inherit;
+    opacity: 0.4;
+  }
+  .pill::after {
+    --animation: shimmer linear infinite;
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(-50deg, transparent, var(--shiny-cta-highlight), transparent);
+    mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+    opacity: 0.6;
+  }
+  .pill:active { translate: 0 1px; }
+  .pill:is(:hover, :focus-visible) {
+    --gradient-percent: 20%;
+    --gradient-angle-offset: 95deg;
+    --gradient-shine: var(--shiny-cta-highlight-subtle);
+    color: #fff;
+  }
+  .pill:is(:hover, :focus-visible),
+  .pill:is(:hover, :focus-visible)::before,
+  .pill:is(:hover, :focus-visible)::after { animation-play-state: running; }
 
   .band-paper { background: #F7F4ED; }
   .band-sky { background: #B8D7EB; }
@@ -254,9 +338,17 @@
   .price-card li:last-child { padding-bottom: 0; }
   .price-card .pill { align-self: flex-start; margin-top: auto; font-size: 14px; padding: 12px 18px; }
   .price-card .pill-mail {
-    background: transparent; color: #1E5AA8; border: 1px solid #1E5AA8;
+    --animation: none;
+    isolation: auto;
+    overflow: visible;
+    background: transparent;
+    color: #1E5AA8;
+    border: 1px solid #1E5AA8;
+    box-shadow: none;
+    animation: none;
   }
-  .price-card .pill-mail:hover { background: #1E5AA8; color: #fff; }
+  .price-card .pill-mail::before, .price-card .pill-mail::after { content: none; animation: none; }
+  .price-card .pill-mail:hover { background: #1E5AA8; color: #fff; translate: none; }
   .owe-line { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5F5C57; text-align: center; }
   .note {
     font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
@@ -380,6 +472,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .street-loop { display: none; }
+    .pill, .pill::before, .pill::after { animation: none; }
+    .pill:active { translate: none; }
   }
 </style>
 </head>
