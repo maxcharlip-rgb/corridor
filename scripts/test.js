@@ -977,10 +977,25 @@ main().catch(async (err) => {
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
       && !/data-open-auth/.test(landing) && !/Create account/.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
-  check('What we do is two sentences, not process cards',
+  const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
+  check('What we do is the mission, not process cards',
     /<h2>What we do<\/h2>/.test(landing)
-      && /Sending a photo dump is how CRE still does it/.test(landing)
-      && /Corridor is the video they send and the one they put on the listing/.test(landing)
+      && /Brokers still ship a photo dump/.test(whatCopy)
+      && /They burn a day/.test(whatCopy)
+      && /The other side never walks the building/.test(whatCopy)
+      && /We cut a listing video from the photos you already have/.test(whatCopy)
+      && /Brokers send it and put it on the page/.test(whatCopy)
+      && /walk the space on their phone/.test(whatCopy)
+      && /the mission/.test(whatCopy)
+      && /Better marketing for the people who list it/.test(whatCopy)
+      && /A real walk for the people who have to decide/.test(whatCopy)
+      && /48 hours/.test(whatCopy)
+      && /You see the cut before you owe/.test(whatCopy)
+      && !/—/.test(whatCopy)
+      && !/cinematic/i.test(whatCopy)
+      && !/gamification/i.test(whatCopy)
+      && !/founder/i.test(whatCopy)
+      && !/<article/.test(whatCopy)
       && landing.indexOf('id="what"') < landing.indexOf('id="pricing"'));
   check('landing has no email-me-a-link auth path',
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
@@ -1011,17 +1026,26 @@ main().catch(async (err) => {
   check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 3 && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
-  check('pricing lists $200, $350, and $750', /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing) && !/<h3>Custom<\/h3>/.test(landing));
-  check('pricing also lists monthly for shops that keep sending',
-    /class="price-kicker">One-time</.test(landing)
-      && /class="price-kicker later">Monthly</.test(landing)
+  check('pricing is a one-time / monthly card switcher',
+    /id="price-once" checked/.test(landing)
+      && /for="price-once">One-time</.test(landing)
+      && /for="price-month">Monthly</.test(landing)
+      && /class="price-card"/.test(landing)
+      && /class="price-card primary"/.test(landing)
+      && /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing)
+      && /<h3>Custom<\/h3>/.test(landing)
+      && /One listing/.test(landing) && /Five-pack/.test(landing)
       && /\$750 <span class="per">\/ month<\/span>/.test(landing)
-      && /4 videos\./.test(landing)
-      && /Unused roll 60 days, bank cap 8\./.test(landing)
-      && /Extra listing \$200\./.test(landing)
-      && /Shops that keep sending listings\./.test(landing)
-      && !/dark SaaS|pricing-grid|featured plan/i.test(landing)
-      && !/<h3>Custom<\/h3>/.test(landing)
+      && />Shop</.test(landing)
+      && /4 videos a month/.test(landing)
+      && /Unused roll 60 days/.test(landing)
+      && /Bank cap 8/.test(landing)
+      && /Extra listing \$200/.test(landing)
+      && /For shops that keep sending/.test(landing)
+      && /mailto:max@corridor\.video/.test(landing)
+      && (landing.match(/<article class="price-card/g) || []).length === 6
+      && !/\$499/.test(landing)
+      && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/half forever/i.test(landing));
   check('invoice-after-cut language is one trust line, not a column', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
