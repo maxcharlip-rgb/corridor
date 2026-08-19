@@ -990,7 +990,7 @@ main().catch(async (err) => {
       && /Better marketing for the people who list it/.test(whatCopy)
       && /A real walk for the people who have to decide/.test(whatCopy)
       && /48 hours/.test(whatCopy)
-      && /You see the cut before you owe/.test(whatCopy)
+      && /We work the cut with you until it.s a video you.d send/.test(whatCopy)
       && !/—/.test(whatCopy)
       && !/cinematic/i.test(whatCopy)
       && !/gamification/i.test(whatCopy)
@@ -1057,7 +1057,11 @@ main().catch(async (err) => {
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/half forever/i.test(landing));
-  check('invoice-after-cut language is one trust line, not a column', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
+  check('cut-until-you-would-send is the closer, not the old owe slogan',
+    /We work the cut with you until it.s a video you.d send/.test(landing)
+      && /After the video is right\. If it isn.t, we keep working or we don.t bill/.test(landing)
+      && !/see the cut before you owe/i.test(landing)
+      && !/owe anything/i.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
