@@ -988,8 +988,15 @@ main().catch(async (err) => {
     fsx.existsSync(phoneWebp) && fsx.statSync(phoneWebp).size < 200_000
       && fsx.existsSync(phoneAvif) && fsx.statSync(phoneAvif).size < 120_000
       && /hero-detroit-phone\.webp/.test(landing) && /hero-detroit-phone\.avif/.test(landing));
-  check('headline fonts are local and optional, so they do not swap late',
-    /font-display:\s*optional/.test(landing) && /\/fonts\/instrument-serif\.woff2/.test(landing) && !/fonts\.googleapis\.com/.test(landing));
+  check('site type is Bricolage Grotesque from Google Fonts',
+    /fonts\.googleapis\.com\/css2\?family=Bricolage\+Grotesque/.test(landing)
+      && /--font:\s*"Bricolage Grotesque"/.test(landing)
+      && /--sans:\s*var\(--font\)/.test(landing)
+      && /--serif:\s*var\(--font\)/.test(landing)
+      && !/font-family:\s*"Archivo"/.test(landing)
+      && !/font-family:\s*"Instrument Serif"/.test(landing)
+      && !/\/fonts\/instrument-serif\.woff2/.test(landing)
+      && !/\/fonts\/archivo\.woff2/.test(landing));
   check('phone type sits in a bottom cluster on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-end/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero is full-bleed and pinned to the river', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*100%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
@@ -1054,7 +1061,7 @@ main().catch(async (err) => {
   const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
   check('hero loop is silent, cover-cropped, and has no controls',
     /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
-      && /preload="none"/.test(loopTag) && /poster="\/hero-detroit\.png"/.test(loopTag)
+      && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.png"/.test(loopTag)
       && !/\scontrols/.test(loopTag)
       && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*100%/.test(landing)
       && /pointer-events:\s*none/.test(landing));
@@ -1164,25 +1171,23 @@ main().catch(async (err) => {
   check('desk is light homepage type and color',
     /#F7F4ED/.test(desk) && /#1E5AA8/.test(desk) && /#2B2B2B/.test(desk)
       && /#B8D7EB/.test(desk) && /#C8C2B4/.test(desk) && /#5F5C57/.test(desk)
-      && /Instrument Serif/.test(desk) && /Archivo/.test(desk) && !/#101E33/.test(desk));
+      && /Bricolage Grotesque/.test(desk) && !/Archivo/.test(desk) && !/Instrument Serif/.test(desk) && !/#101E33/.test(desk));
   check('desk header is the homepage sky-bar, not desk chrome',
     /class="sky-bar"/.test(desk)
-      && /class="wordmark" href="\/">Corridor<span class="wordmark-play"/.test(desk)
+      && /class="wordmark" href="\/">Corridor</.test(desk)
       && /class="nav-wide" href="\/#pricing">Pricing</.test(desk)
       && /class="nav-wide" href="\/#faq">FAQ</.test(desk)
       && /class="nav-wide" href="\/listings">Account</.test(desk)
       && /font-family:\s*var\(--sans\)/.test(desk)
       && /font-size:\s*17px/.test(desk)
       && /font-weight:\s*500/.test(desk)
-      && /fonts\/archivo\.woff2/.test(desk)
-      && /fonts\/instrument-serif\.woff2/.test(desk)
-      && /fonts\/ibm-plex-mono\.woff2/.test(desk)
+      && /fonts\.googleapis\.com\/css2\?family=Bricolage\+Grotesque/.test(desk)
       && /class="lbl"/.test(desk)
       && /class="field"/.test(desk)
       && /class="pill"/.test(desk)
+      && !/wordmark-play/.test(desk)
       && !/class="mark-c"/.test(desk)
-      && !/M2\.4 23V10\.6/.test(desk)
-      && !/fonts\.googleapis\.com/.test(desk));
+      && !/M2\.4 23V10\.6/.test(desk));
   check('landing file is unchanged by the desk',
     !/desk:\s*'\/listings'/.test(fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')));
   check('verify redirect target is the desk', /res\.redirect\(302, '\/listings'\)/.test(authSrc));
