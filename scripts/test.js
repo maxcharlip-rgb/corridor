@@ -948,12 +948,15 @@ main().catch(async (err) => {
       && /hero-detroit-phone\.webp/.test(landing) && /hero-detroit-phone\.avif/.test(landing));
   check('headline fonts are local and optional, so they do not swap late',
     /font-display:\s*optional/.test(landing) && /\/fonts\/instrument-serif\.woff2/.test(landing) && !/fonts\.googleapis\.com/.test(landing));
-  check('phone hero is not a forced 100vh river', /min-height:\s*68svh/.test(landing) && /max-width:\s*11\.2em/.test(landing));
+  check('phone type sits in a bottom cluster on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-end/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero is full-bleed and pinned to the river', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*100%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing));
+  check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('type sits in the open sky, not over the skyline', /class="sky-copy"/.test(landing) && /width:\s*min\(28rem,\s*44%\)/.test(landing));
+  check('type uses Meuze furniture: mid-left headline, bottom-left CTA', /class="sky-board"/.test(landing) && /top:\s*38%/.test(landing) && /clamp\(48px,\s*3\.8vw,\s*52px\)/.test(landing) && /class="sky-lead"/.test(landing) && /nav-send/.test(landing));
+  check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
+  check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
   check('pricing and intake live on sampled color bands after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
@@ -961,8 +964,8 @@ main().catch(async (err) => {
   check('primary blue is still the brand color', /#1E5AA8/.test(landing));
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
-  const skyCopy = landing.slice(landing.indexOf('class="sky-copy"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy is the punch line in the open left sky', /class="sky-copy"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /They walk the building\. Then they book\./.test(landing) && !/id="boring-word"/.test(landing));
+  const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
+  check('hero copy is the punch line in the open left sky', /class="sky-board"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /They walk the building\. Then they book\./.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the shorter subhead, no cinematic', /They walk the building\. Then they book\./.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
