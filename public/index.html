@@ -52,8 +52,9 @@
     --sans: "Archivo", system-ui, "Helvetica Neue", Arial, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
-  html { scroll-behavior: smooth; }
-  html, body { margin: 0; padding: 0; background: #F7F4ED; color: #2B2B2B; font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  html { scroll-behavior: smooth; overflow-x: clip; }
+  html, body { margin: 0; padding: 0; background: #F7F4ED; color: #2B2B2B; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  body { overflow-x: clip; }
   * { box-sizing: border-box; }
   a { color: #2B2B2B; text-decoration: none; }
   a:hover { color: #1E5AA8; }
@@ -191,20 +192,20 @@
     text-align: center; font-size: 16px; line-height: 1.4; color: #2B2B2B;
   }
   .price-switch {
-    position: relative;
     display: flex; width: fit-content; margin: 0 auto 28px; gap: 4px;
     padding: 4px; border: 1px solid #C8C2B4; border-radius: 999px; background: #F7F4ED;
   }
-  .price-switch input {
-    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
-  }
-  .price-switch label {
+  .price-tab {
+    position: relative;
     padding: 10px 20px; border-radius: 999px; cursor: pointer;
     font-size: 14px; font-weight: 500; color: #5F5C57;
   }
-  .price-switch label:hover { color: #1E5AA8; }
-  .price-switch input:checked + label { background: #1E5AA8; color: #fff; }
-  .price-switch input:focus-visible + label { outline: 2px solid #1E5AA8; outline-offset: 2px; }
+  .price-tab input {
+    position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer;
+  }
+  .price-tab:hover { color: #1E5AA8; }
+  .price-tab:has(input:checked) { background: #1E5AA8; color: #fff; }
+  .price-tab input:focus-visible { outline: 2px solid #1E5AA8; outline-offset: 3px; }
   .price-pane-month { display: none; }
   .price-wrap:has(#price-month:checked) .price-pane-once { display: none; }
   .price-wrap:has(#price-month:checked) .price-pane-month { display: block; }
@@ -426,10 +427,14 @@
     <div class="price-wrap">
       <p class="price-lead">They walk the listing on their phone. Leases and investor looks move faster. Not a brochure, not a photo dump, not a sign nobody sees.</p>
       <div class="price-switch">
-        <input type="radio" name="price-view" id="price-once" checked />
-        <label for="price-once">One-time</label>
-        <input type="radio" name="price-view" id="price-month" />
-        <label for="price-month">Monthly</label>
+        <label class="price-tab">
+          <input type="radio" name="price-view" id="price-once" checked />
+          One-time
+        </label>
+        <label class="price-tab">
+          <input type="radio" name="price-view" id="price-month" />
+          Monthly
+        </label>
       </div>
       <div class="price-pane-once">
         <div class="price-grid price-grid-4">
@@ -723,7 +728,7 @@
     return total;
   }
   function paintPrice() {
-    if (priceValue) priceValue.textContent = money(amountCents()) + ' — invoiced after delivery.';
+    if (priceValue) priceValue.textContent = money(amountCents()) + '. We work the cut until it’s a video you’d send.';
   }
 
   moreBtn.addEventListener('click', function () {
@@ -885,6 +890,25 @@
   document.querySelectorAll('[data-home]').forEach(function (el) {
     el.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
+
+  function scrollToId(id) {
+    var el = document.getElementById(id);
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return true;
+  }
+  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var id = (a.getAttribute('href') || '').slice(1);
+      if (!id || !scrollToId(id)) return;
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, '', '#' + id);
+    });
+  });
+  if (location.hash) {
+    var start = location.hash.slice(1);
+    requestAnimationFrame(function () { scrollToId(start); });
+  }
 
   fetch(CONFIG.endpoints.me, { credentials: 'same-origin' })
     .then(function (res) { return res.ok ? res.json() : null; })
