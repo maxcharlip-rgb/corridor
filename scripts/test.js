@@ -1057,9 +1057,18 @@ main().catch(async (err) => {
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/half forever/i.test(landing));
+  const monthPane = landing.slice(landing.indexOf('class="price-pane-month"'), landing.indexOf('id="faq"'));
+  const oncePane = landing.slice(landing.indexOf('class="price-pane-once"'), landing.indexOf('class="price-pane-month"'));
   check('cut-until-you-would-send is the closer, not the old owe slogan',
     /We work the cut with you until it.s a video you.d send/.test(landing)
-      && /After the video is right\. If it isn.t, we keep working or we don.t bill/.test(landing)
+      && /One listing, a phone walk, or a five-pack: after the video is right/.test(landing)
+      && /If it isn.t, we keep working or we don.t bill/.test(landing)
+      && /Shop: \$750 a month for four/.test(landing)
+      && /The month is the shop, not pay-per-cut/.test(landing)
+      && /class="note">We work the cut with you until it.s a video you.d send/.test(oncePane)
+      && /class="month-foot">\$750 a month for four/.test(monthPane)
+      && !/don.t bill/.test(monthPane)
+      && !/after the video is right/i.test(monthPane)
       && !/see the cut before you owe/i.test(landing)
       && !/owe anything/i.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
