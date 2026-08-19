@@ -1,5 +1,3 @@
-import { config } from './config.js';
-
 /**
  * Outbound email.
  *
@@ -86,48 +84,101 @@ export async function sendMail({ to, subject, html, replyTo, attachments }) {
 const SERIF = "'Instrument Serif',Georgia,'Times New Roman',serif";
 const SANS = "Archivo,'Helvetica Neue',Helvetica,Arial,sans-serif";
 
+/** Live site origin for operator-facing links. Uploads and /requests are
+ *  served here; Render's hostname is an intern leak, not a public URL. */
+const SITE_ORIGIN = 'https://corridor.video';
+const QUEUE_URL = `${SITE_ORIGIN}/requests`;
+
+export function mailPublicUrl(href) {
+  const raw = String(href || '').trim();
+  if (!raw) return '';
+  try {
+    if (/^https?:\/\//i.test(raw)) {
+      const u = new URL(raw);
+      if (
+        /onrender\.com$/i.test(u.hostname)
+        || /^(localhost|127\.0\.0\.1)$/i.test(u.hostname)
+      ) {
+        return `${SITE_ORIGIN}${u.pathname}${u.search}${u.hash}`;
+      }
+      if (/^(www\.)?corridor\.video$/i.test(u.hostname)) {
+        return `${SITE_ORIGIN}${u.pathname}${u.search}${u.hash}`;
+      }
+      return raw;
+    }
+  } catch {
+    /* fall through and treat as a path */
+  }
+  const path = raw.startsWith('/') ? raw : `/${raw}`;
+  return `${SITE_ORIGIN}${path}`;
+}
+
 const SHELL = (body) => `<div style="margin:0;padding:28px 20px;background:#F7FAFD">
 <div style="font:15px/1.6 ${SANS};color:#101418;max-width:560px;margin:0 auto">
 <p style="margin:0 0 28px;font:22px/1.15 ${SERIF};color:#101418">Corridor</p>
 ${body}
 <div style="margin-top:32px;padding-top:20px;border-top:1px solid #E9F0F8">
-<p style="margin:0 0 8px;font:italic 16px/1.4 ${SERIF};color:#1E5AA8">CRE marketing is boring. So we fixed it.</p>
-<p style="margin:0;font:11px/1.5 ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#5B6672"><a href="https://www.corridor.video" style="color:#5B6672;text-decoration:none">corridor.video</a> · Detroit</p>
+<p style="margin:0;font:13px/1.5 ${SANS};color:#5B6672">Corridor · Detroit · <a href="mailto:max@corridor.video" style="color:#5B6672;text-decoration:none">max@corridor.video</a></p>
 </div>
 </div>
 </div>`;
 
-const row = (label, value) =>
-  value
-    ? `<tr><td style="padding:7px 16px 7px 0;color:#6b7280;white-space:nowrap;vertical-align:top">${esc(label)}</td><td style="padding:7px 0;font-weight:500">${esc(value)}</td></tr>`
+const field = (label, value) =>
+  value || value === 0
+    ? `<p style="margin:0 0 14px"><span style="display:block;font:11px/1.4 ${SANS};letter-spacing:.08em;text-transform:uppercase;color:#5B6672">${esc(label)}</span><span style="display:block;margin-top:3px">${esc(value)}</span></p>`
     : '';
+
+const optionLabel = (request) => {
+  const o = request.order || {};
+  if (o.phoneWalk && o.extended) return 'Phone walk, extended cut';
+  if (o.phoneWalk) return 'Phone walk';
+  if (o.extended) return 'Extended cut';
+  if (Array.isArray(request.wants) && request.wants.length) {
+    const joined = request.wants.filter(Boolean).join(', ');
+    if (joined && joined !== 'video tour') return joined;
+  }
+  return 'One listing';
+};
+
+const photoList = (urls) => {
+  const items = (urls || []).filter(Boolean).map((u, i) => {
+    const href = mailPublicUrl(u);
+    return `<div style="margin:0 0 6px"><a href="${esc(href)}" style="color:#1E5AA8;word-break:break-all">Photo ${i + 1}</a></div>`;
+  });
+  return items.length
+    ? `<p style="margin:0 0 6px"><span style="display:block;font:11px/1.4 ${SANS};letter-spacing:.08em;text-transform:uppercase;color:#5B6672">Photos</span></p>${items.join('')}`
+    : '';
+};
+
+const queueButton = () =>
+  `<p style="margin:24px 0 0"><a href="${QUEUE_URL}" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Open the queue</a></p>`;
+
+function brokerConfirmBody(request) {
+  const name = String(request.name || '').trim() || 'there';
+  const address = String(request.address || '').trim() || 'your listing';
+  return `
+      <p style="margin:0 0 16px">Hi ${esc(name)},</p>
+      <p style="margin:0 0 16px">We have ${esc(address)}. We cut by hand from the photos you sent. It comes back in 48 hours.</p>
+      <p style="margin:0 0 24px">We work the cut with you until it's a video you'd send.</p>
+      <p style="margin:0">Corridor<br><a href="mailto:max@corridor.video" style="color:#101418;text-decoration:none">max@corridor.video</a></p>
+    `;
+}
 
 /** What lands in the operator's inbox: everything needed to start work. */
 export function requestNotification(request, photos) {
-  const links = photos
-    .map((p, i) => `<a href="${config.publicUrl}/uploads/${esc(p.file)}" style="color:#2B4FD7">Photo ${i + 1}</a>`)
-    .join(' · ');
-
+  const photoUrls = (photos || []).map((p) => `${SITE_ORIGIN}/uploads/${p.file}`);
   return {
-    subject: `New Corridor request — ${request.address || request.firm || 'untitled'}`,
+    subject: `New listing — ${request.address || request.firm || 'untitled'}`,
     html: SHELL(`
-      <h2 style="margin:0 0 4px;font-size:20px">New request</h2>
-      <p style="margin:0 0 18px;color:#6b7280">${esc(request.wants.join(' + ') || 'video tour')}</p>
-      <table style="border-collapse:collapse;font-size:14px">
-        ${row('Firm', request.firm)}
-        ${row('Contact', request.name)}
-        ${row('Email', request.email)}
-        ${row('Phone', request.phone)}
-        ${row('Address', request.address)}
-        ${row('Type', request.propertyType)}
-        ${row('Deal', request.deal)}
-        ${row('Size', request.size)}
-        ${row('Price / rate', request.price)}
-        ${row('Photos', String(photos.length))}
-      </table>
-      ${request.notes ? `<p style="margin:18px 0 0"><b>What they want it to look like</b><br>${esc(request.notes).replace(/\n/g, '<br>')}</p>` : ''}
-      ${links ? `<p style="margin:18px 0 0;font-size:13px">${links}</p>` : ''}
-      <p style="margin:24px 0 0"><a href="${config.publicUrl}/requests" style="background:#2B4FD7;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Open the queue</a></p>
+      ${field('Name', request.name)}
+      ${field('Email', request.email)}
+      ${field('Address', request.address)}
+      ${field('Option', optionLabel(request))}
+      ${field('Photo count', String((photos || []).length))}
+      ${field('Account', request.accountId ? 'Yes' : 'No')}
+      ${request.notes ? field('Notes', request.notes) : ''}
+      ${photoList(photoUrls)}
+      ${queueButton()}
     `),
   };
 }
@@ -135,15 +186,8 @@ export function requestNotification(request, photos) {
 /** What the broker gets back, so the form does not feel like a void. */
 export function requestConfirmation(request) {
   return {
-    subject: 'We got your property — Corridor',
-    html: SHELL(`
-      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">We've got it.</h2>
-      <p style="margin:0 0 16px">We are cutting the ${esc(request.wants.join(' and ') || 'video tour')} for
-      <b>${esc(request.address || 'your property')}</b> now. It comes back to this address, ready to post
-      on CoStar, LinkedIn, or anywhere else your listing lives.</p>
-      <p style="margin:0 0 16px;color:#5B6672">Your video comes back in 48 hours or less. You see the cut before you owe. If we need a photo — a better exterior shot, a floor plate — we will reply to this email.</p>
-      <p style="margin:0;color:#5B6672;font-size:13px">Nothing else to do on your end.</p>
-    `),
+    subject: 'We have your listing',
+    html: SHELL(brokerConfirmBody(request)),
   };
 }
 
@@ -166,13 +210,8 @@ const priceLine = (cents) => `$${(cents / 100).toLocaleString('en-US')}`;
  *  never a sign-in gate. A listing is done when the form returns 201. */
 export function orderConfirmation(request) {
   return {
-    subject: `We've got it — ${request.address || 'your listing'}`,
-    html: SHELL(`
-      <h2 style="margin:0 0 10px;font:400 26px/1.2 ${SERIF};color:#101418">We've got it.</h2>
-      <p style="margin:0 0 16px">We're cutting the tour for <b>${esc(request.address || 'your listing')}</b> now.
-      It comes back to this address <b>within 48 hours</b>. You see the cut before you owe. If we need a photo you didn't send, we'll just ask.</p>
-      <p style="margin:0;color:#5B6672;font-size:13px">Nothing else to do on your end.</p>
-    `),
+    subject: 'We have your listing',
+    html: SHELL(brokerConfirmBody(request)),
   };
 }
 
@@ -186,34 +225,28 @@ export function orderConfirmation(request) {
  */
 export function orderNotification(request, { photoUrls = [], attachedCount = 0 } = {}) {
   const o = request.order || {};
-  const extras = [o.phoneWalk ? 'Phone walk ($350)' : null, o.extended ? 'Extended cut (+$60)' : null].filter(Boolean);
-  const links = photoUrls
-    .map((u, i) => `<a href="${esc(u)}" style="color:#1E5AA8">${i + 1}</a>`)
-    .join(' · ');
+  const urls = photoUrls.length
+    ? photoUrls
+    : (request.photos || []).map((p) => `${SITE_ORIGIN}/uploads/${p.file}`);
+  const photoCount = urls.length || (request.photos || []).length;
 
   return {
-    subject: `New order — ${request.address || 'untitled'}`,
+    subject: `New listing — ${request.address || 'untitled'}`,
     html: SHELL(`
-      <h2 style="margin:0 0 4px;font-size:20px">${esc(request.address || 'New order')}</h2>
-      <p style="margin:0 0 18px;color:#6b7280">${esc(request.name || '')}${request.firm ? ' · ' + esc(request.firm) : ''}</p>
-      <table style="border-collapse:collapse;font-size:14px">
-        ${row('Email', request.email)}
-        ${row('Phone', request.phone)}
-        ${row('Firm', request.firm)}
-        ${row('Size', request.size)}
-        ${row('Type', request.propertyType)}
-        ${row('Listing', request.listingUrl)}
-        ${row('Options', extras.join(' · ') || 'Standard')}
-        ${row('Price', priceLine(o.amountCents || 0))}
-        ${row('Photos', String((request.photos || []).length))}
-        ${attachedCount ? row('Attached', `${attachedCount} file(s) on this email`) : ''}
-        ${row('Account', request.accountId)}
-        ${row('Marketing', request.marketingOptIn ? 'opted in' : 'no')}
-      </table>
-      ${request.brandingContact ? `<p style="margin:18px 0 0"><b>End card</b><br>${esc(request.brandingContact)}</p>` : ''}
-      ${request.notes ? `<p style="margin:18px 0 0"><b>Notes</b><br>${esc(request.notes).replace(/\n/g, '<br>')}</p>` : ''}
-      ${links ? `<p style="margin:18px 0 0;font-size:13px"><b>Photos:</b> ${links}</p>` : ''}
-      <p style="margin:24px 0 0"><a href="${config.publicUrl}/requests" style="background:#1E5AA8;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Open the queue</a></p>
+      ${field('Name', request.name)}
+      ${field('Email', request.email)}
+      ${field('Address', request.address)}
+      ${field('Option', optionLabel(request))}
+      ${field('Price', priceLine(o.amountCents || 0))}
+      ${field('Photo count', String(photoCount))}
+      ${field('Account', request.accountId ? 'Yes' : 'No')}
+      ${field('Phone', request.phone)}
+      ${field('Firm', request.firm)}
+      ${attachedCount ? field('Attached', `${attachedCount} file(s) on this email`) : ''}
+      ${request.brandingContact ? field('End card', request.brandingContact) : ''}
+      ${request.notes ? field('Notes', request.notes) : ''}
+      ${photoList(urls)}
+      ${queueButton()}
     `),
   };
 }

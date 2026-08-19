@@ -800,27 +800,40 @@ main().catch(async (err) => {
   check('notifyAddress defaults to max@corridor.video', notifyAddress() === 'max@corridor.video');
   if (prevNotify !== undefined) process.env.NOTIFY_EMAIL = prevNotify;
 
-  const confirm = orderConfirmation({ address: '1 Test St', photos: [] });
+  const confirm = orderConfirmation({ name: 'Ada', address: '1 Test St', photos: [] });
   check('broker confirmation has no sign-in / magic link',
     !/sign-in|sign in|magic|verify\?token|View your tours/i.test(`${confirm.subject}\n${confirm.html}`));
-  check('broker confirmation promises 48 hours', /48 hours/i.test(confirm.html));
-  check('broker confirmation says they see the cut before they owe', /see the cut before you owe/i.test(confirm.html));
+  check('broker confirmation subject and body are the professional listing copy',
+    confirm.subject === 'We have your listing'
+      && /Hi Ada,/.test(confirm.html)
+      && /We have 1 Test St\./.test(confirm.html)
+      && /We cut by hand from the photos you sent\./.test(confirm.html)
+      && /It comes back in 48 hours\./.test(confirm.html)
+      && /We work the cut with you until it's a video you'd send\./.test(confirm.html)
+      && /max@corridor\.video/.test(confirm.html));
+  check('broker confirmation does not sell, checkout, or intern-glue',
+    !/see the cut before you owe/i.test(confirm.html)
+      && !/first one free/i.test(confirm.html)
+      && !/cinematic/i.test(confirm.html)
+      && !/\/t\/demo/.test(confirm.html)
+      && !/checkout/i.test(confirm.html));
   check('notify default is in the mailer, not a leftover tours address',
     /max@corridor\.video/.test(mailSrc) && !/hello@corridor\.tours/.test(mailSrc));
   check('shared shell dropped the generic cinematic-marketing footer',
-    !/cinematic marketing for commercial real estate/i.test(mailSrc));
-  check('shared shell uses the live-site line and Detroit footer',
-    /CRE marketing is boring\. So we fixed it\./.test(confirm.html)
-      && /corridor\.video/.test(confirm.html)
-      && /Detroit/.test(confirm.html)
-      && /#F7FAFD/.test(confirm.html)
-      && /https:\/\/www\.corridor\.video/.test(confirm.html));
+    !/cinematic marketing for commercial real estate/i.test(mailSrc)
+      && !/cinematic/i.test(mailSrc));
+  check('shared shell uses the Detroit operator footer',
+    /Corridor · Detroit ·/.test(confirm.html)
+      && /max@corridor\.video/.test(confirm.html)
+      && !/CRE marketing is boring/.test(confirm.html)
+      && /#F7FAFD/.test(confirm.html));
 
-  const requestConfirm = requestConfirmation({ address: '1 Test St', wants: ['video tour'], photos: [] });
-  check('request confirmation sits in the branded shell',
-    /We've got it\./.test(requestConfirm.html)
+  const requestConfirm = requestConfirmation({ name: 'Ada', address: '1 Test St', wants: ['video tour'], photos: [] });
+  check('request confirmation uses the same broker voice',
+    requestConfirm.subject === 'We have your listing'
+      && /We have 1 Test St\./.test(requestConfirm.html)
       && /48 hours/i.test(requestConfirm.html)
-      && /see the cut before you owe/i.test(requestConfirm.html)
+      && !/see the cut before you owe/i.test(requestConfirm.html)
       && !/\/t\/demo/.test(requestConfirm.html)
       && !/monthly/i.test(requestConfirm.html));
 
@@ -843,15 +856,44 @@ main().catch(async (err) => {
     /It's ready\./.test(delivery.html)
       && /Watch the tour/.test(delivery.html)
       && /Download the MP4/.test(delivery.html)
-      && /CRE marketing is boring\. So we fixed it\./.test(delivery.html)
-      && !/\/t\/demo/.test(delivery.html));
+      && /Corridor · Detroit ·/.test(delivery.html)
+      && !/\/t\/demo/.test(delivery.html)
+      && !/cinematic/i.test(delivery.html));
 
-  const notify = orderNotification({ address: '1 Test St', name: 'Ada', email: 'ada@test.example', photos: [] });
-  check('operator notify keeps the queue table and subject, only the shell changed',
-    notify.subject === 'New order — 1 Test St'
-      && /Open the queue/.test(notify.html)
+  const notify = orderNotification(
+    {
+      address: '1 Test St',
+      name: 'Ada',
+      email: 'ada@test.example',
+      photos: [{ file: 'shot-a.jpg' }],
+      accountId: 'acc_1',
+      order: { amountCents: 20000, phoneWalk: false },
+    },
+    { photoUrls: ['https://corridor-nrny.onrender.com/uploads/shot-a.jpg'] },
+  );
+  check('operator notify is a labeled new-listing mail, not intern glue',
+    notify.subject === 'New listing — 1 Test St'
+      && /Name/.test(notify.html)
+      && /Email/.test(notify.html)
+      && /Address/.test(notify.html)
+      && /Option/.test(notify.html)
+      && /Price/.test(notify.html)
+      && /Photo count/.test(notify.html)
+      && /Account/.test(notify.html)
       && /ada@test\.example/.test(notify.html)
-      && /CRE marketing is boring\. So we fixed it\./.test(notify.html));
+      && /\$200/.test(notify.html)
+      && !/<table/i.test(notify.html)
+      && !/New order —/.test(notify.subject)
+      && !/cinematic/i.test(notify.html)
+      && /Open the queue/.test(notify.html)
+      && /https:\/\/corridor\.video\/requests/.test(notify.html)
+      && /https:\/\/corridor\.video\/uploads\/shot-a\.jpg/.test(notify.html)
+      && !/onrender\.com/.test(notify.html)
+      && /Corridor · Detroit ·/.test(notify.html));
+
+  check('intake emails the broker confirmation after the order is saved',
+    /orderConfirmation\(request\)/.test(intakeSrc)
+      && /sendMail\(\{ to: email, subject: confirm\.subject/.test(intakeSrc));
 }
 
 // --- property intake --------------------------------------------------------
@@ -1082,6 +1124,10 @@ main().catch(async (err) => {
   check('homepage listing submit does not require sign-in',
     /xhr\.open\('POST'/.test(sendIntake) && !/openAuth\(/.test(sendIntake) && !/\/api\/auth\/link/.test(sendIntake));
   check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
+  check('name placeholder is generic, address can stay Detroit',
+    /placeholder="Your name"/.test(landing)
+      && !/placeholder="Max Charlip"/.test(landing)
+      && /placeholder="6432 Woodward Ave, Detroit, MI"/.test(landing));
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('hero CTA is Send a listing, the only inquire action', /href="#intake"/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
@@ -1113,6 +1159,8 @@ main().catch(async (err) => {
       && !/first-one-free|first one free/i.test(desk) && !/\/t\/demo/.test(desk));
   check('desk email is max@corridor.video if shown',
     /max@corridor\.video/.test(desk) && !/hello@corridor\.tours/.test(desk) && !/@corridor\.tours/.test(desk));
+  check('desk name placeholder is generic',
+    /placeholder="Your name"/.test(desk) && !/placeholder="Max Charlip"/.test(desk));
   check('desk is light homepage type and color',
     /#F7F4ED/.test(desk) && /#1E5AA8/.test(desk) && /#2B2B2B/.test(desk)
       && /#B8D7EB/.test(desk) && /#C8C2B4/.test(desk) && /#5F5C57/.test(desk)
