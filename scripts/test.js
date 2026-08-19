@@ -971,10 +971,12 @@ main().catch(async (err) => {
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We make a video of your listing/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav is Pricing and FAQ — guest home is inquire only',
+  check('nav is Pricing, FAQ, and Account to the desk',
     /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
+      && /class="nav-wide" href="\/listings">Account</.test(landing)
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
-      && !/data-open-auth/.test(landing) && !/Create account/.test(landing) && !/>Sign in</.test(landing));
+      && !/data-open-auth/.test(landing) && !/Create account/.test(landing)
+      && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   check('What we do is two sentences, not process cards',
     /<h2>What we do<\/h2>/.test(landing)
       && /Sending a photo dump is how CRE still does it/.test(landing)
