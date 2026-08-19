@@ -1082,9 +1082,11 @@ main().catch(async (err) => {
       && /One-time/.test(landing)
       && /Monthly/.test(landing)
       && /class="price-card"/.test(landing)
-      && /class="price-card primary"/.test(landing)
+      && /class="price-card primary featured"/.test(landing)
+      && /price-grid-3/.test(landing)
+      && !/price-grid-4/.test(landing)
       && /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing)
-      && /<h3>Custom<\/h3>/.test(landing)
+      && !/<h3>Custom<\/h3>/.test(landing)
       && /One listing/.test(landing) && /Five-pack/.test(landing)
       && /\$750 <span class="per">\/ month<\/span>/.test(landing)
       && />Shop</.test(landing)
@@ -1094,6 +1096,11 @@ main().catch(async (err) => {
       && /Extra listing \$200/.test(landing)
       && /For shops that keep sending/.test(landing)
       && /mailto:max@corridor\.video/.test(landing)
+      && /class="price-quote"/.test(landing)
+      && /Enterprise — custom quote/.test(landing)
+      && /For brokerages/.test(landing)
+      && /Volume, a desk, a number that isn.t on a card/.test(landing)
+      && !/<p class="plan">Enterprise<\/p>/.test(landing)
       && /class="price-lead"/.test(landing)
       && /They walk the listing on their phone/.test(landing)
       && /Leases and investor looks move faster/.test(landing)
@@ -1102,12 +1109,13 @@ main().catch(async (err) => {
       && /class="was">\$550</.test(landing)
       && (landing.match(/class="was">\$1,000</g) || []).length === 2
       && /\$200 off/.test(landing) && /\$250 off/.test(landing)
-      && (landing.match(/<article class="price-card/g) || []).length === 6
+      && (landing.match(/<article class="price-card/g) || []).length === 4
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
-      && !/half forever/i.test(landing));
+      && !/half forever/i.test(landing)
+      && !/yearly|20%|\/ year/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"'))));
   const monthPane = landing.slice(landing.indexOf('class="price-pane-month"'), landing.indexOf('id="faq"'));
   const oncePane = landing.slice(landing.indexOf('class="price-pane-once"'), landing.indexOf('class="price-pane-month"'));
   check('cut-until-you-would-send is the closer, not the old owe slogan',
@@ -1233,8 +1241,9 @@ main().catch(async (err) => {
   check('listings keyframes are only the pill shine',
     deskKeys.length > 0 && deskKeys.every((k) => /gradient-angle|shimmer/.test(k)));
   check('shiny pills do not import Inter, React, or a new UI stack',
-    !/fonts\.googleapis\.com/.test(landing + desk)
+    !/family=Inter/.test(landing + desk)
       && !/\bInter\b/.test(landing + desk)
+      && !/DM Sans/.test(landing + desk)
       && !/styled-jsx|shadcn|tailwind|next\/|from ['"]react['"]|\/components\/ui/.test(landing + desk)
       && !/#8484ff/.test(landing + desk));
   check('outline mail pills stay a static border, not a shine',
