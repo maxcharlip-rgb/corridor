@@ -186,6 +186,10 @@
   .band-sky { background: #B8D7EB; }
   .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
   .price-wrap { max-width: 1120px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
+  .price-lead {
+    max-width: 34rem; margin: 0 auto 22px;
+    text-align: center; font-size: 16px; line-height: 1.4; color: #2B2B2B;
+  }
   .price-switch {
     position: relative;
     display: flex; width: fit-content; margin: 0 auto 28px; gap: 4px;
@@ -218,6 +222,17 @@
   .price-card .plan {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
     text-transform: uppercase; color: #5F5C57; margin: 0 0 8px;
+  }
+  .price-card .ask {
+    display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px;
+  }
+  .price-card .was {
+    font-size: 14px; line-height: 1; color: #8A867E;
+    text-decoration: line-through; text-decoration-thickness: 1px;
+  }
+  .price-card .save {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: #D47A54;
   }
   .price-card h3 {
     font-family: var(--serif); font-weight: 400;
@@ -405,6 +420,7 @@
 
   <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
     <div class="price-wrap">
+      <p class="price-lead">They walk the listing on their phone. Leases and investor looks move faster. Not a brochure, not a photo dump, not a sign nobody sees.</p>
       <div class="price-switch">
         <input type="radio" name="price-view" id="price-once" checked />
         <label for="price-once">One-time</label>
@@ -415,31 +431,34 @@
         <div class="price-grid price-grid-4">
           <article class="price-card">
             <p class="plan">One listing</p>
+            <p class="ask"><span class="was">$400</span><span class="save">$200 off</span></p>
             <h3>$200</h3>
             <ul>
-              <li>Photos you already have.</li>
-              <li>Hand-cut in 48 hours. Two revisions.</li>
-              <li>You see the cut before you owe.</li>
+              <li>They walk the listing on their phone.</li>
+              <li>Photos you already have. Hand-cut in 48 hours.</li>
+              <li>Not a photo dump. Not a sign nobody sees.</li>
             </ul>
             <a class="pill" href="#intake">Send a listing</a>
           </article>
           <article class="price-card">
             <p class="plan">Phone walk</p>
+            <p class="ask"><span class="was">$550</span><span class="save">$200 off</span></p>
             <h3>$350</h3>
             <ul>
               <li>You walk the space on a call. We cut from that.</li>
-              <li>Same 48 hours.</li>
+              <li>Leases and investor looks move faster.</li>
               <li>When stills aren’t enough.</li>
             </ul>
             <a class="pill" href="#intake">Send a listing</a>
           </article>
           <article class="price-card primary">
             <p class="plan">Five-pack</p>
+            <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
             <h3>$750</h3>
             <ul>
               <li>Five listings. Best per-cut.</li>
+              <li>The video they send and put on the listing.</li>
               <li>Use them when the listings hit.</li>
-              <li>Same 48-hour cut.</li>
             </ul>
             <a class="pill" href="#intake">Send a listing</a>
           </article>
@@ -458,12 +477,12 @@
         <div class="price-grid price-grid-2">
           <article class="price-card primary">
             <p class="plan">Shop</p>
+            <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
             <h3>$750 <span class="per">/ month</span></h3>
             <ul>
-              <li>4 videos a month.</li>
+              <li>4 videos a month. They walk it on their phone.</li>
               <li>Unused roll 60 days. Bank cap 8.</li>
-              <li>Extra listing $200.</li>
-              <li>For shops that keep sending.</li>
+              <li>Extra listing $200. For shops that keep sending.</li>
             </ul>
             <a class="pill" href="#intake">Send a listing</a>
           </article>

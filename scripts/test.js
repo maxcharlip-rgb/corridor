@@ -1043,8 +1043,18 @@ main().catch(async (err) => {
       && /Extra listing \$200/.test(landing)
       && /For shops that keep sending/.test(landing)
       && /mailto:max@corridor\.video/.test(landing)
+      && /class="price-lead"/.test(landing)
+      && /They walk the listing on their phone/.test(landing)
+      && /Leases and investor looks move faster/.test(landing)
+      && /Not a brochure, not a photo dump, not a sign nobody sees/.test(landing)
+      && /class="was">\$400</.test(landing)
+      && /class="was">\$550</.test(landing)
+      && (landing.match(/class="was">\$1,000</g) || []).length === 2
+      && /\$200 off/.test(landing) && /\$250 off/.test(landing)
       && (landing.match(/<article class="price-card/g) || []).length === 6
-      && !/\$499/.test(landing)
+      && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
+      && !/gamification/i.test(landing)
+      && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/half forever/i.test(landing));
   check('invoice-after-cut language is one trust line, not a column', /You see the cut before you owe\./.test(landing) && /You see the cut before you owe anything\./.test(landing));
