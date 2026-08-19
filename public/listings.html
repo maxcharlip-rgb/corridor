@@ -192,6 +192,7 @@
   .gate { max-width: 520px; margin: 10vh auto 20vh; padding: 0 clamp(20px, 4.5vw, 64px); }
   .gate h1 { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.04; margin: 0 0 12px; }
   .gate p { font-size: 15px; line-height: 1.55; color: #5F5C57; margin: 0 0 18px; }
+  .gate .pill { margin-top: 4px; }
   .gate .field { margin: 0 0 12px; }
   .gate a { color: #1E5AA8; }
 
@@ -287,7 +288,7 @@
         '<p>Already sent a listing? Enter the email you used.</p>' +
         '<input id="gate-email" class="field" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
         '<p class="err" id="gate-err"></p>' +
-        '<button type="button" class="ghost" id="gate-go">Continue</button>' +
+        '<button type="button" class="pill" id="gate-go">Continue</button>' +
         '<p style="margin-top:28px"><a href="/#intake">Or send a listing</a></p>' +
       '</div>';
     var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email');

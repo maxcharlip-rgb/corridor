@@ -1028,8 +1028,10 @@ main().catch(async (err) => {
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
   check('pricing is a one-time / monthly card switcher',
     /id="price-once" checked/.test(landing)
-      && /for="price-once">One-time</.test(landing)
-      && /for="price-month">Monthly</.test(landing)
+      && /class="price-tab"/.test(landing)
+      && /id="price-month"/.test(landing)
+      && /One-time/.test(landing)
+      && /Monthly/.test(landing)
       && /class="price-card"/.test(landing)
       && /class="price-card primary"/.test(landing)
       && /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing)
@@ -1070,7 +1072,9 @@ main().catch(async (err) => {
       && !/don.t bill/.test(monthPane)
       && !/after the video is right/i.test(monthPane)
       && !/see the cut before you owe/i.test(landing)
-      && !/owe anything/i.test(landing));
+      && !/owe anything/i.test(landing)
+      && !/After you see the cut/i.test(landing)
+      && !/invoiced after delivery/i.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
   check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
@@ -1097,6 +1101,8 @@ main().catch(async (err) => {
     /Already sent a listing\? Enter the email you used/.test(desk)
       && /\/api\/auth\/link/.test(desk)
       && /\/#intake/.test(desk)
+      && /class="pill" id="gate-go">Continue</.test(desk)
+      && !/class="ghost" id="gate-go"/.test(desk)
       && !/Create account/.test(desk)
       && !/email me a link/i.test(desk)
       && !/type="password"/.test(desk));
