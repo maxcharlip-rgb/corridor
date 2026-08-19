@@ -1195,6 +1195,47 @@ main().catch(async (err) => {
       && /r\.accountId === req\.account\.id/.test(authSrc));
 }
 
+// --- primary pills keep Corridor blue, with the shiny-cta motion ------------
+{
+  const fsx = await import('node:fs');
+  const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  const desk = fsx.readFileSync(new URL('../public/listings.html', import.meta.url), 'utf8');
+  const shineOn = (src) =>
+    /@property --gradient-angle/.test(src)
+    && /conic-gradient\(/.test(src)
+    && /--animation:\s*gradient-angle/.test(src)
+    && /--animation:\s*shimmer/.test(src)
+    && /animation-play-state:\s*running/.test(src)
+    && /--shiny-cta-bg:\s*#1E5AA8/.test(src)
+    && /--shiny-cta-bg-subtle:\s*#17457F/.test(src)
+    && /--shiny-cta-fg:\s*#ffffff/.test(src)
+    && /--shiny-cta-highlight:\s*#B8D7EB/.test(src)
+    && /--shiny-cta-highlight-subtle:\s*#D4E7F3/.test(src)
+    && /\.pill\s*\{/.test(src)
+    && /border-radius:\s*999px/.test(src)
+    && /font-size:\s*15px/.test(src)
+    && /background:\s*#1E5AA8/.test(src);
+  const landingKeys = landing.match(/@keyframes\s+[\w-]+/g) || [];
+  const deskKeys = desk.match(/@keyframes\s+[\w-]+/g) || [];
+  check('homepage primary pills use the shiny-cta motion in Corridor blue', shineOn(landing));
+  check('listings Continue and upload pills use the same shiny-cta motion', shineOn(desk)
+    && /class="pill" id="gate-go">Continue</.test(desk)
+    && /class="pill" id="go">Upload listing</.test(desk));
+  check('landing keyframes are only the pill shine',
+    landingKeys.length > 0
+      && landingKeys.every((k) => /gradient-angle|shimmer/.test(k))
+      && !/@keyframes stroll-|@keyframes stride|@keyframes painted-drift|@keyframes river-flow/.test(landing));
+  check('listings keyframes are only the pill shine',
+    deskKeys.length > 0 && deskKeys.every((k) => /gradient-angle|shimmer/.test(k)));
+  check('shiny pills do not import Inter, React, or a new UI stack',
+    !/fonts\.googleapis\.com/.test(landing + desk)
+      && !/\bInter\b/.test(landing + desk)
+      && !/styled-jsx|shadcn|tailwind|next\/|from ['"]react['"]|\/components\/ui/.test(landing + desk)
+      && !/#8484ff/.test(landing + desk));
+  check('outline mail pills stay a static border, not a shine',
+    /pill-mail/.test(landing) && /pill-mail::before/.test(landing) && /content:\s*none/.test(landing));
+}
+
 // --- listing/tour page stays the existing /t/:slug template, now light ------
 {
   const fsx = await import('node:fs');
