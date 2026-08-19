@@ -955,7 +955,7 @@ main().catch(async (err) => {
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
   check('headline sits in the open sky, pitch and CTA at the bottom', /class="sky-board"/.test(landing) && /top:\s*max\(88px,\s*15vh\)/.test(landing) && /class="sky-lead"/.test(landing) && /class="pitch"/.test(landing) && !/nav-send/.test(landing));
-  check('wordmark is Corridor with a play mark in the C', /class="mark-c"/.test(landing) && /orridor/.test(landing) && /7\.7 8\.2 14\.4 12 7\.7 15\.8/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
+  check('wordmark is the site sans spelling Corridor, with a play in the C', /class="wordmark"/.test(landing) && /Corridor<span class="wordmark-play"/.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
   check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
   check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
   check('pricing and intake live on sampled color bands after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
@@ -966,9 +966,9 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy is the punch line in the open left sky', /class="sky-board"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /We make a video of your listing\. It helps it lease\. You get the day back\. Not a BS tour\./.test(landing) && !/So we fixed it/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy is the punch line in the open left sky', /class="sky-board"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /We make a video of your listing\. It helps it lease\. You get the day back\. Not a BS tour\./.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
-  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\./.test(landing) && /We make a video of your listing/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We make a video of your listing/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   check('nav is Pricing and FAQ — guest home is inquire only',
