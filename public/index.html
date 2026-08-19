@@ -80,11 +80,23 @@
     background-repeat: no-repeat;
     image-rendering: auto;
   }
+  .street-loop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 46% 100%;
+    pointer-events: none;
+    display: block;
+    border: 0;
+  }
   .street-haze {
     position: absolute; inset: 0;
     pointer-events: none; z-index: 1;
     background:
-      linear-gradient(90deg, rgba(247,244,237,.78) 0%, rgba(247,244,237,.28) 26%, rgba(247,244,237,0) 54%),
+      linear-gradient(180deg, rgba(247,244,237,.58) 0%, rgba(247,244,237,.2) 20%, rgba(247,244,237,0) 40%),
+      linear-gradient(90deg, rgba(247,244,237,.62) 0%, rgba(247,244,237,.2) 24%, rgba(247,244,237,0) 48%),
       linear-gradient(0deg, rgba(247,244,237,.58) 0%, rgba(247,244,237,.14) 22%, transparent 48%);
   }
   .street-grain {
@@ -107,7 +119,6 @@
     background: transparent;
   }
   .wordmark {
-    position: relative;
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
     color: #2B2B2B;
     font-family: var(--sans);
@@ -116,30 +127,27 @@
     letter-spacing: -.02em;
     line-height: 1;
   }
-  .wordmark-play {
-    position: absolute;
-    left: .4em;
-    top: 50%;
-    width: 0; height: 0;
-    margin-top: -.12em;
-    border-style: solid;
-    border-width: .12em 0 .12em .2em;
-    border-color: transparent transparent transparent #1E5AA8;
-    pointer-events: none;
-  }
   .sky-bar .nav-wide {
     font-size: 14px; color: #2B2B2B; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
   }
   .sky-board { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-  .sky-board h1 {
+  .sky-line {
     position: absolute;
     left: clamp(20px, 4.5vw, 64px);
+    right: clamp(20px, 4.5vw, 64px);
     top: max(88px, 15vh);
-    width: min(11.6em, 44vw);
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(40px, 3.5vw, 48px); line-height: .96; letter-spacing: -.04em;
+  }
+  .sky-line h1 {
+    font-family: var(--sans); font-weight: 500;
+    font-size: clamp(1.5rem, 6.35vw, 7rem); line-height: .95; letter-spacing: -.045em;
     margin: 0; color: #2B2B2B;
+    white-space: nowrap;
+  }
+  .sky-line .fix {
+    font-family: var(--sans); font-weight: 400;
+    font-size: clamp(17px, 1.7vw, 26px); line-height: 1.2; letter-spacing: -.02em;
+    margin: 12px 0 0; color: #2B2B2B;
   }
   .sky-lead {
     position: absolute;
@@ -279,6 +287,7 @@
     }
     .street-fade { height: 40px; }
     .geo { display: none; }
+    .street-loop { object-position: 48% 30%; }
     .sky-board {
       inset: auto clamp(20px, 4.5vw, 64px) max(22px, 4.5vh) clamp(20px, 4.5vw, 64px);
       display: flex;
@@ -287,30 +296,43 @@
       gap: 14px;
       pointer-events: auto;
     }
-    .sky-board h1 {
-      position: static;
+    .sky-line { position: static; }
+    .sky-line h1 {
+      white-space: normal;
       width: min(16rem, 100%);
       font-size: clamp(1.85rem, 8.4vw, 2.15rem);
     }
+    .sky-line .fix { margin-top: 8px; font-size: 1.05rem; }
     .sky-lead { position: static; max-width: 22em; }
     .foot-bar { flex-wrap: wrap; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .street-loop { display: none; }
   }
 </style>
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water."></div>
+    <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water.">
+      <video class="street-loop" muted playsinline autoplay loop preload="none" poster="/hero-detroit.png" disablepictureinpicture disableremoteplayback aria-hidden="true">
+        <source src="/hero-detroit-loop.mp4" type="video/mp4" />
+      </video>
+    </div>
     <div class="street-haze" aria-hidden="true"></div>
     <div class="street-grain" aria-hidden="true"></div>
     <div class="street-fade" aria-hidden="true"></div>
     <header class="sky-bar">
-      <button type="button" class="wordmark" data-home="1">Corridor<span class="wordmark-play" aria-hidden="true"></span></button>
+      <button type="button" class="wordmark" data-home="1">Corridor</button>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
       <a class="nav-wide" href="/listings">Account</a>
     </header>
     <div class="sky-board">
-      <h1>CRE marketing is boring. So we fixed it.</h1>
+      <div class="sky-line">
+        <h1>CRE marketing is boring.</h1>
+        <p class="fix">So we fixed it.</p>
+      </div>
       <div class="sky-lead">
         <p class="pitch">We make a video of your listing. It helps it lease. You get the day back. Not a BS tour.</p>
         <a class="pill" href="#intake">Send a listing</a>
@@ -473,7 +495,7 @@
 
   <footer class="band-sky">
     <div class="foot-bar">
-      <a class="wordmark" href="/">Corridor<span class="wordmark-play" aria-hidden="true"></span></a>
+      <a class="wordmark" href="/">Corridor</a>
       <p>DETROIT · MAX@CORRIDOR.VIDEO</p>
     </div>
   </footer>
@@ -728,6 +750,35 @@
     .then(function (data) { if (data && data.account) account = data.account; })
     .catch(function () {})
     .then(function () { paintIdentity(); paintPrice(); });
+}());
+
+(function () {
+  var video = document.querySelector('.street-loop');
+  if (!video) return;
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function stillOnly() {
+    video.pause();
+    video.removeAttribute('src');
+    while (video.firstChild) video.removeChild(video.firstChild);
+    video.load();
+    if (video.parentNode) video.parentNode.removeChild(video);
+  }
+  if (motion.matches) {
+    stillOnly();
+    return;
+  }
+  video.muted = true;
+  video.addEventListener('error', stillOnly);
+  Array.prototype.forEach.call(video.querySelectorAll('source'), function (source) {
+    source.addEventListener('error', stillOnly);
+  });
+  var play = video.play();
+  if (play && play.catch) play.catch(function () { stillOnly(); });
+  if (motion.addEventListener) {
+    motion.addEventListener('change', function () {
+      if (motion.matches) stillOnly();
+    });
+  }
 }());
 </script>
 </body>

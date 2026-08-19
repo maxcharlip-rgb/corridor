@@ -954,8 +954,8 @@ main().catch(async (err) => {
   check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('headline sits in the open sky, pitch and CTA at the bottom', /class="sky-board"/.test(landing) && /top:\s*max\(88px,\s*15vh\)/.test(landing) && /class="sky-lead"/.test(landing) && /class="pitch"/.test(landing) && !/nav-send/.test(landing));
-  check('wordmark is the site sans spelling Corridor, with a play in the C', /class="wordmark"/.test(landing) && /Corridor<span class="wordmark-play"/.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
+  check('headline sits in the open sky, pitch and CTA at the bottom', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /top:\s*max\(88px,\s*15vh\)/.test(landing) && /class="sky-lead"/.test(landing) && /class="pitch"/.test(landing) && !/nav-send/.test(landing));
+  check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
   check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
   check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
   check('pricing and intake live on sampled color bands after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
@@ -966,7 +966,7 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy is the punch line in the open left sky', /class="sky-board"/.test(landing) && /<h1>CRE marketing is boring\. So we fixed it\.<\/h1>/.test(landing) && /We make a video of your listing\. It helps it lease\. You get the day back\. Not a BS tour\./.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy is a full-width sky line, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /white-space:\s*nowrap/.test(landing) && !/width:\s*min\(11\.6em,\s*44vw\)/.test(landing) && /We make a video of your listing\. It helps it lease\. You get the day back\. Not a BS tour\./.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We make a video of your listing/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
@@ -986,10 +986,24 @@ main().catch(async (err) => {
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
   check('landing form follows intake redirect to the desk',
     /data\.redirect/.test(landing) && /\/listings/.test(landing));
-  check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
-  check('hero is a still full-bleed painting, no scroll dolly or loop',
+  check('hero motion is a muted riverfront loop, not CSS cloud layers',
+    /class="street-loop"/.test(landing)
+      && /hero-detroit-loop\.mp4/.test(landing)
+      && /playsinline/.test(landing)
+      && /prefers-reduced-motion:\s*reduce/.test(landing)
+      && !/rel="preload"[^>]*hero-detroit-loop/.test(landing)
+      && !/playbackRate/.test(landing)
+      && !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
+  const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
+  check('hero loop is silent, cover-cropped, and has no controls',
+    /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
+      && /preload="none"/.test(loopTag) && /poster="\/hero-detroit\.png"/.test(loopTag)
+      && !/\scontrols/.test(loopTag)
+      && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*100%/.test(landing)
+      && /pointer-events:\s*none/.test(landing));
+  check('hero is full-bleed cover, no scroll dolly',
     !/street-pin/.test(landing) && !/street-stage/.test(landing) && !/148vh/.test(landing)
-      && !/hero-detroit-loop/.test(landing) && !/autoplay/.test(landing) && !/src="\/hero-detroit-scroll\.mp4"/.test(landing));
+      && !/src="\/hero-detroit-scroll\.mp4"/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
