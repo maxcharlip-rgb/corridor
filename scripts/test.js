@@ -983,7 +983,19 @@ main().catch(async (err) => {
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
   check('landing form follows intake redirect to the desk',
     /data\.redirect/.test(landing) && /\/listings/.test(landing));
-  check('hero is a still painting, no drifting cloud layers', !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
+  check('hero motion is a muted Higgsfield loop, not CSS cloud layers',
+    /class="street-loop"/.test(landing)
+      && /hero-detroit-loop\.webm/.test(landing)
+      && /hero-detroit-loop\.mp4/.test(landing)
+      && /playsinline/.test(landing)
+      && /prefers-reduced-motion:\s*reduce/.test(landing)
+      && !/rel="preload"[^>]*hero-detroit-loop/.test(landing)
+      && !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
+  const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
+  check('hero loop is silent, cover-cropped, and has no controls',
+    /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
+      && /preload="none"/.test(loopTag) && !/\scontrols/.test(loopTag)
+      && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*100%/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
