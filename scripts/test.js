@@ -1037,7 +1037,7 @@ main().catch(async (err) => {
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
   check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && !/class="still"/.test(landing) && !/class="offer"/.test(landing) && !/class="geo"/.test(landing) && landing.indexOf('<h1>CRE marketing is boring.') < landing.indexOf('class="fix">So we fixed it.') && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*[^0-9.]7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy) && !/photo dump/.test(skyCopy) && !/Detroit founded/.test(skyCopy));
-  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="A photo dump and a PDF is not a tour\. The video lets them walk the space from the photos you already have\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="We make interactive listing videos so clients can walk the space\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing) && !/A photo dump and a PDF is not a tour/.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   const foldNav = landing.slice(landing.indexOf('<header'), landing.indexOf('</header>'));
@@ -1046,10 +1046,20 @@ main().catch(async (err) => {
     /href="#pricing"/.test(foldNav) && /href="#faq"/.test(foldNav)
       && /href="#join"/.test(foldNav)
       && />Corridor</.test(foldNav)
+      && /class="wordmark"/.test(foldNav)
+      && !/class="pill"[\s\S]*Corridor/.test(foldNav)
+      && /class="pill" href="#pricing">Pricing</.test(foldNav)
+      && /class="pill" href="#faq">FAQ</.test(foldNav)
+      && /class="pill" href="#join">Join</.test(foldNav)
+      && (foldNav.match(/class="pill"/g) || []).length === 3
+      && !/class="nav-wide"/.test(foldNav)
+      && !/hamburger/i.test(foldNav)
+      && /min-height:\s*44px/.test(landing)
       && !/href="\/listings"/.test(foldNav)
       && !/Create account/.test(foldNav)
       && !/Create account/.test(foldFoot)
-      && (foldNav.match(/class="nav-wide"/g) || []).length === 3
+      && !/Sign in/.test(foldNav)
+      && !/Waitlist/.test(foldNav)
       && !/href="\/listings">Sign in</.test(foldFoot)
       && !/href="\/listings#create">Create account</.test(foldFoot)
       && !/href="\/listings"/.test(foldFoot)
@@ -1058,11 +1068,13 @@ main().catch(async (err) => {
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
-  check('What we do punches the dump and lets them walk the space',
+  check('What we do says we make interactive listing videos',
     /<h2>What we do<\/h2>/.test(landing)
-      && /A photo dump and a PDF is not a tour\. Nobody walks it\. They skim and bounce\. You burn the week chasing a maybe\./.test(whatCopy)
-      && /The video lets them walk the space from the photos you already have\. They feel the floor tonight\. You get the showing — not another unread listing\./.test(whatCopy)
+      && /We make interactive listing videos so clients can walk the space — buyers, tenants, the other side of the deal\./.test(whatCopy)
+      && /They feel the floor from the photos you already have\. You get the showing, not another unread listing\./.test(whatCopy)
       && (whatCopy.match(/<p>/g) || []).length === 2
+      && !/A photo dump and a PDF is not a tour/.test(whatCopy)
+      && !/Nobody walks it/.test(whatCopy)
       && !/You still send a photo dump and a PDF/.test(whatCopy)
       && !/That’s the listing/.test(whatCopy)
       && !/It dies in an inbox/.test(whatCopy)
@@ -1072,7 +1084,7 @@ main().catch(async (err) => {
       && !/We cut it from the photos you already have\. You send it/.test(whatCopy)
       && !/We cut a listing video from the photos you already have/.test(whatCopy)
       && !/73%/.test(whatCopy)
-      && !/NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
+      && !/NAR/.test(whatCopy)
       && !/403%/.test(whatCopy)
       && !/CRE study/i.test(whatCopy)
       && !/villain/i.test(whatCopy)
@@ -1121,11 +1133,16 @@ main().catch(async (err) => {
   check('short FAQ sits after prices, with Join after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why the cap/.test(landing) && /Five brokers\. Three firms\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Why only three/.test(landing) && !/Three desks/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && landing.indexOf('id="join"') > landing.indexOf('id="faq"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
-  check('pricing is a three-card slider — solo, firm, custom',
+  check('pricing is three visible cards — solo, firm, custom',
     /class="price-card"/.test(landing)
-      && /class="price-slider"/.test(landing)
-      && /class="price-track"/.test(landing)
-      && /scroll-snap-type:\s*x\s+mandatory/.test(landing)
+      && /class="price-grid"/.test(landing)
+      && /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(landing)
+      && !/class="price-slider"/.test(landing)
+      && !/class="price-track"/.test(landing)
+      && !/class="price-controls"/.test(landing)
+      && !/class="price-arrow"/.test(landing)
+      && !/class="price-dots"/.test(landing)
+      && !/scroll-snap-type:\s*x\s+mandatory/.test(landing)
       && !/class="price-switch"/.test(landing)
       && !/>Solo broker</.test(landing)
       && !/>Brokerage firm</.test(landing)
@@ -1186,7 +1203,7 @@ main().catch(async (err) => {
       && (landing.match(/price-card primary/g) || []).length === 1
       && /Five brokers\. Three firms\. Then we open more/.test(landing)
       && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('id="pricing"')
-      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('class="price-slider"')
+      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('class="price-grid"')
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
