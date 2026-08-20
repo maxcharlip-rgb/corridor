@@ -1024,9 +1024,9 @@ main().catch(async (err) => {
   check('hero aria-label describes the empty industrial floor', /aria-label="Empty industrial floor, glass wall, one shaft of light\."/.test(landing) && !/Illustrated Detroit riverfront/.test(landing) && !/Renaissance Center/.test(landing));
   check('street-art fallback is cool grey, not sky', /background-color:\s*#73787E/.test(landing) && !/\.street-art[\s\S]*?background-color:\s*#B8D7EB/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
-  check('Detroit line is a bottom-right caption without a dark rule', /class="geo"/.test(landing) && /text-align:\s*right/.test(landing) && /rgba\(255,\s*255,\s*255,\s*\.6\)/.test(landing) && !/\.geo\s*\{[^}]*border-top:\s*1px solid rgba\(43/.test(landing));
+  check('fold has no geo caption and no dump or offer lines', !/class="geo"/.test(landing) && !/class="still"/.test(landing) && !/class="offer"/.test(landing) && !/Detroit founded/.test(landing) && !/You still ship a photo dump/.test(landing) && !/Photos you already have\. 48 hours\. \$200/.test(landing));
   check('hero has no cream haze or paper scrim over the plate', /class="street-haze"/.test(landing) && !/\.street-haze\s*\{[^}]*rgba\(247,\s*244,\s*237/.test(landing) && !/\.sky-board\s*\{[^}]*rgba\(247,\s*244,\s*237,\s*\.90/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
-  check('hero nav and type sit on the floor in paper-white', /\.sky-bar \.wordmark[\s\S]*?color:\s*rgba\(255,\s*255,\s*255,\s*\.92\)/.test(landing) && /\.sky-line \.fix\s*\{[^}]*color:\s*#FFFFFF/.test(landing) && /\.sky-line \.still\s*\{[^}]*color:\s*#FFFFFF/.test(landing) && /\.sky-line \.offer\s*\{[^}]*rgba\(255,\s*255,\s*255,\s*\.7\)/.test(landing) && !/Instrument/.test(landing));
+  check('hero nav and type sit on the floor in paper-white', /\.sky-bar \.wordmark[\s\S]*?color:\s*rgba\(255,\s*255,\s*255,\s*\.92\)/.test(landing) && /\.sky-line \.fix\s*\{[^}]*color:\s*#FFFFFF/.test(landing) && !/\.sky-line \.still/.test(landing) && !/\.sky-line \.offer/.test(landing) && !/Instrument/.test(landing));
   check('pricing lives on a sampled color band after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
@@ -1035,30 +1035,36 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#BBCDD3/.test(landing) && /#B0BABB/.test(landing) && /#444F52/.test(landing) && /#777F80/.test(landing) && !/#D47A54/.test(landing) && !/#C8C2B4/.test(landing) && !/#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="still">You still ship a photo dump and a PDF\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && landing.indexOf('class="fix">So we fixed it.') < landing.indexOf('class="still">You still ship a photo dump and a PDF.') && landing.indexOf('class="still">You still ship a photo dump and a PDF.') < landing.indexOf('class="offer">Photos you already have. 48 hours. $200.') && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*[^0-9.]7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
-  check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
-  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still ship a photo dump and a PDF\. We cut a listing video from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\. Detroit founded\. We cut a listing anywhere\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && !/class="still"/.test(landing) && !/class="offer"/.test(landing) && !/class="geo"/.test(landing) && landing.indexOf('<h1>CRE marketing is boring.') < landing.indexOf('class="fix">So we fixed it.') && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*[^0-9.]7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy) && !/photo dump/.test(skyCopy) && !/Detroit founded/.test(skyCopy));
+  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still send a photo dump and a PDF\. That’s the listing\. Nobody walks it\. It dies in an inbox\. We do this so the other side walks the building tonight — from the photos you already have — and books the showing because they already felt the space\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   const foldNav = landing.slice(landing.indexOf('<header'), landing.indexOf('</header>'));
   const foldFoot = landing.slice(landing.indexOf('<footer'));
-  check('fold nav is Corridor, Pricing, and FAQ only',
+  check('fold nav is Corridor, Pricing, FAQ, and Join',
     /href="#pricing"/.test(foldNav) && /href="#faq"/.test(foldNav)
+      && /href="#join"/.test(foldNav)
       && />Corridor</.test(foldNav)
-      && !/href="\/listings">Sign in</.test(foldNav)
+      && !/href="\/listings"/.test(foldNav)
       && !/Create account/.test(foldNav)
-      && (foldNav.match(/class="nav-wide"/g) || []).length === 2
-      && /href="\/listings">Sign in</.test(foldFoot)
-      && /href="\/listings#create">Create account</.test(foldFoot)
+      && !/Create account/.test(foldFoot)
+      && (foldNav.match(/class="nav-wide"/g) || []).length === 3
+      && !/href="\/listings">Sign in</.test(foldFoot)
+      && !/href="\/listings#create">Create account</.test(foldFoot)
+      && !/href="\/listings"/.test(foldFoot)
+      && !/placeholder="Waitlist"/.test(foldFoot)
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
   check('What we do is the walk from photos you already have',
     /<h2>What we do<\/h2>/.test(landing)
-      && /Nobody walks the building\. The brochure dies in an inbox\./.test(whatCopy)
-      && /We cut it from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\./.test(whatCopy)
+      && /You still send a photo dump and a PDF\. That’s the listing\. Nobody walks it\. It dies in an inbox\./.test(whatCopy)
+      && /We do this so the other side walks the building tonight — from the photos you already have — and books the showing because they already felt the space\./.test(whatCopy)
       && !/You still ship a photo dump and a PDF/.test(whatCopy)
+      && !/Nobody walks the building\. The brochure dies in an inbox/.test(whatCopy)
+      && !/We cut it from the photos you already have\. You send it/.test(whatCopy)
       && !/We cut a listing video from the photos you already have/.test(whatCopy)
       && !/73%/.test(whatCopy)
       && !/NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
@@ -1067,7 +1073,6 @@ main().catch(async (err) => {
       && !/villain/i.test(whatCopy)
       && !/boring CRE marketing/i.test(whatCopy)
       && !/the mission/.test(whatCopy)
-      && !/—/.test(whatCopy)
       && !/cinematic/i.test(whatCopy)
       && !/gamification/i.test(whatCopy)
       && !/founder/i.test(whatCopy)
@@ -1075,18 +1080,19 @@ main().catch(async (err) => {
       && landing.indexOf('id="what"') < landing.indexOf('id="pricing"'));
   check('landing has no auth modal or password field',
     !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/type="password"/.test(landing));
-  check('landing points listings at the desk, not a homepage form',
-    /href="\/listings"/.test(landing) && !/id="intake-form"/.test(landing));
+  check('landing has no desk links and no homepage intake form',
+    !/href="\/listings"/.test(landing) && !/id="intake-form"/.test(landing) && !/Create account/.test(landing));
   check('hero motion is a muted riverfront loop, not CSS cloud layers',
     /class="street-loop"/.test(landing)
       && /hero-detroit-loop\.mp4/.test(landing)
       && /playsinline/.test(landing)
       && /prefers-reduced-motion:\s*reduce/.test(landing)
       && !/rel="preload"[^>]*hero-detroit-loop/.test(landing)
-      && /defaultPlaybackRate = 0\.5/.test(landing)
-      && /playbackRate = 0\.5/.test(landing)
+      && /defaultPlaybackRate = 0\.4/.test(landing)
+      && /playbackRate = 0\.4/.test(landing)
+      && /play\.then\(function \(\) \{ video\.playbackRate = 0\.4; \}\)/.test(landing)
       && !/playbackRate = 0\.75/.test(landing)
-      && !/playbackRate = 0\.4/.test(landing)
+      && !/playbackRate = 0\.5/.test(landing)
       && !/playbackRate\s*=\s*-/.test(landing)
       && !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
@@ -1104,14 +1110,18 @@ main().catch(async (err) => {
       && !/src="\/hero-detroit-scroll\.mp4"/.test(landing));
   check('hero has no wave or water overlays', !/class="river"/.test(landing) && !/class="wave-row/.test(landing) && !/@keyframes river-flow/.test(landing) && !/class="water-shimmer"/.test(landing));
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
-  check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
+  check('geography is Detroit in the footer only, not a fold line', /DETROIT/.test(landing) && !/Detroit founded/.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why only three/.test(landing) && /Three desks\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
+  check('short FAQ sits after prices, with Join after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why the cap/.test(landing) && /Five brokers\. Three firms\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Why only three/.test(landing) && !/Three desks/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && landing.indexOf('id="join"') > landing.indexOf('id="faq"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
-  check('pricing is exactly three cards with no SKU toggle',
+  check('pricing is a solo/firm switcher with custom on both sides',
     /class="price-card"/.test(landing)
-      && /price-grid-3/.test(landing)
+      && /class="price-switch"/.test(landing)
+      && />Solo broker</.test(landing)
+      && />Brokerage firm</.test(landing)
+      && /price-grid-2/.test(landing)
+      && !/price-grid-3/.test(landing)
       && !/price-grid-4/.test(landing)
       && !/id="price-once"/.test(landing)
       && !/class="price-tab"/.test(landing)
@@ -1120,34 +1130,44 @@ main().catch(async (err) => {
       && !/Monthly/.test(landing)
       && /<h3>\$200<\/h3>/.test(landing)
       && !/<h3>\$350<\/h3>/.test(landing)
-      && /\$750 <span class="per">\/ month<\/span>/.test(landing)
+      && /\$150 <span class="per">a listing<\/span>/.test(landing)
+      && !/\$750/.test(landing)
       && /<h3>Custom<\/h3>/.test(landing)
-      && /One listing/.test(landing)
+      && !/<p class="plan">One listing<\/p>/.test(landing)
       && !/Five-pack/.test(landing)
       && !/Phone walk/.test(landing)
-      && />Shop</.test(landing)
-      && /Four listings/.test(landing)
-      && /Unused roll 60 days, cap 8, extra \$200/.test(landing)
-      && /The month is the shop/.test(landing)
+      && !/>Shop</.test(landing)
+      && !/Four listings/.test(landing)
+      && !/Unused roll/.test(landing)
+      && !/cap 8/.test(landing)
+      && !/The month is the shop/.test(landing)
       && /Photos you have/.test(landing)
       && /Pay when it.s a cut you.d send/.test(landing)
+      && /Your firm joins/.test(landing)
+      && /Cut from the photos you already have/.test(landing)
       && /48 hours/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested — one listing/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested — shop/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested — enterprise/.test(landing)
-      && (landing.match(/I.m interested\./g) || []).length === 3
+      && /mailto:max@corridor\.video\?subject=Interested — solo/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested — firm/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested — custom/.test(landing)
+      && !/Interested — one listing/.test(landing)
+      && !/Interested — shop/.test(landing)
+      && !/Interested — enterprise/.test(landing)
+      && (landing.match(/I.m interested\./g) || []).length === 4
+      && !/pill-mail/.test(landing)
       && !/>Write Max</.test(landing)
+      && !/Write Max\./.test(landing)
       && !/>Book a call</.test(landing)
       && !/Start a listing/.test(landing)
       && !/href="\/listings"/.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
-      && /<p class="plan">Enterprise<\/p>/.test(landing)
+      && /<p class="plan">Custom<\/p>/.test(landing)
       && /Volume, a desk, a number that isn.t on a card/.test(landing)
       && !/class="price-quote"/.test(landing)
       && !/class="was"/.test(landing)
       && !/class="ask"/.test(landing)
       && !/\$400/.test(landing)
       && !/\$1,000/.test(landing)
-      && (landing.match(/<article class="price-card/g) || []).length === 3
+      && (landing.match(/<article class="price-card/g) || []).length === 4
+      && (landing.match(/price-card primary/g) || []).length === 2
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
@@ -1157,14 +1177,16 @@ main().catch(async (err) => {
       && !/\blicense\b/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"'))));
   check('cut-until-you-would-send is the closer, not the old owe slogan',
     /We work the cut with you until it.s a video you.d send/.test(landing)
-      && /One listing: after the video is sendable/.test(landing)
+      && /Solo: you pay when the video is sendable/.test(landing)
       && /If it isn.t, we keep working or we don.t bill/.test(landing)
-      && /Shop: \$750 a month for four/.test(landing)
-      && /The month is the shop, not pay-per-cut/.test(landing)
-      && /Three brokerages right now\. We.ll open more/.test(landing)
-      && landing.indexOf('Three brokerages right now.') < landing.indexOf('We work the cut with you until')
-      && landing.indexOf('Three brokerages right now.') > landing.indexOf('id="pricing"')
+      && /Firm: \$150 a listing\. You pay when the video is sendable/.test(landing)
+      && !/Shop: \$750 a month for four/.test(landing)
+      && !/The month is the shop, not pay-per-cut/.test(landing)
+      && /Five brokers\. Three firms\. Then we open more/.test(landing)
+      && landing.indexOf('Five brokers. Three firms. Then we open more.') < landing.indexOf('We work the cut with you until')
+      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('id="pricing"')
       && /class="note">We work the cut with you until it.s a video you.d send/.test(landing)
+      && !/Three brokerages/.test(landing)
       && !/phone walk/i.test(landing)
       && !/five-pack/i.test(landing)
       && !/see the cut before you owe/i.test(landing)
@@ -1179,19 +1201,29 @@ main().catch(async (err) => {
       && !/Send a listing/.test(landing)
       && !/6432 Woodward/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
-  check('footer waitlist posts to the existing marketing list',
-    /placeholder="Waitlist"/.test(landing)
-      && /aria-label="Waitlist"/.test(landing)
+  check('Join section posts to the existing marketing list',
+    /id="join"/.test(landing)
+      && /<h2>Join<\/h2>/.test(landing)
+      && /Five brokers\. Three firms\. Leave your email\. We set the call\./.test(landing)
+      && /id="join-form"/.test(landing)
+      && /placeholder="Email"/.test(landing)
+      && /aria-label="Email"/.test(landing)
       && /action="\/api\/auth\/link"/.test(landing)
       && /marketing:\s*true/.test(landing)
+      && /<button type="submit" class="pill">Join<\/button>/.test(landing)
+      && !/placeholder="Waitlist"/.test(landing)
+      && !/aria-label="Waitlist"/.test(landing)
       && !/placeholder="Updates"/.test(landing)
       && !/HubSpot/i.test(landing)
-      && !/Apollo/i.test(landing));
+      && !/Apollo/i.test(landing)
+      && landing.indexOf('id="join"') > landing.indexOf('id="faq"')
+      && landing.indexOf('id="join"') < landing.indexOf('<footer'));
   check('homepage footer links Privacy and Terms', /href="\/privacy"/.test(landing) && /href="\/terms"/.test(landing));
-  check('FAQ speed line matches one listing vs shop recuts',
+  check('FAQ speed line is 48 hours and we work the cut',
     /How fast is it back/.test(landing)
-      && /48 hours/.test(landing)
-      && /one finished video and one recut/.test(landing)
+      && /48 hours\. We work the cut until it.s a video you.d send/.test(landing)
+      && !/one finished video and one recut/.test(landing)
+      && !/\$750/.test(landing)
       && !/Two revision rounds are included/.test(landing));
   const terms = fsx.readFileSync(new URL('../public/terms.html', import.meta.url), 'utf8');
   const privacy = fsx.readFileSync(new URL('../public/privacy.html', import.meta.url), 'utf8');
@@ -1317,8 +1349,9 @@ main().catch(async (err) => {
       && !/DM Sans/.test(landing + desk)
       && !/styled-jsx|shadcn|tailwind|next\/|from ['"]react['"]|\/components\/ui/.test(landing + desk)
       && !/#8484ff/.test(landing + desk));
-  check('outline mail pills stay a static border, not a shine',
-    /pill-mail/.test(landing) && /pill-mail::before/.test(landing) && /content:\s*none/.test(landing));
+  check('every interested pill is the filled shiny CTA, not an outline',
+    !/pill-mail/.test(landing)
+      && (landing.match(/class="pill" href="mailto:max@corridor\.video\?subject=Interested/g) || []).length === 4);
 }
 
 // --- listing/tour page stays the existing /t/:slug template, now light ------

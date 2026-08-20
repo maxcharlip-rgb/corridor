@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corridor — CRE marketing is boring. So we fixed it.</title>
-  <meta name="description" content="You still ship a photo dump and a PDF. We cut a listing video from the photos you already have. You send it. The other side walks it on their phone, then they book the showing. Detroit founded. We cut a listing anywhere." />
+  <meta name="description" content="You still send a photo dump and a PDF. That’s the listing. Nobody walks it. It dies in an inbox. We do this so the other side walks the building tonight — from the photos you already have — and books the showing because they already felt the space." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'&gt;&lt;path d='M2 1.3 6.6 4 2 6.7z' fill='%235E7580'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -136,29 +136,6 @@
     font-size: clamp(17px, 1.7vw, 26px); line-height: 1.15; letter-spacing: -.02em;
     margin: 12px 0 0; color: #FFFFFF;
   }
-  .sky-line .still {
-    font-family: var(--sans); font-weight: 400;
-    font-size: clamp(13px, 1.1vw, 16px); line-height: 1.3; letter-spacing: -.015em;
-    margin: 10px 0 0; color: #FFFFFF;
-  }
-  .sky-line .offer {
-    font-family: var(--sans); font-weight: 400;
-    font-size: clamp(13px, 1.1vw, 16px); line-height: 1.3; letter-spacing: -.015em;
-    margin: 10px 0 0; color: rgba(255, 255, 255, .7);
-  }
-  .geo {
-    position: absolute;
-    right: clamp(20px, 4.5vw, 64px);
-    bottom: max(32px, 5.4vh);
-    z-index: 2;
-    width: max-content;
-    max-width: min(28em, 46vw);
-    margin: 0;
-    padding-top: 0;
-    color: rgba(255, 255, 255, .6);
-    font-size: 11px; line-height: 1.4; letter-spacing: .01em;
-    text-align: right;
-  }
   /* Shiny CTA on primary pills. Keep in sync with listings.html.
      Solid #5E7580 is the fallback when @property / conic animation is missing. */
   @property --gradient-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
@@ -256,7 +233,18 @@
   .price-grid {
     display: grid; gap: 20px; align-items: stretch;
   }
-  .price-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .price-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 40rem; margin-left: auto; margin-right: auto; }
+  .price-switch {
+    display: flex; justify-content: center; gap: 8px; margin: 0 0 28px;
+  }
+  .price-switch button {
+    background: none; border: 0; border-bottom: 1px solid transparent;
+    padding: 8px 14px; cursor: pointer;
+    font-size: 15px; color: #777F80;
+  }
+  .price-switch button.on {
+    color: #444F52; border-bottom-color: #444F52;
+  }
   .price-card {
     position: relative;
     display: flex; flex-direction: column;
@@ -286,18 +274,6 @@
   }
   .price-card li:last-child { padding-bottom: 0; }
   .price-card .pill { align-self: flex-start; margin-top: auto; font-size: 14px; padding: 12px 18px; }
-  .price-card .pill-mail {
-    --animation: none;
-    isolation: auto;
-    overflow: visible;
-    background: transparent;
-    color: #5E7580;
-    border: 1px solid #5E7580;
-    box-shadow: none;
-    animation: none;
-  }
-  .price-card .pill-mail::before, .price-card .pill-mail::after { content: none; animation: none; }
-  .price-card .pill-mail:hover { background: #5E7580; color: #fff; translate: none; }
   .shop-now {
     margin: 28px 0 0; text-align: center;
     font-size: 15px; line-height: 1.45; color: #777F80;
@@ -336,9 +312,27 @@
     text-transform: uppercase; color: #777F80;
   }
 
+  .join { max-width: 36rem; }
+  .join h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 12px;
+  }
+  .join p { margin: 0; font-size: 17px; line-height: 1.45; color: #777F80; }
+  .join-form {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .join-form input {
+    width: 16rem; font-size: 15px; padding: 12px 14px; border-radius: 8px;
+    border: 1px solid rgba(68, 79, 82, .22); background: transparent; color: #444F52;
+    outline: none;
+  }
+  .join-form input:focus { border-color: #5E7580; }
+  .join-form .ok { font-size: 15px; color: #777F80; }
+
   @media (max-width: 860px) {
     header a, header button { min-height: 44px; }
-    .price-grid-3 { grid-template-columns: 1fr; max-width: 26rem; margin: 0 auto; }
+    .price-grid-2 { grid-template-columns: 1fr; max-width: 26rem; margin: 0 auto; }
   }
 
   .foot-bar {
@@ -390,7 +384,6 @@
     }
     .street-haze { background: none; }
     .street-fade { height: 28px; }
-    .geo { display: none; }
     .street-loop { object-position: 30% 62%; }
     .sky-bar { gap: 12px 14px; padding: 18px 20px; flex-wrap: wrap; }
     .sky-bar .nav-wide { font-size: 13px; padding: 8px 2px; }
@@ -414,8 +407,6 @@
       line-height: .88;
     }
     .sky-line .fix { margin-top: 8px; font-size: 1.05rem; }
-    .sky-line .still { margin-top: 8px; font-size: 0.95rem; }
-    .sky-line .offer { margin-top: 8px; font-size: 0.95rem; }
     .foot-bar { flex-wrap: wrap; }
   }
 
@@ -440,62 +431,72 @@
       <button type="button" class="wordmark" data-home="1">Corridor</button>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
+      <a class="nav-wide" href="#join">Join</a>
     </header>
     <div class="sky-board">
       <div class="sky-line">
         <h1>CRE marketing is boring.</h1>
         <p class="fix">So we fixed it.</p>
-        <p class="still">You still ship a photo dump and a PDF.</p>
-        <p class="offer">Photos you already have. 48 hours. $200.</p>
       </div>
     </div>
-    <p class="geo">Detroit founded. We cut a listing anywhere.</p>
   </section>
 
   <section id="what" class="band-paper" style="scroll-margin-top: 24px;">
     <div class="inner">
       <div class="what">
         <h2>What we do</h2>
-        <p>Nobody walks the building. The brochure dies in an inbox.</p>
-        <p>We cut it from the photos you already have. You send it. The other side walks it on their phone, then they book the showing.</p>
+        <p>You still send a photo dump and a PDF. That’s the listing. Nobody walks it. It dies in an inbox.</p>
+        <p>We do this so the other side walks the building tonight — from the photos you already have — and books the showing because they already felt the space.</p>
       </div>
     </div>
   </section>
 
   <section id="pricing" class="band-sky" style="scroll-margin-top: 24px;">
     <div class="price-wrap">
-      <div class="price-grid price-grid-3">
-        <article class="price-card">
-          <p class="plan">One listing</p>
+      <div class="price-switch">
+        <button type="button" class="on" data-side="solo" aria-pressed="true">Solo broker</button>
+        <button type="button" data-side="firm" aria-pressed="false">Brokerage firm</button>
+      </div>
+      <div class="price-grid price-grid-2" data-side="solo">
+        <article class="price-card primary">
+          <p class="plan">Solo</p>
           <h3>$200</h3>
           <ul>
             <li>Photos you have.</li>
             <li>48 hours.</li>
             <li>Pay when it’s a cut you’d send.</li>
           </ul>
-          <a class="pill" href="mailto:max@corridor.video?subject=Interested — one listing">I’m interested.</a>
-        </article>
-        <article class="price-card primary">
-          <p class="plan">Shop</p>
-          <h3>$750 <span class="per">/ month</span></h3>
-          <ul>
-            <li>Four listings.</li>
-            <li>Unused roll 60 days, cap 8, extra $200.</li>
-            <li>The month is the shop.</li>
-          </ul>
-          <a class="pill" href="mailto:max@corridor.video?subject=Interested — shop">I’m interested.</a>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested — solo">I’m interested.</a>
         </article>
         <article class="price-card">
-          <p class="plan">Enterprise</p>
+          <p class="plan">Custom</p>
           <h3>Custom</h3>
           <ul>
             <li>Volume, a desk, a number that isn’t on a card.</li>
-            <li>Write Max.</li>
           </ul>
-          <a class="pill pill-mail" href="mailto:max@corridor.video?subject=Interested — enterprise">I’m interested.</a>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested — custom">I’m interested.</a>
         </article>
       </div>
-      <p class="shop-now">Three brokerages right now. We’ll open more.</p>
+      <div class="price-grid price-grid-2" data-side="firm" hidden>
+        <article class="price-card primary">
+          <p class="plan">Firm</p>
+          <h3>$150 <span class="per">a listing</span></h3>
+          <ul>
+            <li>Your firm joins.</li>
+            <li>Cut from the photos you already have.</li>
+          </ul>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested — firm">I’m interested.</a>
+        </article>
+        <article class="price-card">
+          <p class="plan">Custom</p>
+          <h3>Custom</h3>
+          <ul>
+            <li>Volume, a desk, a number that isn’t on a card.</li>
+          </ul>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested — custom">I’m interested.</a>
+        </article>
+      </div>
+      <p class="shop-now">Five brokers. Three firms. Then we open more.</p>
       <p class="note">We work the cut with you until it’s a video you’d send.</p>
     </div>
   </section>
@@ -510,21 +511,34 @@
         </details>
         <details>
           <summary>How fast is it back?</summary>
-          <p>48 hours. One listing: we work the cut until it’s a video you’d send. Shop: one finished video and one recut per listing.</p>
+          <p>48 hours. We work the cut until it’s a video you’d send.</p>
         </details>
         <details>
           <summary>When do I pay?</summary>
-          <p>One listing: after the video is sendable. If it isn’t, we keep working or we don’t bill.</p>
-          <p>Shop: $750 a month for four. Unused roll 60 days, cap 8. Extra cuts $200. The month is the shop, not pay-per-cut.</p>
+          <p>Solo: you pay when the video is sendable. If it isn’t, we keep working or we don’t bill.</p>
+          <p>Firm: $150 a listing. You pay when the video is sendable.</p>
         </details>
         <details>
           <summary>Will it look AI / fake?</summary>
           <p>Cut from their photos. We work it until it’s a video they’d send.</p>
         </details>
         <details>
-          <summary>Why only three?</summary>
-          <p>Three desks. Then the door closes. We’ll open more.</p>
+          <summary>Why the cap?</summary>
+          <p>Five brokers. Three firms. Then the door closes. We’ll open more.</p>
         </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="join" class="band-sky" style="scroll-margin-top: 24px;">
+    <div class="inner">
+      <div class="join">
+        <h2>Join</h2>
+        <p>Five brokers. Three firms. Leave your email. We set the call.</p>
+        <form class="join-form" id="join-form" action="/api/auth/link" method="post">
+          <input type="email" name="email" autocomplete="email" placeholder="Email" aria-label="Email" />
+          <button type="submit" class="pill">Join</button>
+        </form>
       </div>
     </div>
   </section>
@@ -533,14 +547,6 @@
     <div class="foot-bar">
       <a class="wordmark" href="/">Corridor</a>
       <p>DETROIT · MAX@CORRIDOR.VIDEO · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
-      <div class="foot-end">
-        <a href="/listings">Sign in</a>
-        <a href="/listings#create">Create account</a>
-        <form class="foot-notes" id="updates" action="/api/auth/link" method="post">
-          <input type="email" name="email" autocomplete="email" placeholder="Waitlist" aria-label="Waitlist" />
-          <button type="submit">Send</button>
-        </form>
-      </div>
     </div>
   </footer>
 <script>
@@ -568,7 +574,7 @@
     requestAnimationFrame(function () { scrollToId(start); });
   }
 
-  var notes = document.getElementById('updates');
+  var notes = document.getElementById('join-form');
   if (notes) {
     notes.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -592,6 +598,23 @@
       });
     });
   }
+
+  var switcher = document.querySelector('.price-switch');
+  if (switcher) {
+    switcher.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-side]');
+      if (!btn) return;
+      var side = btn.getAttribute('data-side');
+      switcher.querySelectorAll('[data-side]').forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('.price-grid[data-side]').forEach(function (grid) {
+        grid.hidden = grid.getAttribute('data-side') !== side;
+      });
+    });
+  }
 }());
 
 (function () {
@@ -610,15 +633,15 @@
     return;
   }
   video.muted = true;
-  video.defaultPlaybackRate = 0.5;
-  video.playbackRate = 0.5;
+  video.defaultPlaybackRate = 0.4;
+  video.playbackRate = 0.4;
   video.addEventListener('error', stillOnly);
   Array.prototype.forEach.call(video.querySelectorAll('source'), function (source) {
     source.addEventListener('error', stillOnly);
   });
   var play = video.play();
   if (play && play.then) {
-    play.then(function () { video.playbackRate = 0.5; }).catch(function () { stillOnly(); });
+    play.then(function () { video.playbackRate = 0.4; }).catch(function () { stillOnly(); });
   }
   if (motion.addEventListener) {
     motion.addEventListener('change', function () {
