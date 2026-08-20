@@ -1058,10 +1058,15 @@ main().catch(async (err) => {
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
-  check('What we do is the walk from photos you already have',
+  check('What we do punches the dump and lets them walk the space',
     /<h2>What we do<\/h2>/.test(landing)
-      && /You still send a photo dump and a PDF\. That’s the listing\. Nobody walks it\. It dies in an inbox\./.test(whatCopy)
-      && /We do this so the other side walks the building tonight — from the photos you already have — and books the showing because they already felt the space\./.test(whatCopy)
+      && /A photo dump and a PDF is not a tour\. Nobody walks it\. They skim and bounce\. You burn the week chasing a maybe\./.test(whatCopy)
+      && /The video lets them walk the space from the photos you already have\. They feel the floor tonight\. You get the showing — not another unread listing\./.test(whatCopy)
+      && (whatCopy.match(/<p>/g) || []).length === 2
+      && !/You still send a photo dump and a PDF/.test(whatCopy)
+      && !/That’s the listing/.test(whatCopy)
+      && !/It dies in an inbox/.test(whatCopy)
+      && !/We do this so the other side walks the building tonight/.test(whatCopy)
       && !/You still ship a photo dump and a PDF/.test(whatCopy)
       && !/Nobody walks the building\. The brochure dies in an inbox/.test(whatCopy)
       && !/We cut it from the photos you already have\. You send it/.test(whatCopy)
@@ -1071,6 +1076,7 @@ main().catch(async (err) => {
       && !/403%/.test(whatCopy)
       && !/CRE study/i.test(whatCopy)
       && !/villain/i.test(whatCopy)
+      && !/6432/.test(whatCopy)
       && !/boring CRE marketing/i.test(whatCopy)
       && !/the mission/.test(whatCopy)
       && !/cinematic/i.test(whatCopy)
