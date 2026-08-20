@@ -1364,7 +1364,8 @@ main().catch(async (err) => {
       && !/#8484ff/.test(landing + desk));
   check('every interested pill is the filled shiny CTA, not an outline',
     !/pill-mail/.test(landing)
-      && (landing.match(/class="pill" href="mailto:max@corridor\.video\?subject=Interested/g) || []).length === 4);
+      && !/pill-outline/.test(landing)
+      && (landing.match(/class="pill" href="mailto:max@corridor\.video\?subject=Interested/g) || []).length === 3);
 }
 
 // --- listing/tour page stays the existing /t/:slug template, now light ------
