@@ -980,6 +980,8 @@ main().catch(async (err) => {
   const cloudA = new URL('../public/hero-clouds-a.png', import.meta.url);
   const cloudB = new URL('../public/hero-clouds-b.png', import.meta.url);
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
+  const loopPath = new URL('../public/hero-detroit-loop.mp4', import.meta.url);
+  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 4_000_000);
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
   check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.png/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
   const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
@@ -1017,7 +1019,7 @@ main().catch(async (err) => {
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
   check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
-  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We cut a listing video from photos they have/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We cut a listing video from the photos they already have/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
   check('nav is Pricing, FAQ, Sign in, and Create account',
@@ -1030,12 +1032,12 @@ main().catch(async (err) => {
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
   check('What we do is the walk from photos they already have',
     /<h2>What we do<\/h2>/.test(landing)
-      && /They still send photo dumps and PDFs/.test(whatCopy)
+      && /They still ship a photo dump and a PDF/.test(whatCopy)
       && /Nobody walks the building/.test(whatCopy)
-      && /The brochure dies in the inbox/.test(whatCopy)
-      && /We cut a listing video from photos they have/.test(whatCopy)
+      && /The brochure dies in an inbox/.test(whatCopy)
+      && /We cut a listing video from the photos they already have/.test(whatCopy)
       && /They send it/.test(whatCopy)
-      && /walks it on their phone and books the showing/.test(whatCopy)
+      && /walks it on their phone, then they book the showing/.test(whatCopy)
       && /73% of owners would rather list with someone who uses video/.test(whatCopy)
       && /NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
       && !/403%/.test(whatCopy)
@@ -1096,17 +1098,18 @@ main().catch(async (err) => {
       && !/Five-pack/.test(landing)
       && !/Phone walk/.test(landing)
       && />Shop</.test(landing)
-      && /4 videos a month/.test(landing)
-      && /Unused roll 60 days/.test(landing)
-      && /Bank cap 8/.test(landing)
-      && /Extra listing \$200/.test(landing)
-      && /Pay when it.s sendable/.test(landing)
+      && /Four listings/.test(landing)
+      && /Unused roll 60 days, cap 8, extra \$200/.test(landing)
+      && /The month is the shop/.test(landing)
+      && /Photos they have/.test(landing)
+      && /Pay when it.s a cut they.d send/.test(landing)
       && /48 hours/.test(landing)
       && /mailto:max@corridor\.video/.test(landing)
       && /<p class="plan">Enterprise<\/p>/.test(landing)
       && /Volume, a desk, a number that isn.t on a card/.test(landing)
       && !/class="price-quote"/.test(landing)
-      && !/class="was"/.test(landing)
+      && /class="was">\$400</.test(landing)
+      && /class="was">\$1,000</.test(landing)
       && (landing.match(/<article class="price-card/g) || []).length === 3
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)

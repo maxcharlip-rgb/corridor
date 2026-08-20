@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corridor — CRE marketing is boring. So we fixed it.</title>
-  <meta name="description" content="They still send photo dumps and PDFs. We cut a listing video from photos they have. The other side walks it on their phone and books the showing. Detroit founded. We cut a listing anywhere." />
+  <meta name="description" content="They still ship a photo dump and a PDF. We cut a listing video from the photos they already have. The other side walks it on their phone, then they book the showing. Detroit founded. We cut a listing anywhere." />
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'&gt;&lt;path d='M2 1.3 6.6 4 2 6.7z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -254,6 +254,17 @@
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
     text-transform: uppercase; color: #5F5C57; margin: 0 0 10px;
   }
+  .price-card .ask {
+    display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px;
+  }
+  .price-card .was {
+    font-size: 14px; line-height: 1; color: #8A867E;
+    text-decoration: line-through; text-decoration-thickness: 1px;
+  }
+  .price-card .save {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: #D47A54;
+  }
   .price-card h3 {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(36px, 3.6vw, 52px); line-height: .9; letter-spacing: -.03em;
@@ -431,8 +442,8 @@
     <div class="inner">
       <div class="what">
         <h2>What we do</h2>
-        <p>They still send photo dumps and PDFs. Nobody walks the building. The brochure dies in the inbox.</p>
-        <p>We cut a listing video from photos they have. They send it. The other side walks it on their phone and books the showing.</p>
+        <p>They still ship a photo dump and a PDF. Nobody walks the building. The brochure dies in an inbox.</p>
+        <p>We cut a listing video from the photos they already have. They send it. The other side walks it on their phone, then they book the showing.</p>
         <p class="stat">73% of owners would rather list with someone who uses video.</p>
         <p class="cite">NAR, 2024 Profile of Home Buyers and Sellers</p>
       </div>
@@ -444,21 +455,23 @@
       <div class="price-grid price-grid-3">
         <article class="price-card">
           <p class="plan">One listing</p>
+          <p class="ask"><span class="was">$400</span><span class="save">$200 off</span></p>
           <h3>$200</h3>
           <ul>
+            <li>Photos they have.</li>
             <li>48 hours.</li>
-            <li>Pay when it’s sendable.</li>
-            <li>Cut from photos you already have.</li>
+            <li>Pay when it’s a cut they’d send.</li>
           </ul>
           <a class="pill" href="/listings">Start a listing</a>
         </article>
         <article class="price-card primary">
           <p class="plan">Shop</p>
+          <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
           <h3>$750 <span class="per">/ month</span></h3>
           <ul>
-            <li>4 videos a month.</li>
-            <li>Unused roll 60 days. Bank cap 8.</li>
-            <li>Extra listing $200.</li>
+            <li>Four listings.</li>
+            <li>Unused roll 60 days, cap 8, extra $200.</li>
+            <li>The month is the shop.</li>
           </ul>
           <a class="pill" href="/listings">Start a listing</a>
         </article>
