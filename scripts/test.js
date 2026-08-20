@@ -983,7 +983,7 @@ main().catch(async (err) => {
   const loopPath = new URL('../public/hero-detroit-loop.mp4', import.meta.url);
   check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 4_000_000);
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
-  check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.png/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
+  check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.jpg/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/Andrew Heneen/.test(landing));
   const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
   const phoneAvif = new URL('../public/hero-detroit-phone.avif', import.meta.url);
   check('phone hero is a compressed recut of the same painting',
@@ -1067,7 +1067,7 @@ main().catch(async (err) => {
   const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
   check('hero loop is silent, cover-cropped, and has no controls',
     /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
-      && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.png"/.test(loopTag)
+      && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.jpg"/.test(loopTag)
       && !/\scontrols/.test(loopTag)
       && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*38%/.test(landing)
       && /pointer-events:\s*none/.test(landing));

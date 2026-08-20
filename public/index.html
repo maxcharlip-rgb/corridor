@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap" />
   <link rel="preload" href="/hero-detroit-phone.webp" as="image" type="image/webp" media="(max-width: 720px)" />
-  <link rel="preload" href="/hero-detroit.png" as="image" media="(min-width: 721px)" />
+  <link rel="preload" href="/hero-detroit.jpg" as="image" media="(min-width: 721px)" />
 <style>
   :root {
     --paper: #F7F4ED;
@@ -46,7 +46,7 @@
   .street-art {
     position: absolute; inset: 0;
     background-color: #B8D7EB;
-    background-image: url("/hero-detroit.png");
+    background-image: url("/hero-detroit.jpg");
     /* Mid-high crop: sky stays above the towers so the H1 can sit in it.
        Not 90% (type over water) and not 22% (city cropped out). */
     background-size: cover;
@@ -415,7 +415,7 @@
 <body>
   <section class="street" data-screen-label="Landing">
     <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water.">
-      <video class="street-loop" muted playsinline autoplay loop preload="auto" poster="/hero-detroit.png" disablepictureinpicture disableremoteplayback aria-hidden="true">
+      <video class="street-loop" muted playsinline autoplay loop preload="auto" poster="/hero-detroit.jpg" disablepictureinpicture disableremoteplayback aria-hidden="true">
         <source src="/hero-detroit-loop.mp4" type="video/mp4" />
       </video>
     </div>
