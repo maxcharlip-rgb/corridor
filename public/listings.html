@@ -51,6 +51,19 @@
     padding: 12px 4px; cursor: pointer;
   }
   .sky-bar .nav-wide:hover { color: #1E5AA8; }
+  .check {
+    display: flex; align-items: flex-start; gap: 11px;
+    font-size: 14.5px; color: #2B2B2B; cursor: pointer; margin: 4px 0 12px;
+  }
+  .gate-tabs {
+    display: flex; gap: 18px; margin: 0 0 22px;
+  }
+  .gate-tabs a {
+    font-size: 14px; color: #5F5C57; padding: 0 0 6px;
+    border-bottom: 1px solid transparent;
+  }
+  .gate-tabs a.on { color: #2B2B2B; border-bottom-color: #2B2B2B; }
+  .gate-tabs a:hover { color: #1E5AA8; }
 
   .who {
     max-width: 1080px;
@@ -261,6 +274,7 @@
 
   @media (max-width: 860px) {
     header a, header button { min-height: 44px; }
+    .sky-bar { flex-wrap: wrap; gap: 12px 14px; }
     .foot-bar { flex-wrap: wrap; }
   }
 </style>
@@ -270,7 +284,8 @@
     <a class="wordmark" href="/">Corridor</a>
     <a class="nav-wide" href="/#pricing">Pricing</a>
     <a class="nav-wide" href="/#faq">FAQ</a>
-    <a class="nav-wide" href="/listings">Account</a>
+    <a class="nav-wide" href="/listings">Sign in</a>
+    <a class="nav-wide" href="/listings#create">Create account</a>
   </header>
   <p class="who" id="who"></p>
   <div id="app"></div>
@@ -333,38 +348,63 @@
   }
 
   function drawGate() {
+    var create = location.hash === '#create';
     $('#who').innerHTML = '';
     $('#app').innerHTML =
       '<div class="gate">' +
-        '<h1>Your listings</h1>' +
-        '<p>Already sent a listing? Enter the email you used.</p>' +
+        '<h1>' + (create ? 'Create account' : 'Sign in') + '</h1>' +
+        '<div class="gate-tabs">' +
+          '<a href="/listings"' + (create ? '' : ' class="on"') + '>Sign in</a>' +
+          '<a href="/listings#create"' + (create ? ' class="on"' : '') + '>Create account</a>' +
+        '</div>' +
+        (create
+          ? '<p>Name and email. We send a link. Then you can start a listing.</p>' +
+            '<label class="lbl">Your name<input id="gate-name" class="field" type="text" autocomplete="name" placeholder="Your name"></label>'
+          : '<p>Enter the email on the account. We send a link that opens your listings.</p>') +
         '<input id="gate-email" class="field" type="email" autocomplete="email" placeholder="you@brokerage.com">' +
+        (create
+          ? '<label class="check"><input type="checkbox" name="marketing" id="gate-marketing" style="margin-top: 2px; accent-color: #1E5AA8;"> Occasional updates from Corridor</label>'
+          : '') +
         '<p class="err" id="gate-err"></p>' +
-        '<button type="button" class="pill" id="gate-go">Continue</button>' +
-        '<p style="margin-top:28px"><a href="/#intake">Or send a listing</a></p>' +
+        (create
+          ? '<button type="button" class="pill" id="gate-go">Create account</button>'
+          : '<button type="button" class="pill" id="gate-go">Continue</button>') +
       '</div>';
-    var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email');
+    var go = $('#gate-go'), err = $('#gate-err'), email = $('#gate-email'), name = $('#gate-name');
     function send() {
       var v = (email.value || '').trim();
-      if (!EMAIL_RE.test(v)) { err.textContent = 'Enter the email you used on the order.'; err.style.display = 'block'; return; }
+      var who = name ? String(name.value || '').trim() : '';
+      if (create && !who) { err.textContent = 'Tell us who this account is for.'; err.style.display = 'block'; return; }
+      if (!EMAIL_RE.test(v)) { err.textContent = create ? 'Enter an email we can send the link to.' : 'Enter the email you used.'; err.style.display = 'block'; return; }
       go.disabled = true; go.textContent = 'One moment…'; err.style.display = 'none';
+      var body = { email: v };
+      if (create) {
+        body.name = who;
+        body.marketing = Boolean($('#gate-marketing') && $('#gate-marketing').checked);
+      }
       fetch('/api/auth/link', {
         method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: v })
+        body: JSON.stringify(body)
       }).then(function (res) { return res.json().then(function (d) { return { res: res, d: d }; }); })
         .then(function (out) {
           if (!out.res.ok || !(out.d && out.d.success)) throw new Error((out.d && out.d.error) || 'Could not send that.');
           $('.gate p').textContent = 'Check that inbox — the link opens your listings.';
           email.style.display = 'none'; go.style.display = 'none';
+          if (name) name.style.display = 'none';
+          var box = $('.gate .check');
+          if (box) box.style.display = 'none';
+          var tabs = $('.gate-tabs');
+          if (tabs) tabs.style.display = 'none';
         })
         .catch(function (e) {
           err.textContent = e.message; err.style.display = 'block';
-          go.disabled = false; go.textContent = 'Continue';
+          go.disabled = false; go.textContent = create ? 'Create account' : 'Continue';
         });
     }
     go.onclick = send;
     email.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+    if (name) name.addEventListener('keydown', function (e) { if (e.key === 'Enter') email.focus(); });
   }
 
   function sideList(title, items) {
@@ -431,7 +471,7 @@
         '<h1>Upload listing</h1>' +
         '<p class="lede">Address and photos. We already have you as ' + esc(account.email) + '.</p>' +
         (needName ? '<label class="lbl">Your name<input id="name" class="field" type="text" autocomplete="name" placeholder="Your name"></label>' : '') +
-        '<label class="lbl">Property address<input id="address" class="field" type="text" placeholder="6432 Woodward Ave, Detroit, MI"></label>' +
+        '<label class="lbl">Property address<input id="address" class="field" type="text" placeholder="Street, city, state"></label>' +
         '<label class="lbl">Photos · 12 to 40' +
           '<span class="drop" id="drop"><input id="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" style="display:none">' +
           '<i>Choose photos</i><em id="photo-label">12 to 40 · crooked phone shots welcome</em></span>' +
@@ -508,6 +548,10 @@
       xhr.send(fd);
     };
   }
+
+  window.addEventListener('hashchange', function () {
+    if (!account) drawGate();
+  });
 
   boot();
 })();

@@ -113,7 +113,7 @@ export const accountByEmail = (email) =>
   accounts().find((a) => a.email === String(email || '').toLowerCase().trim()) || null;
 
 /**
- * @param {{email:string, password?:string, name?:string, company?:string, phone?:string}} input
+ * @param {{email:string, password?:string, name?:string, company?:string, phone?:string, marketingOptIn?:boolean}} input
  *
  * Passwordless by default. A broker's account is created by their first order
  * and signs in with an emailed link, so there is nothing to choose and nothing
@@ -121,7 +121,7 @@ export const accountByEmail = (email) =>
  * studio login; an account without one simply cannot be signed into by
  * password, which is the correct outcome rather than a hole.
  */
-export function createAccount({ email, password, name, company, phone }) {
+export function createAccount({ email, password, name, company, phone, marketingOptIn }) {
   const normalised = String(email || '').toLowerCase().trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalised)) throw badRequest('Enter a valid email address.');
   if (password != null && String(password).length < 8) throw badRequest('Password must be at least 8 characters.');
@@ -135,7 +135,7 @@ export function createAccount({ email, password, name, company, phone }) {
     name: name || '',
     company: company || '',
     phone: phone || '',
-    marketing_opt_in: false,
+    marketing_opt_in: Boolean(marketingOptIn),
     /* Everyone signs up as an individual and pays per listing. A firm is put
        on a plan deliberately — set brokerageId and plan:'brokerage' on its
        accounts — so nobody can talk their way into free work by signing up. */

@@ -980,8 +980,10 @@ main().catch(async (err) => {
   const cloudA = new URL('../public/hero-clouds-a.png', import.meta.url);
   const cloudB = new URL('../public/hero-clouds-b.png', import.meta.url);
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
+  const loopPath = new URL('../public/hero-detroit-loop.mp4', import.meta.url);
+  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 4_000_000);
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
-  check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.png/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/hero-detroit\.jpg/.test(landing) && !/Andrew Heneen/.test(landing));
+  check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.jpg/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/Andrew Heneen/.test(landing));
   const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
   const phoneAvif = new URL('../public/hero-detroit-phone.avif', import.meta.url);
   check('phone hero is a compressed recut of the same painting',
@@ -997,17 +999,17 @@ main().catch(async (err) => {
       && !/font-family:\s*"Instrument Serif"/.test(landing)
       && !/\/fonts\/instrument-serif\.woff2/.test(landing)
       && !/\/fonts\/archivo\.woff2/.test(landing));
-  check('phone type sits in a bottom cluster on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-end/.test(landing) && !/min-height:\s*68svh/.test(landing));
+  check('phone type sits in the sky on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
-  check('hero is full-bleed and pinned to the river', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*90%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing));
+  check('hero is full-bleed with the sky above the towers', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*38%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
   check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('headline sits over the water, above the pitch and CTA', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /justify-content:\s*flex-end/.test(landing) && /max-width:\s*13ch/.test(landing) && /class="sky-lead"/.test(landing) && /class="pitch"/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
+  check('headline sits in the sky above the towers, with no fold pitch', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /top:\s*5\.6rem/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /max-width:\s*14ch/.test(landing) && !/class="sky-lead"/.test(landing) && !/class="pitch"/.test(landing) && !/We make a video of your listing/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
   check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
   check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
-  check('pricing and intake live on sampled color bands after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
+  check('pricing lives on a sampled color band after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
   check('homepage stays on the light sampled palette', /background:\s*#F7F4ED/.test(landing) && /background:\s*#B8D7EB/.test(landing));
@@ -1015,41 +1017,44 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && /We make a video of your listing\. It helps it lease\. You get the day back\. Not a BS tour\./.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
-  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We make a video of your listing/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
+  check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We cut a listing video from the photos they already have/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav is Pricing, FAQ, and Account to the desk',
+  check('nav is Pricing, FAQ, Sign in, and Create account',
     /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
-      && /class="nav-wide" href="\/listings">Account</.test(landing)
+      && /class="nav-wide" href="\/listings">Sign in</.test(landing)
+      && /class="nav-wide" href="\/listings#create">Create account</.test(landing)
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
-      && !/data-open-auth/.test(landing) && !/Create account/.test(landing)
+      && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
-  check('What we do is the mission, not process cards',
+  check('What we do is the walk from photos they already have',
     /<h2>What we do<\/h2>/.test(landing)
-      && /Brokers still ship a photo dump/.test(whatCopy)
-      && /They burn a day/.test(whatCopy)
-      && /The other side never walks the building/.test(whatCopy)
-      && /We cut a listing video from the photos you already have/.test(whatCopy)
-      && /Brokers send it and put it on the page/.test(whatCopy)
-      && /walk the space on their phone/.test(whatCopy)
-      && /the mission/.test(whatCopy)
-      && /Better marketing for the people who list it/.test(whatCopy)
-      && /A real walk for the people who have to decide/.test(whatCopy)
-      && /48 hours/.test(whatCopy)
-      && /We work the cut with you until it.s a video you.d send/.test(whatCopy)
+      && /They still ship a photo dump and a PDF/.test(whatCopy)
+      && /Nobody walks the building/.test(whatCopy)
+      && /The brochure dies in an inbox/.test(whatCopy)
+      && /We cut a listing video from the photos they already have/.test(whatCopy)
+      && /They send it/.test(whatCopy)
+      && /walks it on their phone, then they book the showing/.test(whatCopy)
+      && /73% of owners would rather list with someone who uses video/.test(whatCopy)
+      && /NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
+      && !/403%/.test(whatCopy)
+      && !/CRE study/i.test(whatCopy)
+      && !/villain/i.test(whatCopy)
+      && !/boring CRE marketing/i.test(whatCopy)
+      && !/the mission/.test(whatCopy)
       && !/—/.test(whatCopy)
       && !/cinematic/i.test(whatCopy)
       && !/gamification/i.test(whatCopy)
       && !/founder/i.test(whatCopy)
       && !/<article/.test(whatCopy)
       && landing.indexOf('id="what"') < landing.indexOf('id="pricing"'));
-  check('landing has no email-me-a-link auth path',
-    !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/\/api\/auth\/link/.test(landing));
-  check('landing form follows intake redirect to the desk',
-    /data\.redirect/.test(landing) && /\/listings/.test(landing));
+  check('landing has no auth modal or password field',
+    !/email me a link/i.test(landing) && !/auth-modal/.test(landing) && !/type="password"/.test(landing));
+  check('landing points listings at the desk, not a homepage form',
+    /href="\/listings"/.test(landing) && !/id="intake-form"/.test(landing));
   check('hero motion is a muted riverfront loop, not CSS cloud layers',
     /class="street-loop"/.test(landing)
       && /hero-detroit-loop\.mp4/.test(landing)
@@ -1062,9 +1067,9 @@ main().catch(async (err) => {
   const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
   check('hero loop is silent, cover-cropped, and has no controls',
     /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
-      && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.png"/.test(loopTag)
+      && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.jpg"/.test(loopTag)
       && !/\scontrols/.test(loopTag)
-      && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*90%/.test(landing)
+      && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*38%/.test(landing)
       && /pointer-events:\s*none/.test(landing));
   check('hero is full-bleed cover, no scroll dolly',
     !/street-pin/.test(landing) && !/street-stage/.test(landing) && !/148vh/.test(landing)
@@ -1073,83 +1078,69 @@ main().catch(async (err) => {
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices and before inquire', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 3 && landing.indexOf('id="faq"') < landing.indexOf('id="intake"'));
+  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 3 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
-  check('pricing is a one-time / monthly card switcher',
-    /id="price-once" checked/.test(landing)
-      && /class="price-tab"/.test(landing)
-      && /id="price-month"/.test(landing)
-      && /One-time/.test(landing)
-      && /Monthly/.test(landing)
-      && /class="price-card"/.test(landing)
-      && /class="price-card primary featured"/.test(landing)
+  check('pricing is exactly three cards with no SKU toggle',
+    /class="price-card"/.test(landing)
       && /price-grid-3/.test(landing)
       && !/price-grid-4/.test(landing)
-      && /<h3>\$200<\/h3>/.test(landing) && /<h3>\$350<\/h3>/.test(landing) && /<h3>\$750<\/h3>/.test(landing)
-      && !/<h3>Custom<\/h3>/.test(landing)
-      && /One listing/.test(landing) && /Five-pack/.test(landing)
+      && !/id="price-once"/.test(landing)
+      && !/class="price-tab"/.test(landing)
+      && !/id="price-month"/.test(landing)
+      && !/One-time/.test(landing)
+      && !/Monthly/.test(landing)
+      && /<h3>\$200<\/h3>/.test(landing)
+      && !/<h3>\$350<\/h3>/.test(landing)
       && /\$750 <span class="per">\/ month<\/span>/.test(landing)
+      && /<h3>Custom<\/h3>/.test(landing)
+      && /One listing/.test(landing)
+      && !/Five-pack/.test(landing)
+      && !/Phone walk/.test(landing)
       && />Shop</.test(landing)
-      && /4 videos a month/.test(landing)
-      && /Unused roll 60 days/.test(landing)
-      && /Bank cap 8/.test(landing)
-      && /Extra listing \$200/.test(landing)
-      && /For shops that keep sending/.test(landing)
+      && /Four listings/.test(landing)
+      && /Unused roll 60 days, cap 8, extra \$200/.test(landing)
+      && /The month is the shop/.test(landing)
+      && /Photos they have/.test(landing)
+      && /Pay when it.s a cut they.d send/.test(landing)
+      && /48 hours/.test(landing)
       && /mailto:max@corridor\.video/.test(landing)
-      && /class="price-quote"/.test(landing)
-      && /Enterprise — custom quote/.test(landing)
-      && /For brokerages/.test(landing)
+      && /<p class="plan">Enterprise<\/p>/.test(landing)
       && /Volume, a desk, a number that isn.t on a card/.test(landing)
-      && !/<p class="plan">Enterprise<\/p>/.test(landing)
-      && /class="price-lead"/.test(landing)
-      && /They walk the listing on their phone/.test(landing)
-      && /Leases and investor looks move faster/.test(landing)
-      && /Not a brochure, not a photo dump, not a sign nobody sees/.test(landing)
+      && !/class="price-quote"/.test(landing)
       && /class="was">\$400</.test(landing)
-      && /class="was">\$550</.test(landing)
-      && (landing.match(/class="was">\$1,000</g) || []).length === 2
-      && /\$200 off/.test(landing) && /\$250 off/.test(landing)
-      && (landing.match(/<article class="price-card/g) || []).length === 4
+      && /class="was">\$1,000</.test(landing)
+      && (landing.match(/<article class="price-card/g) || []).length === 3
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/checkout|stripe/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && !/half forever/i.test(landing)
-      && !/yearly|20%|\/ year/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"'))));
-  const monthPane = landing.slice(landing.indexOf('class="price-pane-month"'), landing.indexOf('id="faq"'));
-  const oncePane = landing.slice(landing.indexOf('class="price-pane-once"'), landing.indexOf('class="price-pane-month"'));
+      && !/yearly|20%|\/ year/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
+      && !/\blicense\b/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"'))));
   check('cut-until-you-would-send is the closer, not the old owe slogan',
     /We work the cut with you until it.s a video you.d send/.test(landing)
-      && /One listing, a phone walk, or a five-pack: after the video is right/.test(landing)
+      && /One listing: after the video is sendable/.test(landing)
       && /If it isn.t, we keep working or we don.t bill/.test(landing)
       && /Shop: \$750 a month for four/.test(landing)
       && /The month is the shop, not pay-per-cut/.test(landing)
-      && /class="note">We work the cut with you until it.s a video you.d send/.test(oncePane)
-      && /class="month-foot">\$750 a month for four/.test(monthPane)
-      && !/don.t bill/.test(monthPane)
-      && !/after the video is right/i.test(monthPane)
+      && /class="note">We work the cut with you until it.s a video you.d send/.test(landing)
+      && !/phone walk/i.test(landing)
+      && !/five-pack/i.test(landing)
       && !/see the cut before you owe/i.test(landing)
       && !/owe anything/i.test(landing)
       && !/After you see the cut/i.test(landing)
       && !/invoiced after delivery/i.test(landing));
   check('no first-one-free on the public site', !/first one free|first-one-free|first tour free/i.test(landing));
   check('no full-refund language', !/full refund/i.test(landing));
-  check('order form is still on the homepage', /id="intake-form"/.test(landing) && /data-endpoint="\/api\/intake"/.test(landing));
-  const sendIntake = landing.slice(landing.indexOf('function sendIntake'), landing.indexOf('intakeGo.addEventListener'));
-  check('homepage listing submit does not require sign-in',
-    /xhr\.open\('POST'/.test(sendIntake) && !/openAuth\(/.test(sendIntake) && !/\/api\/auth\/link/.test(sendIntake));
-  check('first inquire step is name, email, address, photos', /name="name"/.test(landing) && /name="email"/.test(landing) && /name="address"/.test(landing) && /id="intake-files"/.test(landing) && /id="intake-more"/.test(landing) && /hidden/.test(landing));
-  check('name placeholder is generic, address can stay Detroit',
-    /placeholder="Your name"/.test(landing)
-      && !/placeholder="Max Charlip"/.test(landing)
-      && /placeholder="6432 Woodward Ave, Detroit, MI"/.test(landing));
-  check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
-  check('hero CTA is Send a listing, the only inquire action', /href="#intake"/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
+  check('homepage Send-a-listing form is gone',
+    !/id="intake-form"/.test(landing)
+      && !/id="intake"/.test(landing)
+      && !/Send a listing/.test(landing)
+      && !/6432 Woodward/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
   check('homepage footer links Privacy and Terms', /href="\/privacy"/.test(landing) && /href="\/terms"/.test(landing));
-  check('marketing updates default off', /name="marketing"/.test(landing) && !/name="marketing"[^>]*\schecked/.test(landing));
-  check('FAQ speed line matches one-time vs shop recuts',
+  check('FAQ speed line matches one listing vs shop recuts',
     /How fast is it back/.test(landing)
       && /48 hours/.test(landing)
       && /one finished video and one recut/.test(landing)
@@ -1160,10 +1151,11 @@ main().catch(async (err) => {
     /Bricolage Grotesque/.test(terms) && /#F7F4ED/.test(terms) && /#B8D7EB/.test(terms)
       && /class="sky-bar"/.test(terms) && /class="foot-bar"/.test(terms)
       && /Corridor LLC/.test(terms) && /2840 Bolingbroke Dr/.test(terms)
-      && /\$200/.test(terms) && /\$350/.test(terms) && /\$750/.test(terms)
+      && /\$200/.test(terms) && !/\$350/.test(terms) && /\$750/.test(terms)
       && /48 hours/.test(terms) && /Michigan law/.test(terms)
       && !/first one free/i.test(terms) && !/\/t\/demo/.test(terms) && !/\$260/.test(terms)
-      && !/checkout|stripe/i.test(terms) && !/yearly/i.test(terms));
+      && !/checkout|stripe/i.test(terms) && !/yearly/i.test(terms)
+      && !/five-pack/i.test(terms) && !/phone walk/i.test(terms));
   check('privacy page names what we collect and does not sell the list',
     /Bricolage Grotesque/.test(privacy) && /#F7F4ED/.test(privacy)
       && /name, email, property address/.test(privacy)
@@ -1183,15 +1175,19 @@ main().catch(async (err) => {
     /Upload listing/.test(desk) && /Your listings/.test(desk) && /Working on/.test(desk) && /Past/.test(desk));
   check('desk reuses guest intake and session identity',
     /\/api\/intake/.test(desk) && /\/api\/auth\/me/.test(desk) && /\/api\/auth\/listings/.test(desk));
-  check('unauthenticated desk is a quiet return path, not Create account',
-    /Already sent a listing\? Enter the email you used/.test(desk)
+  check('unauthenticated desk is Sign in or Create account',
+    /Create account/.test(desk)
+      && /\/listings#create/.test(desk)
       && /\/api\/auth\/link/.test(desk)
-      && /\/#intake/.test(desk)
+      && /name="marketing"/.test(desk)
+      && !/name="marketing"[^>]*\schecked/.test(desk)
+      && !/\/#intake/.test(desk)
       && /class="pill" id="gate-go">Continue</.test(desk)
+      && /class="pill" id="gate-go">Create account</.test(desk)
       && !/class="ghost" id="gate-go"/.test(desk)
-      && !/Create account/.test(desk)
       && !/email me a link/i.test(desk)
-      && !/type="password"/.test(desk));
+      && !/type="password"/.test(desk)
+      && !/6432 Woodward/.test(desk));
   check('desk is not the operator studio',
     !/\/studio/.test(desk) && !/generate/i.test(desk) && !/higgsfield/i.test(desk));
   check('desk does not ship $260, $350, Custom, first-one-free, or /t/demo',
@@ -1211,7 +1207,8 @@ main().catch(async (err) => {
       && /class="wordmark" href="\/">Corridor</.test(desk)
       && /class="nav-wide" href="\/#pricing">Pricing</.test(desk)
       && /class="nav-wide" href="\/#faq">FAQ</.test(desk)
-      && /class="nav-wide" href="\/listings">Account</.test(desk)
+      && /class="nav-wide" href="\/listings">Sign in</.test(desk)
+      && /class="nav-wide" href="\/listings#create">Create account</.test(desk)
       && /font-family:\s*var\(--sans\)/.test(desk)
       && /font-size:\s*17px/.test(desk)
       && /font-weight:\s*500/.test(desk)
