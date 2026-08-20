@@ -13,7 +13,7 @@
   <link rel="preload" href="/hero-detroit.jpg" as="image" media="(min-width: 721px)" />
 <style>
   :root {
-    --paper: #E6E3D6;
+    --paper: #D8E4E7;
     --sky: #BBCDD3;
     --blue: #5E7580;
     --brick: #B0BABB;
@@ -26,7 +26,7 @@
     --mono: var(--font);
   }
   html { scroll-behavior: smooth; overflow-x: clip; }
-  html, body { margin: 0; padding: 0; background: #E6E3D6; color: #444F52; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  html, body { margin: 0; padding: 0; background: #D8E4E7; color: #444F52; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
   body { overflow-x: clip; }
   * { box-sizing: border-box; }
   a { color: #444F52; text-decoration: none; }
@@ -79,7 +79,7 @@
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
     height: min(5vh, 36px);
-    background: linear-gradient(180deg, rgba(230,227,214,0), #E6E3D6);
+    background: linear-gradient(180deg, rgba(216,228,231,0), #D8E4E7);
     pointer-events: none; z-index: 1;
   }
   .sky-bar {
@@ -249,7 +249,7 @@
   .pill:is(:hover, :focus-visible)::before,
   .pill:is(:hover, :focus-visible)::after { animation-play-state: running; }
 
-  .band-paper { background: #E6E3D6; }
+  .band-paper { background: #D8E4E7; }
   .band-sky { background: #BBCDD3; }
   .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
   .price-wrap { max-width: 1120px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
@@ -260,10 +260,10 @@
   .price-card {
     position: relative;
     display: flex; flex-direction: column;
-    background: #E6E3D6; border: 1px solid #B0BABB; border-radius: 20px;
+    background: #D8E4E7; border: 1px solid #B0BABB; border-radius: 20px;
     padding: 28px 24px 24px; min-height: 100%;
   }
-  .price-card.primary { border-color: #B0BABB; box-shadow: 0 0 0 1px #B0BABB; }
+  .price-card.primary { background: #BBCDD3; border-color: #444F52; box-shadow: 0 0 0 1px #444F52; }
   .price-card .plan {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
     text-transform: uppercase; color: #777F80; margin: 0 0 10px;
@@ -298,9 +298,13 @@
   }
   .price-card .pill-mail::before, .price-card .pill-mail::after { content: none; animation: none; }
   .price-card .pill-mail:hover { background: #5E7580; color: #fff; translate: none; }
+  .shop-now {
+    margin: 28px 0 0; text-align: center;
+    font-size: 15px; line-height: 1.45; color: #777F80;
+  }
   .note {
     font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
-    line-height: 1.2; margin: 28px 0 0; text-align: center;
+    line-height: 1.2; margin: 12px 0 0; text-align: center;
   }
 
   .faq { max-width: 640px; margin: 0 auto; }
@@ -348,6 +352,11 @@
   }
   .foot-bar a { color: inherit; }
   .foot-bar a:hover { color: #5E7580; }
+  .foot-end {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .foot-end > a { font-size: 14px; color: #444F52; }
+  .foot-end > a:hover { color: #5E7580; }
   .foot-notes {
     display: flex; align-items: center; gap: 8px;
   }
@@ -431,8 +440,6 @@
       <button type="button" class="wordmark" data-home="1">Corridor</button>
       <a class="nav-wide" href="#pricing">Pricing</a>
       <a class="nav-wide" href="#faq">FAQ</a>
-      <a class="nav-wide" href="/listings">Sign in</a>
-      <a class="nav-wide" href="/listings#create">Create account</a>
     </header>
     <div class="sky-board">
       <div class="sky-line">
@@ -449,8 +456,8 @@
     <div class="inner">
       <div class="what">
         <h2>What we do</h2>
-        <p>You still ship a photo dump and a PDF. Nobody walks the building. The brochure dies in an inbox.</p>
-        <p>We cut a listing video from the photos you already have. You send it. The other side walks it on their phone, then they book the showing.</p>
+        <p>Nobody walks the building. The brochure dies in an inbox.</p>
+        <p>We cut it from the photos you already have. You send it. The other side walks it on their phone, then they book the showing.</p>
       </div>
     </div>
   </section>
@@ -466,7 +473,7 @@
             <li>48 hours.</li>
             <li>Pay when it’s a cut you’d send.</li>
           </ul>
-          <a class="pill" href="mailto:max@corridor.video">Write Max</a>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested%20%E2%80%94%20one%20listing">I’m interested.</a>
         </article>
         <article class="price-card primary">
           <p class="plan">Shop</p>
@@ -476,7 +483,7 @@
             <li>Unused roll 60 days, cap 8, extra $200.</li>
             <li>The month is the shop.</li>
           </ul>
-          <a class="pill" href="mailto:max@corridor.video">Book a call</a>
+          <a class="pill" href="mailto:max@corridor.video?subject=Interested%20%E2%80%94%20shop">I’m interested.</a>
         </article>
         <article class="price-card">
           <p class="plan">Enterprise</p>
@@ -485,9 +492,10 @@
             <li>Volume, a desk, a number that isn’t on a card.</li>
             <li>Write Max.</li>
           </ul>
-          <a class="pill pill-mail" href="mailto:max@corridor.video">Write Max</a>
+          <a class="pill pill-mail" href="mailto:max@corridor.video?subject=Interested%20%E2%80%94%20enterprise">I’m interested.</a>
         </article>
       </div>
+      <p class="shop-now">Three brokerages right now. We’ll open more.</p>
       <p class="note">We work the cut with you until it’s a video you’d send.</p>
     </div>
   </section>
@@ -513,6 +521,10 @@
           <summary>Will it look AI / fake?</summary>
           <p>Cut from their photos. We work it until it’s a video they’d send.</p>
         </details>
+        <details>
+          <summary>Why only three?</summary>
+          <p>Three desks. Then the door closes. We’ll open more.</p>
+        </details>
       </div>
     </div>
   </section>
@@ -521,10 +533,14 @@
     <div class="foot-bar">
       <a class="wordmark" href="/">Corridor</a>
       <p>DETROIT · MAX@CORRIDOR.VIDEO · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
-      <form class="foot-notes" id="updates" action="/api/auth/link" method="post">
-        <input type="email" name="email" autocomplete="email" placeholder="Updates" aria-label="Email for occasional updates" />
-        <button type="submit">Send</button>
-      </form>
+      <div class="foot-end">
+        <a href="/listings">Sign in</a>
+        <a href="/listings#create">Create account</a>
+        <form class="foot-notes" id="updates" action="/api/auth/link" method="post">
+          <input type="email" name="email" autocomplete="email" placeholder="Waitlist" aria-label="Waitlist" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
     </div>
   </footer>
 <script>

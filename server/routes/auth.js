@@ -13,7 +13,7 @@ import {
 import { rateLimit } from '../limits.js';
 import { config } from '../config.js';
 import { sendMail, signInLink, mailConfigured } from '../mailer.js';
-import { requests as requestsRepo } from '../store.js';
+import { requests as requestsRepo, saveNow } from '../store.js';
 
 export const authApi = express.Router();
 authApi.use(express.json({ limit: '16kb' }));
@@ -131,6 +131,10 @@ authApi.post('/link', credentialLimiter, async (req, res) => {
   }
 
   if (account) {
+    if (marketingOptIn && !account.marketing_opt_in) {
+      account.marketing_opt_in = true;
+      saveNow();
+    }
     const token = issueLoginToken(account.id);
     const url = `${config.publicUrl}/api/auth/verify?token=${encodeURIComponent(token)}`;
     const mail = signInLink(account, url, LINK_EXPIRY_MINUTES);

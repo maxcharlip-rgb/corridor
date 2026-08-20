@@ -171,6 +171,10 @@ async function main() {
   check('unknown address gets the same response', JSON.stringify(link.json) === JSON.stringify(unknown.json));
   const created = await req('/api/auth/link', { method: 'POST', body: { email: 'newbie@test.example', name: 'New Broker' } });
   check('new email can request a create-account link', created.status === 200 && created.json?.success === true);
+  const waitlist = await req('/api/auth/link', { method: 'POST', body: { email: 'waitlist@test.example', marketing: true } });
+  check('waitlist email is accepted on the existing link endpoint', waitlist.status === 200 && waitlist.json?.success === true);
+  const waitlistAgain = await req('/api/auth/link', { method: 'POST', body: { email: 'newbie@test.example', marketing: true } });
+  check('existing email can join the marketing list', waitlistAgain.status === 200 && waitlistAgain.json?.success === true);
 
   await sleep(200);
   const logged = serverLog.match(/sign-in link for ops@test\.example: (\S+)/);
@@ -194,6 +198,10 @@ async function main() {
     check('account present on disk immediately', (onDisk.accounts || []).some((a) => a.email === 'ops@test.example'));
     check('first-order account has no password hash',
       (onDisk.accounts || [])[0]?.passwordHash == null);
+    check('waitlist email is persisted with marketing opt-in',
+      (onDisk.accounts || []).some((a) => a.email === 'waitlist@test.example' && a.marketing_opt_in === true));
+    check('existing account keeps marketing opt-in on the same list',
+      (onDisk.accounts || []).some((a) => a.email === 'newbie@test.example' && a.marketing_opt_in === true));
   }
 
   check('auth gates after first account', (await req('/api/bootstrap')).status === 401);
@@ -1022,7 +1030,7 @@ main().catch(async (err) => {
   check('pricing lives on a sampled color band after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
-  check('homepage stays on the light sampled palette', /background:\s*#E6E3D6/.test(landing) && /background:\s*#BBCDD3/.test(landing) && /\.street-fade\s*\{[^}]*#E6E3D6/.test(landing) && /\.price-card\.primary\s*\{[^}]*border-color:\s*#B0BABB/.test(landing) && !/#F7F4ED/.test(landing) && !/#B8D7EB/.test(landing));
+  check('homepage stays on the light sampled palette', /background:\s*#D8E4E7/.test(landing) && /background:\s*#BBCDD3/.test(landing) && /\.street-fade\s*\{[^}]*#D8E4E7/.test(landing) && /\.price-card\.primary\s*\{[^}]*border-color:\s*#444F52/.test(landing) && !/#E6E3D6/.test(landing) && !/#F7F4ED/.test(landing) && !/#B8D7EB/.test(landing));
   check('primary CTA is floor steel, not Corridor blue', /#5E7580/.test(landing) && !/#1E5AA8/.test(landing));
   check('illustration palette is on the homepage', /#BBCDD3/.test(landing) && /#B0BABB/.test(landing) && /#444F52/.test(landing) && /#777F80/.test(landing) && !/#D47A54/.test(landing) && !/#C8C2B4/.test(landing) && !/#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
@@ -1032,22 +1040,22 @@ main().catch(async (err) => {
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still ship a photo dump and a PDF\. We cut a listing video from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\. Detroit founded\. We cut a listing anywhere\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
-  check('nav is Pricing, FAQ, Sign in, and Create account',
+  check('fold nav is Corridor, Pricing, and FAQ only',
     /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
-      && /class="nav-wide" href="\/listings">Sign in</.test(landing)
-      && /class="nav-wide" href="\/listings#create">Create account</.test(landing)
+      && !/<header[\s\S]*href="\/listings">Sign in</.test(landing)
+      && !/<header[\s\S]*Create account/.test(landing)
+      && /<footer[\s\S]*href="\/listings">Sign in</.test(landing)
+      && /<footer[\s\S]*href="\/listings#create">Create account</.test(landing)
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
   check('What we do is the walk from photos you already have',
     /<h2>What we do<\/h2>/.test(landing)
-      && /You still ship a photo dump and a PDF/.test(whatCopy)
-      && /Nobody walks the building/.test(whatCopy)
-      && /The brochure dies in an inbox/.test(whatCopy)
-      && /We cut a listing video from the photos you already have/.test(whatCopy)
-      && /You send it/.test(whatCopy)
-      && /walks it on their phone, then they book the showing/.test(whatCopy)
+      && /Nobody walks the building\. The brochure dies in an inbox\./.test(whatCopy)
+      && /We cut it from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\./.test(whatCopy)
+      && !/You still ship a photo dump and a PDF/.test(whatCopy)
+      && !/We cut a listing video from the photos you already have/.test(whatCopy)
       && !/73%/.test(whatCopy)
       && !/NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
       && !/403%/.test(whatCopy)
@@ -1094,7 +1102,7 @@ main().catch(async (err) => {
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 4 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
+  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why only three/.test(landing) && /Three desks\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
   check('pricing is exactly three cards with no SKU toggle',
@@ -1120,9 +1128,12 @@ main().catch(async (err) => {
       && /Photos you have/.test(landing)
       && /Pay when it.s a cut you.d send/.test(landing)
       && /48 hours/.test(landing)
-      && /mailto:max@corridor\.video/.test(landing)
-      && />Write Max</.test(landing)
-      && />Book a call</.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20one%20listing/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20shop/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20enterprise/.test(landing)
+      && (landing.match(/I.m interested\./g) || []).length === 3
+      && !/>Write Max</.test(landing)
+      && !/>Book a call</.test(landing)
       && !/Start a listing/.test(landing)
       && !/href="\/listings"/.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && /<p class="plan">Enterprise<\/p>/.test(landing)
@@ -1146,6 +1157,9 @@ main().catch(async (err) => {
       && /If it isn.t, we keep working or we don.t bill/.test(landing)
       && /Shop: \$750 a month for four/.test(landing)
       && /The month is the shop, not pay-per-cut/.test(landing)
+      && /Three brokerages right now\. We.ll open more/.test(landing)
+      && landing.indexOf('Three brokerages right now.') < landing.indexOf('We work the cut with you until')
+      && landing.indexOf('Three brokerages right now.') > landing.indexOf('id="pricing"')
       && /class="note">We work the cut with you until it.s a video you.d send/.test(landing)
       && !/phone walk/i.test(landing)
       && !/five-pack/i.test(landing)
@@ -1161,6 +1175,14 @@ main().catch(async (err) => {
       && !/Send a listing/.test(landing)
       && !/6432 Woodward/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
+  check('footer waitlist posts to the existing marketing list',
+    /placeholder="Waitlist"/.test(landing)
+      && /aria-label="Waitlist"/.test(landing)
+      && /action="\/api\/auth\/link"/.test(landing)
+      && /marketing:\s*true/.test(landing)
+      && !/placeholder="Updates"/.test(landing)
+      && !/HubSpot/i.test(landing)
+      && !/Apollo/i.test(landing));
   check('homepage footer links Privacy and Terms', /href="\/privacy"/.test(landing) && /href="\/terms"/.test(landing));
   check('FAQ speed line matches one listing vs shop recuts',
     /How fast is it back/.test(landing)
