@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corridor — CRE marketing is boring. So we fixed it.</title>
   <meta name="description" content="You still ship a photo dump and a PDF. We cut a listing video from the photos you already have. You send it. The other side walks it on their phone, then they book the showing. Detroit founded. We cut a listing anywhere." />
-  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'&gt;&lt;path d='M2 1.3 6.6 4 2 6.7z' fill='%231E5AA8'/&gt;&lt;/svg&gt;" />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'&gt;&lt;path d='M2 1.3 6.6 4 2 6.7z' fill='%235E7580'/&gt;&lt;/svg&gt;" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap" />
@@ -13,26 +13,26 @@
   <link rel="preload" href="/hero-detroit.jpg" as="image" media="(min-width: 721px)" />
 <style>
   :root {
-    --paper: #F7F4ED;
-    --sky: #B8D7EB;
-    --blue: #1E5AA8;
-    --brick: #D47A54;
-    --stone: #C8C2B4;
-    --ink: #2B2B2B;
-    --muted: #5F5C57;
+    --paper: #E6E3D6;
+    --sky: #BBCDD3;
+    --blue: #5E7580;
+    --brick: #B0BABB;
+    --stone: #B0BABB;
+    --ink: #444F52;
+    --muted: #777F80;
     --font: "Bricolage Grotesque", system-ui, "Helvetica Neue", Arial, sans-serif;
     --serif: var(--font);
     --sans: var(--font);
     --mono: var(--font);
   }
   html { scroll-behavior: smooth; overflow-x: clip; }
-  html, body { margin: 0; padding: 0; background: #F7F4ED; color: #2B2B2B; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  html, body { margin: 0; padding: 0; background: #E6E3D6; color: #444F52; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
   body { overflow-x: clip; }
   * { box-sizing: border-box; }
-  a { color: #2B2B2B; text-decoration: none; }
-  a:hover { color: #1E5AA8; }
+  a { color: #444F52; text-decoration: none; }
+  a:hover { color: #5E7580; }
   input, select, textarea, button { font-family: inherit; }
-  ::selection { background: #B8D7EB; }
+  ::selection { background: #BBCDD3; }
 
   .street {
     position: relative;
@@ -79,7 +79,7 @@
   .street-fade {
     position: absolute; left: 0; right: 0; bottom: 0;
     height: min(5vh, 36px);
-    background: linear-gradient(180deg, rgba(247,244,237,0), #F7F4ED);
+    background: linear-gradient(180deg, rgba(230,227,214,0), #E6E3D6);
     pointer-events: none; z-index: 1;
   }
   .sky-bar {
@@ -90,7 +90,7 @@
   }
   .wordmark {
     margin-right: auto; background: transparent; border: 0; padding: 0; cursor: pointer;
-    color: #2B2B2B;
+    color: #444F52;
     font-family: var(--sans);
     font-size: 17px;
     font-weight: 500;
@@ -99,10 +99,10 @@
   }
   .sky-bar .wordmark,
   .sky-bar .nav-wide {
-    color: rgba(247, 244, 237, .92);
+    color: rgba(255, 255, 255, .92);
   }
   .sky-bar .wordmark:hover,
-  .sky-bar .nav-wide:hover { color: #F7F4ED; }
+  .sky-bar .nav-wide:hover { color: #FFFFFF; }
   .sky-bar .nav-wide {
     font-size: 14px; background: transparent; border: 0;
     padding: 12px 4px; cursor: pointer;
@@ -128,18 +128,23 @@
   .sky-line h1 {
     font-family: var(--sans); font-weight: 500;
     font-size: clamp(2.6rem, 6.8vw, 5.8rem); line-height: .86; letter-spacing: -.03em;
-    margin: 0; color: #F7F4ED;
+    margin: 0; color: #FFFFFF;
     max-width: 14ch;
   }
   .sky-line .fix {
     font-family: var(--sans); font-weight: 400;
     font-size: clamp(17px, 1.7vw, 26px); line-height: 1.15; letter-spacing: -.02em;
-    margin: 12px 0 0; color: #F7F4ED;
+    margin: 12px 0 0; color: #FFFFFF;
+  }
+  .sky-line .still {
+    font-family: var(--sans); font-weight: 400;
+    font-size: clamp(13px, 1.1vw, 16px); line-height: 1.3; letter-spacing: -.015em;
+    margin: 10px 0 0; color: #FFFFFF;
   }
   .sky-line .offer {
     font-family: var(--sans); font-weight: 400;
     font-size: clamp(13px, 1.1vw, 16px); line-height: 1.3; letter-spacing: -.015em;
-    margin: 10px 0 0; color: rgba(247, 244, 237, .7);
+    margin: 10px 0 0; color: rgba(255, 255, 255, .7);
   }
   .geo {
     position: absolute;
@@ -150,12 +155,12 @@
     max-width: min(28em, 46vw);
     margin: 0;
     padding-top: 0;
-    color: rgba(247, 244, 237, .6);
+    color: rgba(255, 255, 255, .6);
     font-size: 11px; line-height: 1.4; letter-spacing: .01em;
     text-align: right;
   }
   /* Shiny CTA on primary pills. Keep in sync with listings.html.
-     Solid #1E5AA8 is the fallback when @property / conic animation is missing. */
+     Solid #5E7580 is the fallback when @property / conic animation is missing. */
   @property --gradient-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
   @property --gradient-angle-offset { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
   @property --gradient-percent { syntax: "<percentage>"; initial-value: 5%; inherits: false; }
@@ -163,11 +168,11 @@
   @keyframes gradient-angle { to { --gradient-angle: 360deg; } }
   @keyframes shimmer { to { rotate: 360deg; } }
   .pill {
-    --shiny-cta-bg: #1E5AA8;
-    --shiny-cta-bg-subtle: #17457F;
+    --shiny-cta-bg: #5E7580;
+    --shiny-cta-bg-subtle: #4A5D66;
     --shiny-cta-fg: #ffffff;
-    --shiny-cta-highlight: #B8D7EB;
-    --shiny-cta-highlight-subtle: #D4E7F3;
+    --shiny-cta-highlight: #BBCDD3;
+    --shiny-cta-highlight-subtle: #D6E1E5;
     --animation: gradient-angle linear infinite;
     --duration: 3s;
     --shadow-size: 2px;
@@ -179,7 +184,7 @@
     font-size: 15px;
     font-weight: 500;
     color: var(--shiny-cta-fg);
-    background: #1E5AA8;
+    background: #5E7580;
     background:
       linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
       conic-gradient(
@@ -244,8 +249,8 @@
   .pill:is(:hover, :focus-visible)::before,
   .pill:is(:hover, :focus-visible)::after { animation-play-state: running; }
 
-  .band-paper { background: #F7F4ED; }
-  .band-sky { background: #B8D7EB; }
+  .band-paper { background: #E6E3D6; }
+  .band-sky { background: #BBCDD3; }
   .inner { max-width: 720px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
   .price-wrap { max-width: 1120px; margin: 0 auto; padding: clamp(48px, 7vw, 72px) 24px; }
   .price-grid {
@@ -255,28 +260,28 @@
   .price-card {
     position: relative;
     display: flex; flex-direction: column;
-    background: #F7F4ED; border: 1px solid #C8C2B4; border-radius: 20px;
+    background: #E6E3D6; border: 1px solid #B0BABB; border-radius: 20px;
     padding: 28px 24px 24px; min-height: 100%;
   }
-  .price-card.primary { border-color: #D47A54; box-shadow: 0 0 0 1px #D47A54; }
+  .price-card.primary { border-color: #B0BABB; box-shadow: 0 0 0 1px #B0BABB; }
   .price-card .plan {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
-    text-transform: uppercase; color: #5F5C57; margin: 0 0 10px;
+    text-transform: uppercase; color: #777F80; margin: 0 0 10px;
   }
   .price-card h3 {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(36px, 3.6vw, 52px); line-height: .9; letter-spacing: -.03em;
-    margin: 0 0 16px; color: #2B2B2B;
+    margin: 0 0 16px; color: #444F52;
   }
   .price-card h3 .per {
     font-family: var(--sans); font-weight: 400;
-    font-size: .36em; letter-spacing: -.01em; color: #5F5C57;
+    font-size: .36em; letter-spacing: -.01em; color: #777F80;
   }
   .price-card ul {
     list-style: none; margin: 0 0 22px; padding: 0; flex: 1;
   }
   .price-card li {
-    font-size: 14px; line-height: 1.45; color: #5F5C57;
+    font-size: 14px; line-height: 1.45; color: #777F80;
     padding: 0 0 10px;
   }
   .price-card li:last-child { padding-bottom: 0; }
@@ -286,13 +291,13 @@
     isolation: auto;
     overflow: visible;
     background: transparent;
-    color: #1E5AA8;
-    border: 1px solid #1E5AA8;
+    color: #5E7580;
+    border: 1px solid #5E7580;
     box-shadow: none;
     animation: none;
   }
   .price-card .pill-mail::before, .price-card .pill-mail::after { content: none; animation: none; }
-  .price-card .pill-mail:hover { background: #1E5AA8; color: #fff; translate: none; }
+  .price-card .pill-mail:hover { background: #5E7580; color: #fff; translate: none; }
   .note {
     font-family: var(--serif); font-size: clamp(22px, 2.4vw, 28px);
     line-height: 1.2; margin: 28px 0 0; text-align: center;
@@ -303,28 +308,28 @@
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 20px;
   }
-  .faq details { border-top: 1px solid #C8C2B4; padding: 15px 0; }
-  .faq details:last-child { border-bottom: 1px solid #C8C2B4; }
+  .faq details { border-top: 1px solid #B0BABB; padding: 15px 0; }
+  .faq details:last-child { border-bottom: 1px solid #B0BABB; }
   .faq summary { cursor: pointer; font-size: 16px; list-style: none; }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #5F5C57; }
+  .faq p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #777F80; }
 
   .what { max-width: 36rem; }
   .what h2 {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; margin: 0 0 12px;
   }
-  .what p { margin: 0; font-size: 17px; line-height: 1.45; color: #5F5C57; }
+  .what p { margin: 0; font-size: 17px; line-height: 1.45; color: #777F80; }
   .what p + p { margin-top: 14px; }
   .what .stat {
     margin-top: 28px;
     font-size: 22px; line-height: 1.25; letter-spacing: -.02em;
-    color: #2B2B2B;
+    color: #444F52;
   }
   .what .cite {
     margin-top: 8px;
     font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
-    text-transform: uppercase; color: #5F5C57;
+    text-transform: uppercase; color: #777F80;
   }
 
   @media (max-width: 860px) {
@@ -342,23 +347,23 @@
     font-family: var(--mono); font-size: 11px; letter-spacing: .06em; margin: 0;
   }
   .foot-bar a { color: inherit; }
-  .foot-bar a:hover { color: #1E5AA8; }
+  .foot-bar a:hover { color: #5E7580; }
   .foot-notes {
     display: flex; align-items: center; gap: 8px;
   }
   .foot-notes input {
     width: 11.5rem; font-size: 13px; padding: 8px 10px; border-radius: 8px;
-    border: 1px solid rgba(43, 43, 43, .22); background: transparent; color: #2B2B2B;
+    border: 1px solid rgba(68, 79, 82, .22); background: transparent; color: #444F52;
     outline: none;
   }
-  .foot-notes input:focus { border-color: #1E5AA8; }
+  .foot-notes input:focus { border-color: #5E7580; }
   .foot-notes button {
     background: none; border: 0; padding: 8px 2px; cursor: pointer;
     font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
-    text-transform: uppercase; color: #5F5C57;
+    text-transform: uppercase; color: #777F80;
   }
-  .foot-notes button:hover { color: #1E5AA8; }
-  .foot-notes .ok { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #5F5C57; }
+  .foot-notes button:hover { color: #5E7580; }
+  .foot-notes .ok { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #777F80; }
 
   /* Phone: full first screen, type on the empty floor, not the window haze. */
   @media (max-width: 720px) {
@@ -400,6 +405,7 @@
       line-height: .88;
     }
     .sky-line .fix { margin-top: 8px; font-size: 1.05rem; }
+    .sky-line .still { margin-top: 8px; font-size: 0.95rem; }
     .sky-line .offer { margin-top: 8px; font-size: 0.95rem; }
     .foot-bar { flex-wrap: wrap; }
   }
@@ -432,6 +438,7 @@
       <div class="sky-line">
         <h1>CRE marketing is boring.</h1>
         <p class="fix">So we fixed it.</p>
+        <p class="still">You still ship a photo dump and a PDF.</p>
         <p class="offer">Photos you already have. 48 hours. $200.</p>
       </div>
     </div>
@@ -587,15 +594,15 @@
     return;
   }
   video.muted = true;
-  video.defaultPlaybackRate = 0.75;
-  video.playbackRate = 0.75;
+  video.defaultPlaybackRate = 0.5;
+  video.playbackRate = 0.5;
   video.addEventListener('error', stillOnly);
   Array.prototype.forEach.call(video.querySelectorAll('source'), function (source) {
     source.addEventListener('error', stillOnly);
   });
   var play = video.play();
   if (play && play.then) {
-    play.then(function () { video.playbackRate = 0.75; }).catch(function () { stillOnly(); });
+    play.then(function () { video.playbackRate = 0.5; }).catch(function () { stillOnly(); });
   }
   if (motion.addEventListener) {
     motion.addEventListener('change', function () {

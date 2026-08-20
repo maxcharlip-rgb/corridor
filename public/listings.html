@@ -143,7 +143,7 @@
   .drop em { font-style: normal; font-size: 14px; color: #5F5C57; }
   .err { display: none; margin: 0 0 12px; font-size: 12.5px; color: #A93521; }
   /* Shiny CTA on primary pills. Keep in sync with index.html.
-     Solid #1E5AA8 is the fallback when @property / conic animation is missing. */
+     Solid #5E7580 is the fallback when @property / conic animation is missing. */
   @property --gradient-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
   @property --gradient-angle-offset { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
   @property --gradient-percent { syntax: "<percentage>"; initial-value: 5%; inherits: false; }
@@ -151,11 +151,11 @@
   @keyframes gradient-angle { to { --gradient-angle: 360deg; } }
   @keyframes shimmer { to { rotate: 360deg; } }
   .pill {
-    --shiny-cta-bg: #1E5AA8;
-    --shiny-cta-bg-subtle: #17457F;
+    --shiny-cta-bg: #5E7580;
+    --shiny-cta-bg-subtle: #4A5D66;
     --shiny-cta-fg: #ffffff;
-    --shiny-cta-highlight: #B8D7EB;
-    --shiny-cta-highlight-subtle: #D4E7F3;
+    --shiny-cta-highlight: #BBCDD3;
+    --shiny-cta-highlight-subtle: #D6E1E5;
     --animation: gradient-angle linear infinite;
     --duration: 3s;
     --shadow-size: 2px;
@@ -167,7 +167,7 @@
     font-size: 15px;
     font-weight: 500;
     color: var(--shiny-cta-fg);
-    background: #1E5AA8;
+    background: #5E7580;
     background:
       linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
       conic-gradient(
