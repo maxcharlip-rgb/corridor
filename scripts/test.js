@@ -999,13 +999,13 @@ main().catch(async (err) => {
       && !/font-family:\s*"Instrument Serif"/.test(landing)
       && !/\/fonts\/instrument-serif\.woff2/.test(landing)
       && !/\/fonts\/archivo\.woff2/.test(landing));
-  check('phone type sits on the floor on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /bottom:\s*14svh/.test(landing) && !/top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
+  check('phone type sits on the floor on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /bottom:\s*18svh/.test(landing) && /left:\s*16%/.test(landing) && !/top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
-  check('hero is full-bleed with the floor in frame', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*50%\s*72%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*38%/.test(landing) && !/background-position:\s*48%\s*28%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
+  check('hero is full-bleed with the floor in frame', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*40%\s*56%/.test(landing) && /background-position:\s*30%\s*62%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*38%/.test(landing) && !/background-position:\s*48%\s*28%/.test(landing) && !/background-position:\s*50%\s*72%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
   check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('headline sits on the empty floor, with no fold pitch', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /bottom:\s*clamp\(14vh,\s*18vh,\s*22vh\)/.test(landing) && !/top:\s*5\.6rem/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /max-width:\s*14ch/.test(landing) && !/class="sky-lead"/.test(landing) && !/class="pitch"/.test(landing) && !/We make a video of your listing/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
+  check('headline sits on the empty floor, with no fold pitch', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /left:\s*clamp\(18%,\s*22vw,\s*26%\)/.test(landing) && /bottom:\s*clamp\(26vh,\s*30vh,\s*34vh\)/.test(landing) && !/top:\s*5\.6rem/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /max-width:\s*14ch/.test(landing) && !/class="sky-lead"/.test(landing) && !/class="pitch"/.test(landing) && !/We make a video of your listing/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
   check('hero aria-label describes the empty industrial floor', /aria-label="Empty industrial floor, glass wall, one shaft of light\."/.test(landing) && !/Illustrated Detroit riverfront/.test(landing) && !/Renaissance Center/.test(landing));
   check('street-art fallback is cool grey, not sky', /background-color:\s*#73787E/.test(landing) && !/\.street-art[\s\S]*?background-color:\s*#B8D7EB/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
@@ -1073,8 +1073,10 @@ main().catch(async (err) => {
     /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
       && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.jpg"/.test(loopTag)
       && !/\scontrols/.test(loopTag)
-      && /object-fit:\s*cover/.test(landing) && /object-position:\s*50%\s*72%/.test(landing)
+      && /object-fit:\s*cover/.test(landing) && /object-position:\s*40%\s*56%/.test(landing)
+      && /object-position:\s*30%\s*62%/.test(landing)
       && !/object-position:\s*46%\s*38%/.test(landing) && !/object-position:\s*48%\s*28%/.test(landing)
+      && !/object-position:\s*50%\s*72%/.test(landing)
       && /pointer-events:\s*none/.test(landing));
   check('hero is full-bleed cover, no scroll dolly',
     !/street-pin/.test(landing) && !/street-stage/.test(landing) && !/148vh/.test(landing)

@@ -47,9 +47,9 @@
     position: absolute; inset: 0;
     background-color: #73787E;
     background-image: url("/hero-detroit.jpg");
-    /* Floor-first crop: keep the empty concrete in frame. Favor the bottom. */
+    /* Windows in frame, floor holding the type. Not the river 46% 38%. */
     background-size: cover;
-    background-position: 50% 72%;
+    background-position: 40% 56%;
     background-repeat: no-repeat;
     image-rendering: auto;
   }
@@ -59,7 +59,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 50% 72%;
+    object-position: 40% 56%;
     pointer-events: none;
     display: block;
     border: 0;
@@ -68,7 +68,7 @@
     position: absolute; inset: 0;
     pointer-events: none; z-index: 1;
     background:
-      radial-gradient(ellipse 58% 40% at 56% 70%, rgba(247,244,237,.34) 0%, rgba(247,244,237,.12) 46%, transparent 74%);
+      radial-gradient(ellipse 52% 38% at 26% 64%, rgba(247,244,237,.34) 0%, rgba(247,244,237,.12) 46%, transparent 74%);
   }
   .street-grain {
     position: absolute; inset: 0;
@@ -104,10 +104,10 @@
   }
   .sky-board {
     position: absolute;
-    left: clamp(36%, 48vw, 54%);
+    left: clamp(18%, 22vw, 26%);
     right: auto;
     top: auto;
-    bottom: clamp(14vh, 18vh, 22vh);
+    bottom: clamp(26vh, 30vh, 34vh);
     z-index: 2;
     display: flex;
     flex-direction: column;
@@ -368,23 +368,23 @@
         url("/hero-detroit-phone.avif") type("image/avif"),
         url("/hero-detroit-phone.webp") type("image/webp")
       );
-      background-position: 50% 72%;
+      background-position: 30% 62%;
       background-size: cover;
     }
     .street-haze {
       background:
-        radial-gradient(ellipse 72% 46% at 58% 72%, rgba(247,244,237,.40) 0%, rgba(247,244,237,.14) 50%, transparent 76%);
+        radial-gradient(ellipse 68% 44% at 24% 66%, rgba(247,244,237,.40) 0%, rgba(247,244,237,.14) 50%, transparent 76%);
     }
     .street-fade { height: 40px; }
     .geo { display: none; }
-    .street-loop { object-position: 50% 72%; }
+    .street-loop { object-position: 30% 62%; }
     .sky-bar { gap: 12px 14px; padding: 18px 20px; flex-wrap: wrap; }
     .sky-bar .nav-wide { font-size: 13px; padding: 8px 2px; }
     .sky-board {
       top: auto;
-      left: 22%;
+      left: 16%;
       right: 20px;
-      bottom: 14svh;
+      bottom: 18svh;
       max-width: none;
       justify-content: flex-start;
       padding: 1rem 1.15rem 1.05rem 1rem;
