@@ -1040,12 +1040,16 @@ main().catch(async (err) => {
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still ship a photo dump and a PDF\. We cut a listing video from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\. Detroit founded\. We cut a listing anywhere\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
   check('footer has no photograph credit', !/Andrew Heneen/.test(landing) && !/Wikimedia Commons/.test(landing));
+  const foldNav = landing.slice(landing.indexOf('<header'), landing.indexOf('</header>'));
+  const foldFoot = landing.slice(landing.indexOf('<footer'));
   check('fold nav is Corridor, Pricing, and FAQ only',
-    /href="#pricing"/.test(landing) && /href="#faq"/.test(landing)
-      && !/<header[\s\S]*href="\/listings">Sign in</.test(landing)
-      && !/<header[\s\S]*Create account/.test(landing)
-      && /<footer[\s\S]*href="\/listings">Sign in</.test(landing)
-      && /<footer[\s\S]*href="\/listings#create">Create account</.test(landing)
+    /href="#pricing"/.test(foldNav) && /href="#faq"/.test(foldNav)
+      && />Corridor</.test(foldNav)
+      && !/href="\/listings">Sign in</.test(foldNav)
+      && !/Create account/.test(foldNav)
+      && (foldNav.match(/class="nav-wide"/g) || []).length === 2
+      && /href="\/listings">Sign in</.test(foldFoot)
+      && /href="\/listings#create">Create account</.test(foldFoot)
       && !/href="#product"/.test(landing) && !/href="#what"/.test(landing)
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
@@ -1128,9 +1132,9 @@ main().catch(async (err) => {
       && /Photos you have/.test(landing)
       && /Pay when it.s a cut you.d send/.test(landing)
       && /48 hours/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20one%20listing/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20shop/.test(landing)
-      && /mailto:max@corridor\.video\?subject=Interested%20%E2%80%94%20enterprise/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested — one listing/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested — shop/.test(landing)
+      && /mailto:max@corridor\.video\?subject=Interested — enterprise/.test(landing)
       && (landing.match(/I.m interested\./g) || []).length === 3
       && !/>Write Max</.test(landing)
       && !/>Book a call</.test(landing)
