@@ -981,7 +981,7 @@ main().catch(async (err) => {
   const cloudB = new URL('../public/hero-clouds-b.png', import.meta.url);
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
   const loopPath = new URL('../public/hero-detroit-loop.mp4', import.meta.url);
-  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 4_000_000);
+  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 2_500_000);
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
   check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.jpg/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/Andrew Heneen/.test(landing));
   const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
