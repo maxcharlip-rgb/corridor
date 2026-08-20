@@ -131,6 +131,11 @@
     font-size: clamp(17px, 1.7vw, 26px); line-height: 1.2; letter-spacing: -.02em;
     margin: 12px 0 0; color: #2B2B2B;
   }
+  .sky-line .offer {
+    font-family: var(--sans); font-weight: 400;
+    font-size: clamp(14px, 1.25vw, 18px); line-height: 1.3; letter-spacing: -.015em;
+    margin: 10px 0 0; color: #2B2B2B;
+  }
   .geo {
     position: absolute;
     right: clamp(20px, 4.5vw, 64px);
@@ -253,17 +258,6 @@
   .price-card .plan {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
     text-transform: uppercase; color: #5F5C57; margin: 0 0 10px;
-  }
-  .price-card .ask {
-    display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px;
-  }
-  .price-card .was {
-    font-size: 14px; line-height: 1; color: #8A867E;
-    text-decoration: line-through; text-decoration-thickness: 1px;
-  }
-  .price-card .save {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
-    text-transform: uppercase; color: #D47A54;
   }
   .price-card h3 {
     font-family: var(--serif); font-weight: 400;
@@ -402,6 +396,7 @@
       font-size: clamp(1.85rem, 8.4vw, 2.15rem);
     }
     .sky-line .fix { margin-top: 8px; font-size: 1.05rem; }
+    .sky-line .offer { margin-top: 8px; font-size: 0.95rem; }
     .foot-bar { flex-wrap: wrap; }
   }
 
@@ -433,6 +428,7 @@
       <div class="sky-line">
         <h1>CRE marketing is boring.</h1>
         <p class="fix">So we fixed it.</p>
+        <p class="offer">Photos you already have. 48 hours. $200.</p>
       </div>
     </div>
     <p class="geo">Detroit founded. We cut a listing anywhere.</p>
@@ -442,8 +438,8 @@
     <div class="inner">
       <div class="what">
         <h2>What we do</h2>
-        <p>They still ship a photo dump and a PDF. Nobody walks the building. The brochure dies in an inbox.</p>
-        <p>We cut a listing video from the photos they already have. They send it. The other side walks it on their phone, then they book the showing.</p>
+        <p>You still ship a photo dump and a PDF. Nobody walks the building. The brochure dies in an inbox.</p>
+        <p>We cut a listing video from the photos you already have. You send it. The other side walks it on their phone, then they book the showing.</p>
       </div>
     </div>
   </section>
@@ -453,25 +449,23 @@
       <div class="price-grid price-grid-3">
         <article class="price-card">
           <p class="plan">One listing</p>
-          <p class="ask"><span class="was">$400</span><span class="save">$200 off</span></p>
           <h3>$200</h3>
           <ul>
-            <li>Photos they have.</li>
+            <li>Photos you have.</li>
             <li>48 hours.</li>
-            <li>Pay when it’s a cut they’d send.</li>
+            <li>Pay when it’s a cut you’d send.</li>
           </ul>
-          <a class="pill" href="/listings">Start a listing</a>
+          <a class="pill" href="mailto:max@corridor.video">Write Max</a>
         </article>
         <article class="price-card primary">
           <p class="plan">Shop</p>
-          <p class="ask"><span class="was">$1,000</span><span class="save">$250 off</span></p>
           <h3>$750 <span class="per">/ month</span></h3>
           <ul>
             <li>Four listings.</li>
             <li>Unused roll 60 days, cap 8, extra $200.</li>
             <li>The month is the shop.</li>
           </ul>
-          <a class="pill" href="/listings">Start a listing</a>
+          <a class="pill" href="mailto:max@corridor.video">Book a call</a>
         </article>
         <article class="price-card">
           <p class="plan">Enterprise</p>
@@ -480,7 +474,7 @@
             <li>Volume, a desk, a number that isn’t on a card.</li>
             <li>Write Max.</li>
           </ul>
-          <a class="pill pill-mail" href="mailto:max@corridor.video">max@corridor.video</a>
+          <a class="pill pill-mail" href="mailto:max@corridor.video">Write Max</a>
         </article>
       </div>
       <p class="note">We work the cut with you until it’s a video you’d send.</p>
@@ -503,6 +497,10 @@
           <summary>When do I pay?</summary>
           <p>One listing: after the video is sendable. If it isn’t, we keep working or we don’t bill.</p>
           <p>Shop: $750 a month for four. Unused roll 60 days, cap 8. Extra cuts $200. The month is the shop, not pay-per-cut.</p>
+        </details>
+        <details>
+          <summary>Will it look AI / fake?</summary>
+          <p>Cut from their photos. We work it until it’s a video they’d send.</p>
         </details>
       </div>
     </div>

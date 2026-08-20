@@ -1017,7 +1017,7 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /We cut a listing video from the photos they already have/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
@@ -1030,13 +1030,13 @@ main().catch(async (err) => {
       && !/data-open-auth/.test(landing) && !/>Account</.test(landing)
       && !/type="password"/.test(landing) && !/href="\/studio"/.test(landing));
   const whatCopy = landing.slice(landing.indexOf('id="what"'), landing.indexOf('id="pricing"'));
-  check('What we do is the walk from photos they already have',
+  check('What we do is the walk from photos you already have',
     /<h2>What we do<\/h2>/.test(landing)
-      && /They still ship a photo dump and a PDF/.test(whatCopy)
+      && /You still ship a photo dump and a PDF/.test(whatCopy)
       && /Nobody walks the building/.test(whatCopy)
       && /The brochure dies in an inbox/.test(whatCopy)
-      && /We cut a listing video from the photos they already have/.test(whatCopy)
-      && /They send it/.test(whatCopy)
+      && /We cut a listing video from the photos you already have/.test(whatCopy)
+      && /You send it/.test(whatCopy)
       && /walks it on their phone, then they book the showing/.test(whatCopy)
       && !/73%/.test(whatCopy)
       && !/NAR, 2024 Profile of Home Buyers and Sellers/.test(whatCopy)
@@ -1078,7 +1078,7 @@ main().catch(async (err) => {
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is one Detroit-founded line', /Detroit founded\. We cut a listing anywhere\./.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 3 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
+  check('short FAQ sits after prices, with no inquire form after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Who owns the tour/.test(landing) && (landing.match(/<details>/g) || []).length === 4 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
   check('pricing is exactly three cards with no SKU toggle',
@@ -1101,15 +1101,21 @@ main().catch(async (err) => {
       && /Four listings/.test(landing)
       && /Unused roll 60 days, cap 8, extra \$200/.test(landing)
       && /The month is the shop/.test(landing)
-      && /Photos they have/.test(landing)
-      && /Pay when it.s a cut they.d send/.test(landing)
+      && /Photos you have/.test(landing)
+      && /Pay when it.s a cut you.d send/.test(landing)
       && /48 hours/.test(landing)
       && /mailto:max@corridor\.video/.test(landing)
+      && />Write Max</.test(landing)
+      && />Book a call</.test(landing)
+      && !/Start a listing/.test(landing)
+      && !/href="\/listings"/.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
       && /<p class="plan">Enterprise<\/p>/.test(landing)
       && /Volume, a desk, a number that isn.t on a card/.test(landing)
       && !/class="price-quote"/.test(landing)
-      && /class="was">\$400</.test(landing)
-      && /class="was">\$1,000</.test(landing)
+      && !/class="was"/.test(landing)
+      && !/class="ask"/.test(landing)
+      && !/\$400/.test(landing)
+      && !/\$1,000/.test(landing)
       && (landing.match(/<article class="price-card/g) || []).length === 3
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
