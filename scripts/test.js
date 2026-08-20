@@ -1115,12 +1115,17 @@ main().catch(async (err) => {
   check('short FAQ sits after prices, with Join after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why the cap/.test(landing) && /Five brokers\. Three firms\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Why only three/.test(landing) && !/Three desks/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && landing.indexOf('id="join"') > landing.indexOf('id="faq"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
-  check('pricing is a solo/firm switcher with custom on both sides',
+  check('pricing is a three-card slider — solo, firm, custom',
     /class="price-card"/.test(landing)
-      && /class="price-switch"/.test(landing)
-      && />Solo broker</.test(landing)
-      && />Brokerage firm</.test(landing)
-      && /price-grid-2/.test(landing)
+      && /class="price-slider"/.test(landing)
+      && /class="price-track"/.test(landing)
+      && /scroll-snap-type:\s*x\s+mandatory/.test(landing)
+      && !/class="price-switch"/.test(landing)
+      && !/>Solo broker</.test(landing)
+      && !/>Brokerage firm</.test(landing)
+      && !/data-side="solo"/.test(landing)
+      && !/data-side="firm"/.test(landing)
+      && !/price-grid-2/.test(landing)
       && !/price-grid-3/.test(landing)
       && !/price-grid-4/.test(landing)
       && !/id="price-once"/.test(landing)
@@ -1128,6 +1133,11 @@ main().catch(async (err) => {
       && !/id="price-month"/.test(landing)
       && !/One-time/.test(landing)
       && !/Monthly/.test(landing)
+      && /<p class="plan">Solo<\/p>/.test(landing)
+      && /<p class="plan">Firm<\/p>/.test(landing)
+      && /<p class="plan">Custom<\/p>/.test(landing)
+      && landing.indexOf('<p class="plan">Solo</p>') < landing.indexOf('<p class="plan">Firm</p>')
+      && landing.indexOf('<p class="plan">Firm</p>') < landing.indexOf('<p class="plan">Custom</p>')
       && /<h3>\$200<\/h3>/.test(landing)
       && !/<h3>\$350<\/h3>/.test(landing)
       && /\$150 <span class="per">a listing<\/span>/.test(landing)
@@ -1152,22 +1162,25 @@ main().catch(async (err) => {
       && !/Interested — one listing/.test(landing)
       && !/Interested — shop/.test(landing)
       && !/Interested — enterprise/.test(landing)
-      && (landing.match(/I.m interested\./g) || []).length === 4
+      && (landing.match(/I.m interested\./g) || []).length === 3
       && !/pill-mail/.test(landing)
       && !/>Write Max</.test(landing)
       && !/Write Max\./.test(landing)
       && !/>Book a call</.test(landing)
       && !/Start a listing/.test(landing)
       && !/href="\/listings"/.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
-      && /<p class="plan">Custom<\/p>/.test(landing)
+      && (landing.match(/<p class="plan">Custom<\/p>/g) || []).length === 1
       && /Volume, a desk, a number that isn.t on a card/.test(landing)
       && !/class="price-quote"/.test(landing)
       && !/class="was"/.test(landing)
       && !/class="ask"/.test(landing)
       && !/\$400/.test(landing)
       && !/\$1,000/.test(landing)
-      && (landing.match(/<article class="price-card/g) || []).length === 4
-      && (landing.match(/price-card primary/g) || []).length === 2
+      && (landing.match(/<article class="price-card/g) || []).length === 3
+      && (landing.match(/price-card primary/g) || []).length === 1
+      && /Five brokers\. Three firms\. Then we open more/.test(landing)
+      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('id="pricing"')
+      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('class="price-slider"')
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
