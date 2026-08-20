@@ -41,16 +41,15 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
-    background: #B8D7EB;
+    background: #73787E;
   }
   .street-art {
     position: absolute; inset: 0;
-    background-color: #B8D7EB;
+    background-color: #73787E;
     background-image: url("/hero-detroit.jpg");
-    /* Mid-high crop: sky stays above the towers so the H1 can sit in it.
-       Not 90% (type over water) and not 22% (city cropped out). */
+    /* Windows in frame, floor holding the type. */
     background-size: cover;
-    background-position: 46% 38%;
+    background-position: 40% 56%;
     background-repeat: no-repeat;
     image-rendering: auto;
   }
@@ -60,7 +59,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 46% 38%;
+    object-position: 40% 56%;
     pointer-events: none;
     display: block;
     border: 0;
@@ -69,8 +68,7 @@
     position: absolute; inset: 0;
     pointer-events: none; z-index: 1;
     background:
-      linear-gradient(180deg, rgba(247,244,237,.38) 0%, rgba(247,244,237,.12) 18%, transparent 32%),
-      linear-gradient(90deg, rgba(247,244,237,.78) 0%, rgba(247,244,237,.32) 16%, rgba(247,244,237,0) 34%);
+      radial-gradient(ellipse 52% 38% at 26% 64%, rgba(247,244,237,.34) 0%, rgba(247,244,237,.12) 46%, transparent 74%);
   }
   .street-grain {
     position: absolute; inset: 0;
@@ -106,10 +104,10 @@
   }
   .sky-board {
     position: absolute;
-    left: clamp(20px, 4.5vw, 64px);
+    left: clamp(18%, 22vw, 26%);
     right: auto;
-    top: 5.6rem;
-    bottom: auto;
+    top: auto;
+    bottom: clamp(26vh, 30vh, 34vh);
     z-index: 2;
     display: flex;
     flex-direction: column;
@@ -118,6 +116,9 @@
     gap: 0;
     max-width: min(20em, 46vw);
     pointer-events: none;
+    padding: 1.2rem 1.5rem 1.3rem 1.25rem;
+    background:
+      radial-gradient(ellipse 88% 78% at 38% 42%, rgba(247,244,237,.90) 0%, rgba(247,244,237,.62) 46%, rgba(247,244,237,0) 78%);
   }
   .sky-line { position: static; }
   .sky-line h1 {
@@ -356,7 +357,7 @@
   .foot-notes button:hover { color: #1E5AA8; }
   .foot-notes .ok { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #5F5C57; }
 
-  /* Phone: full first screen, type in the sky above the towers. */
+  /* Phone: full first screen, type on the empty floor, not the window haze. */
   @media (max-width: 720px) {
     .street {
       height: 100svh;
@@ -367,26 +368,26 @@
         url("/hero-detroit-phone.avif") type("image/avif"),
         url("/hero-detroit-phone.webp") type("image/webp")
       );
-      background-position: 48% 28%;
+      background-position: 30% 62%;
       background-size: cover;
     }
     .street-haze {
       background:
-        linear-gradient(180deg, rgba(247,244,237,.55) 0%, rgba(247,244,237,.16) 28%, transparent 46%),
-        linear-gradient(90deg, rgba(247,244,237,.62) 0%, transparent 48%);
+        radial-gradient(ellipse 68% 44% at 24% 66%, rgba(247,244,237,.40) 0%, rgba(247,244,237,.14) 50%, transparent 76%);
     }
     .street-fade { height: 40px; }
     .geo { display: none; }
-    .street-loop { object-position: 48% 28%; }
+    .street-loop { object-position: 30% 62%; }
     .sky-bar { gap: 12px 14px; padding: 18px 20px; flex-wrap: wrap; }
     .sky-bar .nav-wide { font-size: 13px; padding: 8px 2px; }
     .sky-board {
-      top: 6.4rem;
-      left: 20px;
+      top: auto;
+      left: 16%;
       right: 20px;
-      bottom: auto;
+      bottom: 18svh;
       max-width: none;
       justify-content: flex-start;
+      padding: 1rem 1.15rem 1.05rem 1rem;
     }
     .sky-line { position: static; }
     .sky-line h1 {
@@ -409,7 +410,7 @@
 </head>
 <body>
   <section class="street" data-screen-label="Landing">
-    <div class="street-art" role="img" aria-label="Illustrated Detroit riverfront. The Renaissance Center stands across the water.">
+    <div class="street-art" role="img" aria-label="Empty industrial floor, glass wall, one shaft of light.">
       <video class="street-loop" muted playsinline autoplay loop preload="auto" poster="/hero-detroit.jpg" disablepictureinpicture disableremoteplayback aria-hidden="true">
         <source src="/hero-detroit-loop.mp4" type="video/mp4" />
       </video>
@@ -583,15 +584,15 @@
     return;
   }
   video.muted = true;
-  video.defaultPlaybackRate = 0.4;
-  video.playbackRate = 0.4;
+  video.defaultPlaybackRate = 0.75;
+  video.playbackRate = 0.75;
   video.addEventListener('error', stillOnly);
   Array.prototype.forEach.call(video.querySelectorAll('source'), function (source) {
     source.addEventListener('error', stillOnly);
   });
   var play = video.play();
   if (play && play.then) {
-    play.then(function () { video.playbackRate = 0.4; }).catch(function () { stillOnly(); });
+    play.then(function () { video.playbackRate = 0.75; }).catch(function () { stillOnly(); });
   }
   if (motion.addEventListener) {
     motion.addEventListener('change', function () {

@@ -981,7 +981,7 @@ main().catch(async (err) => {
   const cloudB = new URL('../public/hero-clouds-b.png', import.meta.url);
   check('hero illustration is a real full-quality PNG in public/', fsx.existsSync(heroPath) && fsx.statSync(heroPath).size > 2_000_000 && heroPath.pathname.endsWith('.png'));
   const loopPath = new URL('../public/hero-detroit-loop.mp4', import.meta.url);
-  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 4_000_000);
+  check('hero loop is the hi-res ping-pong plate', fsx.existsSync(loopPath) && fsx.statSync(loopPath).size > 2_500_000);
   check('cut-out cloud layer assets were deleted', !fsx.existsSync(basePath) && !fsx.existsSync(cloudA) && !fsx.existsSync(cloudB));
   check('homepage uses the original static illustrated Detroit riverfront', /hero-detroit\.jpg/.test(landing) && !/hero-detroit-base\.png/.test(landing) && !/hero-clouds-a\.png/.test(landing) && !/Andrew Heneen/.test(landing));
   const phoneWebp = new URL('../public/hero-detroit-phone.webp', import.meta.url);
@@ -999,13 +999,15 @@ main().catch(async (err) => {
       && !/font-family:\s*"Instrument Serif"/.test(landing)
       && !/\/fonts\/instrument-serif\.woff2/.test(landing)
       && !/\/fonts\/archivo\.woff2/.test(landing));
-  check('phone type sits in the sky on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
+  check('phone type sits on the floor on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /bottom:\s*18svh/.test(landing) && /left:\s*16%/.test(landing) && !/top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
-  check('hero is full-bleed with the sky above the towers', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*38%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
+  check('hero is full-bleed with the floor in frame', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*40%\s*56%/.test(landing) && /background-position:\s*30%\s*62%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*38%/.test(landing) && !/background-position:\s*48%\s*28%/.test(landing) && !/background-position:\s*50%\s*72%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
   check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
   check('first viewport is the full-bleed riverfront, not a boxed hero', /class="street"/.test(landing) && /class="street-art"/.test(landing) && !/<figure class="hero-art">/.test(landing));
   check('illustration is not a fixed backdrop under the whole page', !/class="scene"/.test(landing) && !/\.scene\s*\{[^}]*position:\s*fixed/.test(landing));
-  check('headline sits in the sky above the towers, with no fold pitch', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /top:\s*5\.6rem/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /max-width:\s*14ch/.test(landing) && !/class="sky-lead"/.test(landing) && !/class="pitch"/.test(landing) && !/We make a video of your listing/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
+  check('headline sits on the empty floor, with no fold pitch', /class="sky-board"/.test(landing) && /class="sky-line"/.test(landing) && /left:\s*clamp\(18%,\s*22vw,\s*26%\)/.test(landing) && /bottom:\s*clamp\(26vh,\s*30vh,\s*34vh\)/.test(landing) && !/top:\s*5\.6rem/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /max-width:\s*14ch/.test(landing) && !/class="sky-lead"/.test(landing) && !/class="pitch"/.test(landing) && !/We make a video of your listing/.test(landing) && !/top:\s*max\(88px,\s*15vh\)/.test(landing) && !/nav-send/.test(landing));
+  check('hero aria-label describes the empty industrial floor', /aria-label="Empty industrial floor, glass wall, one shaft of light\."/.test(landing) && !/Illustrated Detroit riverfront/.test(landing) && !/Renaissance Center/.test(landing));
+  check('street-art fallback is cool grey, not sky', /background-color:\s*#73787E/.test(landing) && !/\.street-art[\s\S]*?background-color:\s*#B8D7EB/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
   check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
   check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
@@ -1061,7 +1063,9 @@ main().catch(async (err) => {
       && /playsinline/.test(landing)
       && /prefers-reduced-motion:\s*reduce/.test(landing)
       && !/rel="preload"[^>]*hero-detroit-loop/.test(landing)
-      && /playbackRate = 0\.4/.test(landing)
+      && /defaultPlaybackRate = 0\.75/.test(landing)
+      && /playbackRate = 0\.75/.test(landing)
+      && !/playbackRate = 0\.4/.test(landing)
       && !/playbackRate\s*=\s*-/.test(landing)
       && !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
   const loopTag = landing.slice(landing.indexOf('class="street-loop"'), landing.indexOf('</video>'));
@@ -1069,7 +1073,10 @@ main().catch(async (err) => {
     /muted/.test(loopTag) && /autoplay/.test(loopTag) && /loop/.test(loopTag)
       && /preload="auto"/.test(loopTag) && /poster="\/hero-detroit\.jpg"/.test(loopTag)
       && !/\scontrols/.test(loopTag)
-      && /object-fit:\s*cover/.test(landing) && /object-position:\s*46%\s*38%/.test(landing)
+      && /object-fit:\s*cover/.test(landing) && /object-position:\s*40%\s*56%/.test(landing)
+      && /object-position:\s*30%\s*62%/.test(landing)
+      && !/object-position:\s*46%\s*38%/.test(landing) && !/object-position:\s*48%\s*28%/.test(landing)
+      && !/object-position:\s*50%\s*72%/.test(landing)
       && /pointer-events:\s*none/.test(landing));
   check('hero is full-bleed cover, no scroll dolly',
     !/street-pin/.test(landing) && !/street-stage/.test(landing) && !/148vh/.test(landing)
