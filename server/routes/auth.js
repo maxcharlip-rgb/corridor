@@ -117,11 +117,14 @@ authApi.post('/link', credentialLimiter, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
   }
   const name = String((req.body || {}).name || '').trim().slice(0, 120);
+  const marketingOptIn = (req.body || {}).marketing === true
+    || (req.body || {}).marketing === 'yes'
+    || (req.body || {}).marketing_opt_in === true;
 
   let account = accountByEmail(email);
   if (!account) {
     try {
-      account = createAccount({ email, name });
+      account = createAccount({ email, name, marketingOptIn });
     } catch {
       account = accountByEmail(email);
     }
