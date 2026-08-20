@@ -1147,6 +1147,30 @@ main().catch(async (err) => {
   check('extra intake fields stay in the expander for the API', /name="phone"/.test(landing) && /name="size"/.test(landing) && /name="propertyType"/.test(landing) && /name="phoneWalk"/.test(landing) && /name="notes"/.test(landing));
   check('hero CTA is Send a listing, the only inquire action', /href="#intake"/.test(landing) && /id="intake-submit"/.test(landing) && /Send a listing/.test(landing));
   check('footer is Detroit and max@corridor.video, no intern line', /DETROIT/.test(landing) && /MAX@CORRIDOR\.VIDEO/.test(landing) && !/STARTED BY ONE CRE INTERN/.test(landing) && !/MAX@CORRIDOR\.TOURS/.test(landing));
+  check('homepage footer links Privacy and Terms', /href="\/privacy"/.test(landing) && /href="\/terms"/.test(landing));
+  check('marketing updates default off', /name="marketing"/.test(landing) && !/name="marketing"[^>]*\schecked/.test(landing));
+  check('FAQ speed line matches one-time vs shop recuts',
+    /How fast is it back/.test(landing)
+      && /48 hours/.test(landing)
+      && /one finished video and one recut/.test(landing)
+      && !/Two revision rounds are included/.test(landing));
+  const terms = fsx.readFileSync(new URL('../public/terms.html', import.meta.url), 'utf8');
+  const privacy = fsx.readFileSync(new URL('../public/privacy.html', import.meta.url), 'utf8');
+  check('terms page is Corridor type on paper and sky',
+    /Bricolage Grotesque/.test(terms) && /#F7F4ED/.test(terms) && /#B8D7EB/.test(terms)
+      && /class="sky-bar"/.test(terms) && /class="foot-bar"/.test(terms)
+      && /Corridor LLC/.test(terms) && /2840 Bolingbroke Dr/.test(terms)
+      && /\$200/.test(terms) && /\$350/.test(terms) && /\$750/.test(terms)
+      && /48 hours/.test(terms) && /Michigan law/.test(terms)
+      && !/first one free/i.test(terms) && !/\/t\/demo/.test(terms) && !/\$260/.test(terms)
+      && !/checkout|stripe/i.test(terms) && !/yearly/i.test(terms));
+  check('privacy page names what we collect and does not sell the list',
+    /Bricolage Grotesque/.test(privacy) && /#F7F4ED/.test(privacy)
+      && /name, email, property address/.test(privacy)
+      && /Default unchecked/.test(privacy)
+      && /We don.t sell the list/.test(privacy)
+      && /href="\/privacy"/.test(privacy) && /href="\/terms"/.test(privacy)
+      && !/first one free/i.test(privacy) && !/\/t\/demo/.test(privacy));
 }
 
 // --- broker desk is not studio ----------------------------------------------
@@ -1175,6 +1199,7 @@ main().catch(async (err) => {
       && !/first-one-free|first one free/i.test(desk) && !/\/t\/demo/.test(desk));
   check('desk email is max@corridor.video if shown',
     /max@corridor\.video/.test(desk) && !/hello@corridor\.tours/.test(desk) && !/@corridor\.tours/.test(desk));
+  check('desk footer links Privacy and Terms', /href="\/privacy"/.test(desk) && /href="\/terms"/.test(desk));
   check('desk name placeholder is generic',
     /placeholder="Your name"/.test(desk) && !/placeholder="Max Charlip"/.test(desk));
   check('desk is light homepage type and color',
