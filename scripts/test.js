@@ -1001,8 +1001,9 @@ main().catch(async (err) => {
       && !/\/fonts\/archivo\.woff2/.test(landing));
   check('hero H1 is white Bricolage on the floor, not ink or a second face',
     /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing)
-      && /\.sky-line h1\s*\{[^}]*color:\s*#F7F4ED/.test(landing)
+      && /\.sky-line h1\s*\{[^}]*color:\s*#FFFFFF/.test(landing)
       && !/\.sky-line h1\s*\{[^}]*color:\s*#2B2B2B/.test(landing)
+      && !/\.sky-line h1\s*\{[^}]*color:\s*#F7F4ED/.test(landing)
       && !/family=Instrument\+Serif/.test(landing)
       && !/font-family:\s*"Instrument Serif"/.test(landing));
   check('phone type sits on the floor on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /bottom:\s*18svh/.test(landing) && /left:\s*20px/.test(landing) && /max-width:\s*min\(12\.5rem,\s*56vw\)/.test(landing) && !/left:\s*16%/.test(landing) && !/top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
@@ -1015,18 +1016,18 @@ main().catch(async (err) => {
   check('hero aria-label describes the empty industrial floor', /aria-label="Empty industrial floor, glass wall, one shaft of light\."/.test(landing) && !/Illustrated Detroit riverfront/.test(landing) && !/Renaissance Center/.test(landing));
   check('street-art fallback is cool grey, not sky', /background-color:\s*#73787E/.test(landing) && !/\.street-art[\s\S]*?background-color:\s*#B8D7EB/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
-  check('Detroit line is a bottom-right caption without a dark rule', /class="geo"/.test(landing) && /text-align:\s*right/.test(landing) && /rgba\(247,\s*244,\s*237,\s*\.6\)/.test(landing) && !/\.geo\s*\{[^}]*border-top:\s*1px solid rgba\(43/.test(landing));
+  check('Detroit line is a bottom-right caption without a dark rule', /class="geo"/.test(landing) && /text-align:\s*right/.test(landing) && /rgba\(255,\s*255,\s*255,\s*\.6\)/.test(landing) && !/\.geo\s*\{[^}]*border-top:\s*1px solid rgba\(43/.test(landing));
   check('hero has no cream haze or paper scrim over the plate', /class="street-haze"/.test(landing) && !/\.street-haze\s*\{[^}]*rgba\(247,\s*244,\s*237/.test(landing) && !/\.sky-board\s*\{[^}]*rgba\(247,\s*244,\s*237,\s*\.90/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
-  check('hero nav and type sit on the floor in paper-white', /\.sky-bar \.wordmark[\s\S]*?color:\s*rgba\(247,\s*244,\s*237,\s*\.92\)/.test(landing) && /\.sky-line \.fix\s*\{[^}]*color:\s*#F7F4ED/.test(landing) && /\.sky-line \.offer\s*\{[^}]*rgba\(247,\s*244,\s*237,\s*\.7\)/.test(landing) && !/Instrument/.test(landing));
+  check('hero nav and type sit on the floor in paper-white', /\.sky-bar \.wordmark[\s\S]*?color:\s*rgba\(255,\s*255,\s*255,\s*\.92\)/.test(landing) && /\.sky-line \.fix\s*\{[^}]*color:\s*#FFFFFF/.test(landing) && /\.sky-line \.still\s*\{[^}]*color:\s*#FFFFFF/.test(landing) && /\.sky-line \.offer\s*\{[^}]*rgba\(255,\s*255,\s*255,\s*\.7\)/.test(landing) && !/Instrument/.test(landing));
   check('pricing lives on a sampled color band after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
-  check('homepage stays on the light sampled palette', /background:\s*#F7F4ED/.test(landing) && /background:\s*#B8D7EB/.test(landing));
-  check('primary blue is still the brand color', /#1E5AA8/.test(landing));
-  check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
+  check('homepage stays on the light sampled palette', /background:\s*#E6E3D6/.test(landing) && /background:\s*#BBCDD3/.test(landing) && /\.street-fade\s*\{[^}]*#E6E3D6/.test(landing) && /\.price-card\.primary\s*\{[^}]*border-color:\s*#B0BABB/.test(landing) && !/#F7F4ED/.test(landing) && !/#B8D7EB/.test(landing));
+  check('primary CTA is floor steel, not Corridor blue', /#5E7580/.test(landing) && !/#1E5AA8/.test(landing));
+  check('illustration palette is on the homepage', /#BBCDD3/.test(landing) && /#B0BABB/.test(landing) && /#444F52/.test(landing) && /#777F80/.test(landing) && !/#D47A54/.test(landing) && !/#C8C2B4/.test(landing) && !/#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*[^0-9.]7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="still">You still ship a photo dump and a PDF\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && landing.indexOf('class="fix">So we fixed it.') < landing.indexOf('class="still">You still ship a photo dump and a PDF.') && landing.indexOf('class="still">You still ship a photo dump and a PDF.') < landing.indexOf('class="offer">Photos you already have. 48 hours. $200.') && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*[^0-9.]7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still ship a photo dump and a PDF\. We cut a listing video from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\. Detroit founded\. We cut a listing anywhere\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
@@ -1070,8 +1071,9 @@ main().catch(async (err) => {
       && /playsinline/.test(landing)
       && /prefers-reduced-motion:\s*reduce/.test(landing)
       && !/rel="preload"[^>]*hero-detroit-loop/.test(landing)
-      && /defaultPlaybackRate = 0\.75/.test(landing)
-      && /playbackRate = 0\.75/.test(landing)
+      && /defaultPlaybackRate = 0\.5/.test(landing)
+      && /playbackRate = 0\.5/.test(landing)
+      && !/playbackRate = 0\.75/.test(landing)
       && !/playbackRate = 0\.4/.test(landing)
       && !/playbackRate\s*=\s*-/.test(landing)
       && !/class="sky-drift"/.test(landing) && !/class="painted/.test(landing) && !/@keyframes painted-drift/.test(landing) && !/hero-clouds-/.test(landing) && !/\.street-art\s*\{[^}]*animation/.test(landing) && !/class="puff/.test(landing));
@@ -1251,7 +1253,7 @@ main().catch(async (err) => {
       && /r\.accountId === req\.account\.id/.test(authSrc));
 }
 
-// --- primary pills keep Corridor blue, with the shiny-cta motion ------------
+// --- primary pills keep floor steel, with the shiny-cta motion ------------
 {
   const fsx = await import('node:fs');
   const landing = fsx.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
@@ -1262,18 +1264,18 @@ main().catch(async (err) => {
     && /--animation:\s*gradient-angle/.test(src)
     && /--animation:\s*shimmer/.test(src)
     && /animation-play-state:\s*running/.test(src)
-    && /--shiny-cta-bg:\s*#1E5AA8/.test(src)
-    && /--shiny-cta-bg-subtle:\s*#17457F/.test(src)
+    && /--shiny-cta-bg:\s*#5E7580/.test(src)
+    && /--shiny-cta-bg-subtle:\s*#4A5D66/.test(src)
     && /--shiny-cta-fg:\s*#ffffff/.test(src)
-    && /--shiny-cta-highlight:\s*#B8D7EB/.test(src)
-    && /--shiny-cta-highlight-subtle:\s*#D4E7F3/.test(src)
+    && /--shiny-cta-highlight:\s*#BBCDD3/.test(src)
+    && /--shiny-cta-highlight-subtle:\s*#D6E1E5/.test(src)
     && /\.pill\s*\{/.test(src)
     && /border-radius:\s*999px/.test(src)
     && /font-size:\s*15px/.test(src)
-    && /background:\s*#1E5AA8/.test(src);
+    && /background:\s*#5E7580/.test(src);
   const landingKeys = landing.match(/@keyframes\s+[\w-]+/g) || [];
   const deskKeys = desk.match(/@keyframes\s+[\w-]+/g) || [];
-  check('homepage primary pills use the shiny-cta motion in Corridor blue', shineOn(landing));
+  check('homepage primary pills use the shiny-cta motion in floor steel', shineOn(landing));
   check('listings Continue and upload pills use the same shiny-cta motion', shineOn(desk)
     && /class="pill" id="gate-go">Continue</.test(desk)
     && /class="pill" id="go">Upload listing</.test(desk));
