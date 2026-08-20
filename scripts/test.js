@@ -996,9 +996,14 @@ main().catch(async (err) => {
       && /--sans:\s*var\(--font\)/.test(landing)
       && /--serif:\s*var\(--font\)/.test(landing)
       && !/font-family:\s*"Archivo"/.test(landing)
-      && !/font-family:\s*"Instrument Serif"/.test(landing)
       && !/\/fonts\/instrument-serif\.woff2/.test(landing)
       && !/\/fonts\/archivo\.woff2/.test(landing));
+  check('hero H1 is Instrument Serif on paper-white, not Bricolage ink',
+    /family=Instrument\+Serif/.test(landing)
+      && /\.sky-line h1\s*\{[^}]*font-family:\s*"Instrument Serif"/.test(landing)
+      && /\.sky-line h1\s*\{[^}]*color:\s*#F7F4ED/.test(landing)
+      && !/\.sky-line h1\s*\{[^}]*color:\s*#2B2B2B/.test(landing)
+      && !/\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing));
   check('phone type sits on the floor on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /bottom:\s*18svh/.test(landing) && /left:\s*16%/.test(landing) && !/top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero is full-bleed with the floor in frame', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*40%\s*56%/.test(landing) && /background-position:\s*30%\s*62%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*38%/.test(landing) && !/background-position:\s*48%\s*28%/.test(landing) && !/background-position:\s*50%\s*72%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
@@ -1009,8 +1014,9 @@ main().catch(async (err) => {
   check('hero aria-label describes the empty industrial floor', /aria-label="Empty industrial floor, glass wall, one shaft of light\."/.test(landing) && !/Illustrated Detroit riverfront/.test(landing) && !/Renaissance Center/.test(landing));
   check('street-art fallback is cool grey, not sky', /background-color:\s*#73787E/.test(landing) && !/\.street-art[\s\S]*?background-color:\s*#B8D7EB/.test(landing));
   check('wordmark is the site sans spelling Corridor, no play mark', /class="wordmark"/.test(landing) && />Corridor</.test(landing) && /font-family:\s*var\(--sans\)/.test(landing) && !/wordmark-play/.test(landing) && !/class="mark-c"/.test(landing) && !/class="rest"/.test(landing) && !/M2\.4 23V10\.6/.test(landing));
-  check('Detroit line is a bottom-right hairline caption', /class="geo"/.test(landing) && /border-top:/.test(landing) && /text-align:\s*right/.test(landing));
-  check('light haze reads type without darkening the painting', /class="street-haze"/.test(landing) && /rgba\(247,\s*244,\s*237/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
+  check('Detroit line is a bottom-right caption without a dark rule', /class="geo"/.test(landing) && /text-align:\s*right/.test(landing) && /rgba\(247,\s*244,\s*237,\s*\.6\)/.test(landing) && !/\.geo\s*\{[^}]*border-top:\s*1px solid rgba\(43/.test(landing));
+  check('hero has no cream haze or paper scrim over the plate', /class="street-haze"/.test(landing) && !/\.street-haze\s*\{[^}]*rgba\(247,\s*244,\s*237/.test(landing) && !/\.sky-board\s*\{[^}]*rgba\(247,\s*244,\s*237,\s*\.90/.test(landing) && !/backdrop-filter:\s*blur/.test(landing));
+  check('hero nav and type sit on the floor in paper-white', /\.sky-bar \.wordmark[\s\S]*?color:\s*rgba\(247,\s*244,\s*237,\s*\.88\)/.test(landing) && /\.sky-line \.fix\s*\{[^}]*color:\s*#F7F4ED/.test(landing) && /\.sky-line \.offer\s*\{[^}]*rgba\(247,\s*244,\s*237,\s*\.7\)/.test(landing));
   check('pricing lives on a sampled color band after the riverfront', /band-sky/.test(landing) && /band-paper/.test(landing));
   check('footer is sky, not a brown slab', /<footer class="band-sky">/.test(landing) && !/<footer class="band-stone">/.test(landing));
   check('no glass cards or dim overlay on the illustration', !/card-lite/.test(landing) && !/glass-strip/.test(landing) && !/backdrop-filter:\s*blur\(10px\)/.test(landing));
@@ -1019,7 +1025,7 @@ main().catch(async (err) => {
   check('illustration palette is on the homepage', /#B8D7EB/.test(landing) && /#D47A54/.test(landing) && /#C8C2B4/.test(landing) && /#2B2B2B/.test(landing));
   check('moodboard filler was not copied into the product', !/local roots|sustainable|LIST YOUR PROPERTY|corridor\.co/i.test(landing));
   const skyCopy = landing.slice(landing.indexOf('class="street"'), landing.indexOf('id="what"') > -1 ? landing.indexOf('id="what"') : landing.indexOf('id="pricing"'));
-  check('hero copy wraps in the left haze, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*var\(--sans\)/.test(landing) && /clamp\(1\.5rem,\s*4\.6vw,\s*4\.4rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
+  check('hero copy wraps on the floor, then a quieter fix', /class="sky-line"/.test(landing) && /<h1>CRE marketing is boring\.<\/h1>/.test(landing) && /class="fix">So we fixed it\./.test(landing) && /class="offer">Photos you already have\. 48 hours\. \$200\./.test(landing) && /\.sky-line h1\s*\{[^}]*font-family:\s*"Instrument Serif"/.test(landing) && /clamp\(2\.6rem,\s*6\.8vw,\s*5\.8rem\)/.test(landing) && !/\.sky-line h1\s*\{[^}]*white-space:\s*nowrap/.test(landing) && !/\.sky-line h1\s*\{[^}]*7rem/.test(landing) && !/We make a video of your listing/.test(landing) && !/They walk the building/.test(landing) && !/id="boring-word"/.test(landing));
   check('hero has no cinematic and no old photos-in subhead', !/cinematic/i.test(skyCopy) && !/Photos in/.test(skyCopy));
   check('title and meta match the new hero, no cinematic', /<title>Corridor — CRE marketing is boring\. So we fixed it\./.test(landing) && /name="description" content="You still ship a photo dump and a PDF\. We cut a listing video from the photos you already have\. You send it\. The other side walks it on their phone, then they book the showing\. Detroit founded\. We cut a listing anywhere\."/.test(landing) && !/<title>[^<]*cinematic/i.test(landing) && !/name="description" content="[^"]*cinematic/i.test(landing));
   check('hero is a still riverfront, no walker figures', !/class="sidewalk"/.test(landing) && !/class="walker/.test(landing) && !/@keyframes stroll-/.test(landing) && !/@keyframes stride/.test(landing) && !/billboard/.test(landing));
