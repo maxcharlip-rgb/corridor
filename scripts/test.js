@@ -997,7 +997,7 @@ main().catch(async (err) => {
       && !/font-family:\s*"Instrument Serif"/.test(landing)
       && !/\/fonts\/instrument-serif\.woff2/.test(landing)
       && !/\/fonts\/archivo\.woff2/.test(landing));
-  check('phone type sits in the sky on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /top:\s*4\.8rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
+  check('phone type sits in the sky on a full first screen', /height:\s*100svh/.test(landing) && /justify-content:\s*flex-start/.test(landing) && /top:\s*6\.4rem/.test(landing) && !/min-height:\s*68svh/.test(landing));
   check('hero is a CSS cover background, not a pixelated or srcset image', /background-size:\s*cover/.test(landing) && !/background-size:\s*175%\s*auto/.test(landing) && !/background-size:\s*auto\s*100%/.test(landing) && !/image-rendering:\s*pixelated/.test(landing) && !/srcset/.test(landing));
   check('hero is full-bleed with the sky above the towers', /min-height:\s*100vh/.test(landing) && /min-height:\s*100dvh/.test(landing) && /background-size:\s*cover/.test(landing) && /background-position:\s*46%\s*38%/.test(landing) && /image-rendering:\s*auto/.test(landing) && !/street-patch/.test(landing) && !/background-position:\s*22%/.test(landing) && !/background-position:\s*46%\s*90%/.test(landing));
   check('hero owns the first viewport so the next section cannot peek', /height:\s*100vh/.test(landing) && /height:\s*100dvh/.test(landing) && /overflow:\s*hidden/.test(landing));
