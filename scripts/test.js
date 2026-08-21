@@ -1130,7 +1130,7 @@ main().catch(async (err) => {
   check('process cards and side gutters were cut', !/class="gutter"/.test(landing) && !/<h2>The walk<\/h2>/.test(landing) && !/<h2>The showing<\/h2>/.test(landing) && !/<h2>The listing<\/h2>/.test(landing) && !/id="proof"/.test(landing) && !/id="product"/.test(landing));
   check('geography is Detroit in the footer only, not a fold line', /DETROIT/.test(landing) && !/Detroit founded/.test(landing) && !/Detroit based/.test(landing) && !/we work with anyone around the world/i.test(landing) && !/Metro Detroit brokers, first/.test(landing));
   check('ticker and brochure sections were cut', !/corridorMarquee/.test(landing) && !/Please see attached/.test(landing) && !/Included every time/.test(landing) && !/eight-figure/.test(landing) && !/id="brokerages"/.test(landing));
-  check('short FAQ sits after prices, with Join after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why the cap/.test(landing) && /Five brokers\. Three firms\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Why only three/.test(landing) && !/Three desks/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && landing.indexOf('id="join"') > landing.indexOf('id="faq"') && !/id="intake"/.test(landing));
+  check('short FAQ sits after prices, with Join after it', /id="faq"/.test(landing) && /What do I send/.test(landing) && /When do I pay/.test(landing) && /Will it look AI \/ fake/.test(landing) && /Why the cap/.test(landing) && /Three firms\. Then the door closes\. We.ll open more/.test(landing) && /Cut from their photos\. We work it until it.s a video they.d send/.test(landing) && !/Five brokers/.test(landing) && !/five brokers/.test(landing) && !/Why only three/.test(landing) && !/Three desks/.test(landing) && !/Who owns the tour/.test(landing) && !/spots left/i.test(landing) && (landing.match(/<details>/g) || []).length === 5 && landing.indexOf('id="faq"') > landing.indexOf('id="pricing"') && landing.indexOf('id="join"') > landing.indexOf('id="faq"') && !/id="intake"/.test(landing));
   check('cut by hand from your photos appears once, in the FAQ', (landing.match(/cut by hand from your photos/g) || []).length === 1 && landing.indexOf('cut by hand from your photos') > landing.indexOf('id="faq"'));
   check('no demo tour link on the public page', !/\/t\/demo/.test(landing) && !/the space is real/.test(landing) && !/This is what your listing looks like/.test(landing));
   check('pricing is three visible cards — solo, firm, custom',
@@ -1201,9 +1201,10 @@ main().catch(async (err) => {
       && !/\$1,000/.test(landing)
       && (landing.match(/<article class="price-card/g) || []).length === 3
       && (landing.match(/price-card primary/g) || []).length === 1
-      && /Five brokers\. Three firms\. Then we open more/.test(landing)
-      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('id="pricing"')
-      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('class="price-grid"')
+      && /Three firms\. Then we open more/.test(landing)
+      && landing.indexOf('Three firms. Then we open more.') > landing.indexOf('id="pricing"')
+      && landing.indexOf('Three firms. Then we open more.') > landing.indexOf('class="price-grid"')
+      && !/Five brokers/.test(landing)
       && !/\$499/.test(landing) && !/\$9,?999/.test(landing)
       && !/gamification/i.test(landing)
       && !/room-by-room|analytics|a game/i.test(landing.slice(landing.indexOf('id="pricing"'), landing.indexOf('id="faq"')))
@@ -1218,9 +1219,9 @@ main().catch(async (err) => {
       && /Firm: \$150 a listing\. You pay when the video is sendable/.test(landing)
       && !/Shop: \$750 a month for four/.test(landing)
       && !/The month is the shop, not pay-per-cut/.test(landing)
-      && /Five brokers\. Three firms\. Then we open more/.test(landing)
-      && landing.indexOf('Five brokers. Three firms. Then we open more.') < landing.indexOf('We work the cut with you until')
-      && landing.indexOf('Five brokers. Three firms. Then we open more.') > landing.indexOf('id="pricing"')
+      && /Three firms\. Then we open more/.test(landing)
+      && landing.indexOf('Three firms. Then we open more.') < landing.indexOf('We work the cut with you until')
+      && landing.indexOf('Three firms. Then we open more.') > landing.indexOf('id="pricing"')
       && /class="note">We work the cut with you until it.s a video you.d send/.test(landing)
       && !/Three brokerages/.test(landing)
       && !/phone walk/i.test(landing)
@@ -1240,7 +1241,8 @@ main().catch(async (err) => {
   check('Join section posts to the existing marketing list',
     /id="join"/.test(landing)
       && /<h2>Join<\/h2>/.test(landing)
-      && /Five brokers\. Three firms\. Leave your email\. We set the call\./.test(landing)
+      && /Three firms\. Leave your email\. We set the call\./.test(landing)
+      && !/Five brokers/.test(landing)
       && /id="join-form"/.test(landing)
       && /placeholder="Email"/.test(landing)
       && /aria-label="Email"/.test(landing)
@@ -1271,7 +1273,8 @@ main().catch(async (err) => {
       && /48 hours/.test(terms) && /Michigan law/.test(terms)
       && !/first one free/i.test(terms) && !/\/t\/demo/.test(terms) && !/\$260/.test(terms)
       && !/checkout|stripe/i.test(terms) && !/yearly/i.test(terms)
-      && !/five-pack/i.test(terms) && !/phone walk/i.test(terms));
+      && !/five-pack/i.test(terms) && !/phone walk/i.test(terms)
+      && !/Five brokers/.test(terms) && !/five brokers/.test(terms));
   check('privacy page names what we collect and does not sell the list',
     /Bricolage Grotesque/.test(privacy) && /#F7F4ED/.test(privacy)
       && /name, email, property address/.test(privacy)
