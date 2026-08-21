@@ -1281,6 +1281,19 @@ main().catch(async (err) => {
       && !/first one free/i.test(privacy) && !/\/t\/demo/.test(privacy));
 }
 
+// --- /request is a leftover send-a-listing URL, not homepage #intake --------
+{
+  const fsx = await import('node:fs');
+  const requestPage = fsx.readFileSync(new URL('../public/request.html', import.meta.url), 'utf8');
+  check('/request sends send-a-listing traffic to /listings, not /#intake',
+    /<title>Send us a listing — Corridor<\/title>/.test(requestPage)
+      && /url=\/listings/.test(requestPage)
+      && /rel="canonical" href="\/listings"/.test(requestPage)
+      && /href="\/listings"/.test(requestPage)
+      && /location\.replace\('\/listings'\)/.test(requestPage)
+      && !/#intake/.test(requestPage));
+}
+
 // --- broker desk is not studio ----------------------------------------------
 {
   const fsx = await import('node:fs');
