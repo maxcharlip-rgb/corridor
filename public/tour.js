@@ -74,7 +74,7 @@ function paint() {
   $('#app').innerHTML = `
     ${tour.demo ? `<div class="note">
         <p>This is the listing page a broker shares. The QR on the sign opens it. Every room they watch is a lead.</p>
-        <a href="/#intake">Send a listing</a>
+        <a href="/listings">Send a listing</a>
       </div>` : ''}
     <header class="top">
       <p class="kicker">${tour.demo ? 'Sample listing tour' : 'Listing tour'}</p>
